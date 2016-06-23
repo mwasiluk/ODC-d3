@@ -3,13 +3,13 @@ function D3ScatterPlotMatrix(placeholderSelector, data, config) {
     this.placeholderSelector = placeholderSelector;
     this.svg = null;
     this.defaultConfig = {
-        width: 0,
-        size: 200, //cell size
-        padding: 20, //cell padding
+        width: undefined, //svg width (default: computed using cell size and margins)
+        size: 200, //scatter plot cell size
+        padding: 20, //scatter plot cell padding
         brush: true,
-        guides: true,
-        tooltip: true,
-        ticks: null,
+        guides: true, //show axis guides
+        tooltip: true, //show tooltip on dot hover
+        ticks: undefined, //ticks number, (default: computed using cell size)
         margin: {
             left: 30,
             right: 30,
@@ -37,8 +37,8 @@ function D3ScatterPlotMatrix(placeholderSelector, data, config) {
             }
         },
         groups:{
-            key: undefined,
-            includeInPlot: false
+            key: undefined, //object property name or array index with grouping variable
+            includeInPlot: false //include group as variable in plot, boolean (default: false)
         }
 
     };
@@ -103,7 +103,7 @@ D3ScatterPlotMatrix.prototype.initPlot = function () {
 
 
 
-    if(conf.ticks===null){
+    if(conf.ticks===undefined){
         conf.ticks = this.plot.size / 40;
     }
 
