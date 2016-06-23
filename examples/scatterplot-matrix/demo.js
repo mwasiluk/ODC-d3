@@ -6,10 +6,11 @@ var config = {
     brush: true,
     tooltip: true,
     variables: {
-        categoryKey: 'species',
-        // includeCategoryInPlot: true,
         // keys: ['petal length', 'petal width'],
         // labels: ['a', 'b', 'c', 'd', 'e']
+    },
+    groups:{
+        key: 'species'
     },
     x:{
     }

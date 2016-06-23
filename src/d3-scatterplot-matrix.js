@@ -32,12 +32,15 @@ function D3ScatterPlotMatrix(placeholderSelector, data, config) {
         variables: {
             labels: [], //optional array of variable labels (for the diagonal of the plot).
             keys: [], //optional array of variable keys
-            categoryKey: null,
-            includeCategoryInPlot: false,
             value: function (d, variableKey) {// variable value accessor
                 return d[variableKey];
             }
+        },
+        groups:{
+            key: undefined,
+            includeInPlot: false
         }
+
     };
 
 
@@ -123,9 +126,9 @@ D3ScatterPlotMatrix.prototype.initPlot = function () {
         }
 
 
-    }else if(conf.variables.categoryKey){
+    }else if(conf.groups.key){
         this.plot.dot.color = function (d) {
-            return self.plot.dot.colorCategory(d[conf.variables.categoryKey]);
+            return self.plot.dot.colorCategory(d[conf.groups.key]);
         }
     }
 
@@ -143,7 +146,7 @@ D3ScatterPlotMatrix.prototype.setupVariables = function () {
     plot.domainByVariable = {};
     plot.variables = variablesConf.keys;
     if(!plot.variables || !plot.variables.length){
-        plot.variables = this.utils.inferVariables(data, variablesConf.categoryKey, variablesConf.includeCategoryInPlot);
+        plot.variables = this.utils.inferVariables(data, this.config.groups.key, this.config.includeInPlot);
     }
 
     plot.labels = [];
