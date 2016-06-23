@@ -43,7 +43,7 @@ ChartsD3Utils.prototype.cross = function (a, b) {
     return c;
 };
 
-ChartsD3Utils.prototype.inferTraits = function (data, categoryKey, includeCategory) {
+ChartsD3Utils.prototype.inferVariables = function (data, categoryKey, includeCategory) {
     var res = [];
     if (data.length) {
         var d = data[0];

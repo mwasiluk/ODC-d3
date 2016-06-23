@@ -5,14 +5,13 @@ var config = {
     guides: true,
     brush: true,
     tooltip: true,
-    traits: {
+    variables: {
         categoryKey: 'species',
         // includeCategoryInPlot: true,
         // keys: ['petal length', 'petal width'],
         // labels: ['a', 'b', 'c', 'd', 'e']
     },
     x:{
-        // scale: "identity"
     }
 
 

@@ -29,13 +29,13 @@ function D3ScatterPlotMatrix(placeholderSelector, data, config) {
             color: null, // string or function returning color's value for color scale
             d3ColorCategory: 'category10'
         },
-        traits: {
-            labels: [], //optional array of trait labels
-            keys: [], //optional array of trait keys
+        variables: {
+            labels: [], //optional array of variable labels (for the diagonal of the plot).
+            keys: [], //optional array of variable keys
             categoryKey: null,
             includeCategoryInPlot: false,
-            value: function (d, traitKey) {// trait value accessor
-                return d[traitKey];
+            value: function (d, variableKey) {// variable value accessor
+                return d[variableKey];
             }
         }
     };
@@ -76,7 +76,7 @@ D3ScatterPlotMatrix.prototype.initPlot = function () {
         }
     };
 
-    this.setupTraits();
+    this.setupVariables();
 
     this.plot.size = conf.size;
 
@@ -85,7 +85,7 @@ D3ScatterPlotMatrix.prototype.initPlot = function () {
     var placeholderNode = d3.select(this.placeholderSelector).node();
 
     if (!width) {
-        var maxWidth = margin.left + margin.right + this.plot.traits.length*this.plot.size;
+        var maxWidth = margin.left + margin.right + this.plot.variables.length*this.plot.size;
         width = Math.min(placeholderNode.getBoundingClientRect().width, maxWidth);
 
     }
@@ -123,9 +123,9 @@ D3ScatterPlotMatrix.prototype.initPlot = function () {
         }
 
 
-    }else if(conf.traits.categoryKey){
+    }else if(conf.variables.categoryKey){
         this.plot.dot.color = function (d) {
-            return self.plot.dot.colorCategory(d[conf.traits.categoryKey]);
+            return self.plot.dot.colorCategory(d[conf.variables.categoryKey]);
         }
     }
 
@@ -135,31 +135,31 @@ D3ScatterPlotMatrix.prototype.initPlot = function () {
 
 };
 
-D3ScatterPlotMatrix.prototype.setupTraits = function () {
-    var traitsConf = this.config.traits;
+D3ScatterPlotMatrix.prototype.setupVariables = function () {
+    var variablesConf = this.config.variables;
 
     var data = this.data;
     var plot = this.plot;
-    plot.domainByTrait = {};
-    plot.traits = traitsConf.keys;
-    if(!plot.traits || !plot.traits.length){
-        plot.traits = this.utils.inferTraits(data, traitsConf.categoryKey, traitsConf.includeCategoryInPlot);
+    plot.domainByVariable = {};
+    plot.variables = variablesConf.keys;
+    if(!plot.variables || !plot.variables.length){
+        plot.variables = this.utils.inferVariables(data, variablesConf.categoryKey, variablesConf.includeCategoryInPlot);
     }
 
     plot.labels = [];
-    plot.labelByTrait = {};
-    plot.traits.forEach(function(traitKey, index) {
-        plot.domainByTrait[traitKey] = d3.extent(data, function(d) { return traitsConf.value(d, traitKey) });
-        var label = traitKey;
-        if(traitsConf.labels && traitsConf.labels.length>index){
+    plot.labelByVariable = {};
+    plot.variables.forEach(function(variableKey, index) {
+        plot.domainByVariable[variableKey] = d3.extent(data, function(d) { return variablesConf.value(d, variableKey) });
+        var label = variableKey;
+        if(variablesConf.labels && variablesConf.labels.length>index){
 
-            label = traitsConf.labels[index];
+            label = variablesConf.labels[index];
         }
         plot.labels.push(label);
-        plot.labelByTrait[traitKey] = label;
+        plot.labelByVariable[variableKey] = label;
     });
 
-    console.log(plot.labelByTrait);
+    console.log(plot.labelByVariable);
 
     plot.subplots = [];
 };
@@ -170,13 +170,13 @@ D3ScatterPlotMatrix.prototype.setupX = function () {
     var x = plot.x;
     var conf = this.config;
 
-    x.value = conf.traits.value;
+    x.value = conf.variables.value;
     x.scale = d3.scale[conf.x.scale]().range([conf.padding / 2, plot.size - conf.padding / 2]);
-    x.map = function (d, trait) {
-        return x.scale(x.value(d, trait));
+    x.map = function (d, variable) {
+        return x.scale(x.value(d, variable));
     };
     x.axis = d3.svg.axis().scale(x.scale).orient(conf.x.orient).ticks(conf.ticks);
-    x.axis.tickSize(plot.size * plot.traits.length);
+    x.axis.tickSize(plot.size * plot.variables.length);
 
 };
 
@@ -186,33 +186,33 @@ D3ScatterPlotMatrix.prototype.setupY = function () {
     var y = plot.y;
     var conf = this.config;
 
-    y.value = conf.traits.value;
+    y.value = conf.variables.value;
     y.scale = d3.scale[conf.y.scale]().range([ plot.size - conf.padding / 2, conf.padding / 2]);
-    y.map = function (d, trait) {
-        return y.scale(y.value(d, trait));
+    y.map = function (d, variable) {
+        return y.scale(y.value(d, variable));
     };
     y.axis= d3.svg.axis().scale(y.scale).orient(conf.y.orient).ticks(conf.ticks);
-    y.axis.tickSize(-plot.size * plot.traits.length);
+    y.axis.tickSize(-plot.size * plot.variables.length);
 };
 
 
 D3ScatterPlotMatrix.prototype.drawPlot = function () {
     var self =this;
-    var n = self.plot.traits.length;
+    var n = self.plot.variables.length;
     var conf = this.config;
     self.svgG.selectAll(".mw-axis-x.mw-axis")
-        .data(self.plot.traits)
+        .data(self.plot.variables)
         .enter().append("g")
         .attr("class", "mw-axis-x mw-axis"+(conf.guides ? '' : ' mw-no-guides'))
         .attr("transform", function(d, i) { return "translate(" + (n - i - 1) * self.plot.size + ",0)"; })
-        .each(function(d) { self.plot.x.scale.domain(self.plot.domainByTrait[d]); d3.select(this).call(self.plot.x.axis); });
+        .each(function(d) { self.plot.x.scale.domain(self.plot.domainByVariable[d]); d3.select(this).call(self.plot.x.axis); });
 
     self.svgG.selectAll(".mw-axis-y.mw-axis")
-        .data(self.plot.traits)
+        .data(self.plot.variables)
         .enter().append("g")
         .attr("class", "mw-axis-y mw-axis"+(conf.guides ? '' : ' mw-no-guides'))
         .attr("transform", function(d, i) { return "translate(0," + i * self.plot.size + ")"; })
-        .each(function(d) { self.plot.y.scale.domain(self.plot.domainByTrait[d]); d3.select(this).call(self.plot.y.axis); });
+        .each(function(d) { self.plot.y.scale.domain(self.plot.domainByVariable[d]); d3.select(this).call(self.plot.y.axis); });
 
 
     if(conf.tooltip){
@@ -222,7 +222,7 @@ D3ScatterPlotMatrix.prototype.drawPlot = function () {
     }
 
     var cell = self.svgG.selectAll(".mw-cell")
-        .data(self.utils.cross(self.plot.traits, self.plot.traits))
+        .data(self.utils.cross(self.plot.variables, self.plot.variables))
         .enter().append("g")
         .attr("class", "mw-cell")
         .attr("transform", function(d) { return "translate(" + (n - d.i - 1) * self.plot.size + "," + d.j * self.plot.size + ")"; });
@@ -240,7 +240,7 @@ D3ScatterPlotMatrix.prototype.drawPlot = function () {
         .attr("x", conf.padding)
         .attr("y", conf.padding)
         .attr("dy", ".71em")
-        .text(function(d) { return self.plot.labelByTrait[d.x]; });
+        .text(function(d) { return self.plot.labelByVariable[d.x]; });
 
 
 
@@ -250,8 +250,8 @@ D3ScatterPlotMatrix.prototype.drawPlot = function () {
         plot.subplots.push(p);
         var cell = d3.select(this);
 
-        plot.x.scale.domain(plot.domainByTrait[p.x]);
-        plot.y.scale.domain(plot.domainByTrait[p.y]);
+        plot.x.scale.domain(plot.domainByVariable[p.x]);
+        plot.y.scale.domain(plot.domainByVariable[p.y]);
 
         cell.append("rect")
             .attr("class", "mw-frame")
@@ -372,8 +372,8 @@ D3ScatterPlotMatrix.prototype.drawBrush = function (cell) {
     function brushstart(p) {
         if (brushCell !== this) {
             d3.select(brushCell).call(brush.clear());
-            self.plot.x.scale.domain(self.plot.domainByTrait[p.x]);
-            self.plot.y.scale.domain(self.plot.domainByTrait[p.y]);
+            self.plot.x.scale.domain(self.plot.domainByVariable[p.x]);
+            self.plot.y.scale.domain(self.plot.domainByVariable[p.y]);
             brushCell = this;
         }
     }
