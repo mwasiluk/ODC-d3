@@ -1,0 +1,5 @@
+# Created by .ignore support plugin (hsz.mobi)
+.idea/
+charts-d3.iml
+node_modules/
+bower_components/

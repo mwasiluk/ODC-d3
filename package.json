@@ -1,0 +1,37 @@
+{
+  "name": "charts-d3",
+  "version": "0.1.0",
+  "description": "d3charts",
+  "main": "gulpfile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mwasiluk/charts-d3.git"
+  },
+  "keywords": [
+    "d3",
+    "scatterplot"
+  ],
+  "author": "Michal Wasiluk",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mwasiluk/charts-d3/issues"
+  },
+  "homepage": "https://github.com/mwasiluk/charts-d3#readme",
+  "devDependencies": {
+    "browser-sync": "^2.13.0",
+    "del": "^2.2.0",
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.0",
+    "gulp-load-plugins": "^1.2.4",
+    "gulp-minify-css": "^1.2.4",
+    "gulp-plumber": "^1.1.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-sass": "^2.3.1",
+    "gulp-strip-debug": "^1.1.0",
+    "gulp-uglify": "^1.5.3",
+    "merge-stream": "^1.0.0"
+  }
+}
