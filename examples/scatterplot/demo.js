@@ -2,7 +2,7 @@ var conf = {
     // width: 500,
     // height: 500,
     dot:{
-        // color: 'red'
+        color: function(d) { return d[0]*d[1] }
     },
     x:{
         // scale: "log"

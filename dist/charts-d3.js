@@ -423,7 +423,7 @@ function D3ScatterPlot(placeholderSelector, data, config){
         },
         dot:{
             radius: 2,
-            color: function(d) { return d[0]*d[1] }, // string or function returning color's value for color scale
+            color: 'black', // string or function returning color's value for color scale
             d3ColorCategory: 'category10'
         }
     };
