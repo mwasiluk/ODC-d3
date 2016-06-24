@@ -5,6 +5,8 @@ function D3ScatterPlot(placeholderSelector, data, config){
     this.defaultConfig = {
         width: 0,
         height: 0,
+        guides: true, //show axis guides
+        tooltip: true, //show tooltip on dot hover
         margin:{
             left: 50,
             right: 30,
@@ -197,6 +199,23 @@ D3ScatterPlot.prototype.update = function (){
         .attr("cx", plot.x.map)
         .attr("cy", plot.y.map);
 
+    if(plot.tooltip){
+        dots.on("mouseover", function(d) {
+            plot.tooltip.transition()
+                .duration(200)
+                .style("opacity", .9);
+            plot.tooltip.html("(" + plot.x.value(d)
+                + ", " +plot.y.value(d) + ")")
+                .style("left", (d3.event.pageX + 5) + "px")
+                .style("top", (d3.event.pageY - 28) + "px");
+        })
+            .on("mouseout", function(d) {
+                plot.tooltip.transition()
+                    .duration(500)
+                    .style("opacity", 0);
+            });
+    }
+
     if(plot.dot.color){
         dots.style("fill", plot.dot.color)
     }
@@ -227,6 +246,12 @@ D3ScatterPlot.prototype.initSvg = function (){
         .attr("class", "mw-d3-scatterplot");
     self.svgG = self.svg.append("g")
         .attr("transform", "translate(" + config.margin.left + "," + config.margin.top + ")");
+
+    if(config.tooltip){
+        self.plot.tooltip = this.utils.selectOrAppend(d3.select(self.placeholderSelector), 'div.mw-tooltip', 'div')
+            .attr("class", "mw-tooltip")
+            .style("opacity", 0);
+    }
 
     if(!config.width || config.height ){
         d3.select(window)
