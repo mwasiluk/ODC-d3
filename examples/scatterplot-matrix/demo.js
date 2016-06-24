@@ -15,7 +15,6 @@ var config = {
     x:{
     }
 
-
 };
 var data2 = [
     [1, 2, 3, 4, 5],

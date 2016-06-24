@@ -1,6 +1,7 @@
 var conf = {
     // width: 500,
     // height: 500,
+    guides: true,
     dot:{
         color: function(d) { return d[0]*d[1] }
     },
