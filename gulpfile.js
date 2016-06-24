@@ -56,7 +56,7 @@ gulp.task('build', ['build-css', 'build-js'], function () {
 });
 
 gulp.task('watch', function() {
-    return gulp.watch(['./src/**/*.html', './styles/*.*css', 'src/**/*.js'], ['default']);
+    return gulp.watch(['./src/**/*.html', './src/styles/*.*css', 'src/**/*.js'], ['default']);
 });
 
 gulp.task('default', ['build-clean'],  function() {
@@ -78,7 +78,7 @@ gulp.task('serve', ['default'], ()=>{
         open: 'local',
         browser: "google chrome"
     });
-    gulp.watch(['i18n/**/*.json', './src/**/*.html', './styles/*.*css', 'src/**/*.js', 'examples/**/*.*'], ['default-watch']);
+    gulp.watch(['i18n/**/*.json', './src/**/*.html', './src/styles/*.*css', 'src/**/*.js', 'examples/**/*.*'], ['default-watch']);
 });
 
 // error function for plumber

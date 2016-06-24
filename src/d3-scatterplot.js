@@ -5,7 +5,7 @@ function D3ScatterPlot(placeholderSelector, data, config){
     this.defaultConfig = {
         width: 0,
         height: 0,
-        guides: true, //show axis guides
+        guides: false, //show axis guides
         tooltip: true, //show tooltip on dot hover
         margin:{
             left: 50,
@@ -121,7 +121,9 @@ D3ScatterPlot.prototype.setupX = function (){
     x.axis = d3.svg.axis().scale(x.scale).orient(conf.orient);
     var data = this.data;
     plot.x.scale.domain([d3.min(data, plot.x.value)-1, d3.max(data, plot.x.value)+1]);
-
+    if(this.config.guides) {
+        x.axis.tickSize(-plot.height);
+    }
 
 };
 
@@ -142,6 +144,10 @@ D3ScatterPlot.prototype.setupY = function (){
     y.map = function(d) { return y.scale(y.value(d));};
     y.axis = d3.svg.axis().scale(y.scale).orient(conf.orient);
 
+    if(this.config.guides){
+        y.axis.tickSize(-plot.width);
+    }
+
 
     var data = this.data;
     plot.y.scale.domain([d3.min(data, plot.y.value)-1, d3.max(data, plot.y.value)+1]);
@@ -157,7 +163,7 @@ D3ScatterPlot.prototype.drawAxisX = function (){
     var plot = self.plot;
     var axisConf = this.config.x;
     self.svgG.append("g")
-        .attr("class", "mw-axis mw-axis-x")
+        .attr("class", "mw-axis-x mw-axis"+(self.config.guides ? '' : ' mw-no-guides'))
         .attr("transform", "translate(0," + plot.height + ")")
         .call(plot.x.axis)
         .append("text")
@@ -173,7 +179,7 @@ D3ScatterPlot.prototype.drawAxisY = function (){
     var plot = self.plot;
     var axisConf = this.config.y;
     self.svgG.append("g")
-        .attr("class", "mw-axis mw-axis-y")
+        .attr("class", "mw-axis mw-axis-y"+(self.config.guides ? '' : ' mw-no-guides'))
         .call(plot.y.axis)
         .append("text")
         .attr("class", "mw-label")

@@ -39,7 +39,13 @@ svg.mw-d3-scatterplot {
   background-color: white;
   font-size: 11px;
   height: 100%; }
-  svg.mw-d3-scatterplot .mw-axis path, svg.mw-d3-scatterplot .mw-axis line {
+  svg.mw-d3-scatterplot .mw-axis path {
     fill: none;
     stroke: #000;
     shape-rendering: crispEdges; }
+  svg.mw-d3-scatterplot .mw-axis line {
+    shape-rendering: crispEdges;
+    stroke: #eaeaea; }
+  svg.mw-d3-scatterplot .mw-axis.mw-no-guides line {
+    display: none;
+    stroke: #a6a6a6; }

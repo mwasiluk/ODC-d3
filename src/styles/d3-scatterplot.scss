@@ -4,10 +4,20 @@ svg.mw-d3-scatterplot{
   height: 100%;
   .mw-axis{
 
-    path, line{
+    path{
       fill: none;
       stroke: #000;
       shape-rendering: crispEdges;
+    }
+    line {
+      shape-rendering: crispEdges;
+      stroke: #eaeaea;
+    }
+    &.mw-no-guides{
+      line{
+        display: none;
+        stroke: #a6a6a6;
+      }
     }
   }
 
