@@ -1,4 +1,5 @@
 function D3ScatterPlotMatrix(placeholderSelector, data, config) {
+    var self = this;
     this.utils = new ChartsD3Utils();
     this.placeholderSelector = placeholderSelector;
     this.svg = null;
@@ -38,7 +39,9 @@ function D3ScatterPlotMatrix(placeholderSelector, data, config) {
         },
         groups:{
             key: undefined, //object property name or array index with grouping variable
-            includeInPlot: false //include group as variable in plot, boolean (default: false)
+            includeInPlot: false, //include group as variable in plot, boolean (default: false)
+            value: function(d) { return d[self.config.groups.key] }, // grouping value accessor,
+            label: ""
         }
 
     };
@@ -284,8 +287,21 @@ D3ScatterPlotMatrix.prototype.drawPlot = function () {
                     plot.tooltip.transition()
                         .duration(200)
                         .style("opacity", .9);
-                    plot.tooltip.html("(" + plot.x.value(d, subplot.x)
-                        + ", " +plot.y.value(d, subplot.y) + ")")
+                    var html = "(" + plot.x.value(d, subplot.x) + ", " +plot.y.value(d, subplot.y) + ")";
+                    plot.tooltip.html(html)
+                        .style("left", (d3.event.pageX + 5) + "px")
+                        .style("top", (d3.event.pageY - 28) + "px");
+
+                    var group = self.config.groups.value(d);
+                    if(group || group===0 ){
+                        html+="<br/>";
+                        var label = self.config.groups.label;
+                        if(label){
+                            html+=label+": ";
+                        }
+                        html+=group
+                    }
+                    plot.tooltip.html(html)
                         .style("left", (d3.event.pageX + 5) + "px")
                         .style("top", (d3.event.pageY - 28) + "px");
                 })
