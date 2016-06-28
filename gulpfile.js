@@ -4,12 +4,14 @@ var merge = require('merge-stream');
 var plugins = require('gulp-load-plugins')();
 var browserSync = require('browser-sync').create();
 
+var projectName= "odc-d3"
+
 gulp.task('clean', function (cb) {
     return del(['tmp', 'dist'], cb);
 });
 
 gulp.task('build-css', function () {
-    var fileName = 'charts-d3';
+    var fileName = projectName;
     var pretty = gulp.src('./src/styles/*')
         .pipe(plugins.plumber({ errorHandler: onError }))
         .pipe(plugins.sass())
@@ -31,7 +33,7 @@ gulp.task('build-css', function () {
 });
 
 gulp.task('build-js', function () {
-    var jsFileName = 'charts-d3';
+    var jsFileName = projectName;
    var pretty = gulp.src('./src/*.js')
         .pipe(plugins.plumber({ errorHandler: onError }))
         .pipe(plugins.concat(jsFileName+'.js'))

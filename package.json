@@ -1,14 +1,14 @@
 {
-  "name": "charts-d3",
+  "name": "odc-d3",
   "version": "0.1.0",
-  "description": "d3charts",
+  "description": "Open Data Charts for D3",
   "main": "gulpfile.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mwasiluk/charts-d3.git"
+    "url": "git+https://github.com/mwasiluk/ODC-d3.git"
   },
   "keywords": [
     "d3",
@@ -17,9 +17,9 @@
   "author": "Michal Wasiluk",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mwasiluk/charts-d3/issues"
+    "url": "https://github.com/mwasiluk/ODC-d3/issues"
   },
-  "homepage": "https://github.com/mwasiluk/charts-d3#readme",
+  "homepage": "https://github.com/mwasiluk/ODC-d3#readme",
   "devDependencies": {
     "browser-sync": "^2.13.0",
     "del": "^2.2.0",

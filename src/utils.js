@@ -2,7 +2,7 @@ function ChartsD3Utils() {
 }
 
 // usage example deepExtend({}, objA, objB); => should work similar to $.extend(true, {}, objA, objB);
-ChartsD3Utils.prototype.deepExtend = function (out) { 
+ChartsD3Utils.prototype.deepExtend = function (out) {
 
     var utils = this;
     var emptyOut = {};
