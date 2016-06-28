@@ -1,4 +1,4 @@
-# Open Data Charts for D3 - ODC-d3
+# ODC-D3 - Open Data Charts for D3 
 
 You can install this package through `Bower` :
 
