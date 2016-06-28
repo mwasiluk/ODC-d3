@@ -13,6 +13,9 @@ var conf = {
     }
 
 };
+// conf = new  ODCD3.ScatterPlotConfig();
+// conf.guides = true;
+
 var data = [
     [1,2, 1],
     [2,3, 2],
@@ -24,5 +27,5 @@ var data = [
     [5,4, 2]
 
 ];
-var plot = new D3ScatterPlot("#scatterplot", data, conf);
+var plot = new ODCD3.ScatterPlot("#scatterplot", data, conf);
 

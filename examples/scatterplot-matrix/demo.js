@@ -49,6 +49,6 @@ var plot;
 plot.init();*/
 d3.csv("flowers.csv", function(error, data) {
     console.log(data);
-    plot = new D3ScatterPlotMatrix("#scatterplot", data, config);
+    plot = new ODCD3.ScatterPlotMatrix("#scatterplot", data, config);
 
 });

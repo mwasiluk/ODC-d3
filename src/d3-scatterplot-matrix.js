@@ -1,6 +1,6 @@
 function D3ScatterPlotMatrix(placeholderSelector, data, config) {
     var self = this;
-    this.utils = new ChartsD3Utils();
+    this.utils = new Utils();
     this.placeholderSelector = placeholderSelector;
     this.svg = null;
     this.defaultConfig = {
@@ -202,7 +202,7 @@ D3ScatterPlotMatrix.prototype.setupY = function () {
 };
 
 
-D3ScatterPlotMatrix.prototype.drawPlot = function () {
+D3ScatterPlotMatrix.prototype.draw = function () {
     var self =this;
     var n = self.plot.variables.length;
     var conf = this.config;
@@ -370,7 +370,7 @@ D3ScatterPlotMatrix.prototype.init = function () {
     var self = this;
     self.initPlot();
     self.initSvg();
-    self.drawPlot();
+    self.draw();
 };
 
 D3ScatterPlotMatrix.prototype.drawBrush = function (cell) {

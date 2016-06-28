@@ -4,6 +4,12 @@ var merge = require('merge-stream');
 var plugins = require('gulp-load-plugins')();
 var browserSync = require('browser-sync').create();
 
+var browserify = require("browserify");
+var source = require('vinyl-source-stream');
+var tsify = require("tsify");
+var sourcemaps = require('gulp-sourcemaps');
+var buffer = require('vinyl-buffer');
+
 var projectName= "odc-d3"
 
 gulp.task('clean', function (cb) {
@@ -12,42 +18,55 @@ gulp.task('clean', function (cb) {
 
 gulp.task('build-css', function () {
     var fileName = projectName;
-    var pretty = gulp.src('./src/styles/*')
+    return gulp.src('./src/styles/*')
         .pipe(plugins.plumber({ errorHandler: onError }))
         .pipe(plugins.sass())
-        // .pipe(plugins.rename({
-        //     extname: '.css'
-        // }))
         .pipe(plugins.concat(fileName+'.css'))
-        .pipe(gulp.dest('./dist'));
-    var ugly = gulp.src('./src/styles/*')
-        .pipe(plugins.plumber({ errorHandler: onError }))
-        .pipe(plugins.sass())
+        .pipe(gulp.dest('./dist'))
         .pipe(plugins.minifyCss())
-        // .pipe(plugins.rename({
-        //     extname: '.min.css'
-        // }))
-        .pipe(plugins.concat(fileName+'.min.css'))
+        .pipe(plugins.rename({ extname: '.min.css' }))
         .pipe(gulp.dest('./dist'));
-    return merge(pretty, ugly);
+});
+
+gulp.task('build-js2', function () {
+    var jsFileName =  projectName;
+   return gulp.src('./src/*.js')
+        .pipe(plugins.plumber({ errorHandler: onError }))
+         .pipe(plugins.babel({
+           presets: ['es2015']
+         }))
+        .pipe(plugins.concat(jsFileName+'.js'))
+        .pipe(gulp.dest('dist'))
+        .pipe(plugins.stripDebug())
+        .pipe(plugins.uglify())
+        .pipe(plugins.rename({ extname: '.min.js' }))
+        .pipe(gulp.dest('dist'));
 });
 
 gulp.task('build-js', function () {
-    var jsFileName = projectName;
-   var pretty = gulp.src('./src/*.js')
+    var jsFileName =  projectName;
+    return browserify({
+        basedir: '.',
+        debug: true,
+        entries: ['src/index.js'],
+        cache: {},
+        packageCache: {},
+        standalone: 'ODCD3'
+    })
+        .transform("babelify", {presets: ["es2015"],  plugins: ["transform-class-properties"]})
+        .bundle()
         .pipe(plugins.plumber({ errorHandler: onError }))
-        .pipe(plugins.concat(jsFileName+'.js'))
-        .pipe(gulp.dest('dist'));
-
-    var ugly = gulp.src('./src/*.js')
-        .pipe(plugins.plumber({ errorHandler: onError }))
-        .pipe(plugins.uglify())
+        .pipe(source(jsFileName+'.js'))
+        .pipe(gulp.dest("dist"))
+        .pipe(buffer())
+        .pipe(sourcemaps.init({loadMaps: true}))
         .pipe(plugins.stripDebug())
-        .pipe(plugins.concat(jsFileName+'.min.js'))
-        .pipe(gulp.dest('dist'));
-
-    return merge(pretty, ugly);
+        .pipe(plugins.uglify())
+        .pipe(plugins.rename({ extname: '.min.js' }))
+        .pipe(sourcemaps.write('./'))
+        .pipe(gulp.dest("dist"));
 });
+
 
 gulp.task('build-clean', ['clean'], function () {
     gulp.start('build');
