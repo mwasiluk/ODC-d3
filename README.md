@@ -1,8 +1,8 @@
-# charts-d3   
+# Open Data Charts for D3 - ODC-d3
 
 You can install this package through `Bower` :
 
-    bower install charts-d3 --save
+    bower install odc-d3 --save
 
 
 <br/><br/>
