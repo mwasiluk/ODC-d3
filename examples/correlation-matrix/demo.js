@@ -9,6 +9,9 @@ var config = {
         // keys: ['petal length', 'petal width'],
         // labels: ['a', 'b', 'c', 'd', 'e']
     },
+    cell:{
+        shape:"ellipse"
+    },
     groups:{
         key: 'species'
     },

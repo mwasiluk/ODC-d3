@@ -17,16 +17,16 @@ export class CorrelationMatrixConfig extends ChartConfig{
     correlation={
         scale: "linear",
         domain: [-1, 0, 1],
-        range: ["darkslateblue", "white", "crimson"],
+        range: ["darkblue", "white", "crimson"],
         value: (xValues, yValues) => StatisticsUtils.sampleCorrelation(xValues, yValues),
 
     };
     cell={
-        shape: "circle",
+        shape: "ellipse", //possible values: rect, circle, ellipse
         size: undefined,
         sizeMin: 5,
         sizeMax: 80,
-        padding: 2
+        padding: 1
     };
 
 
@@ -142,9 +142,20 @@ export class CorrelationMatrix extends Chart{
             var radiusMax = shapeSize/2;
             shape.radiusScale = d3.scale.linear().domain([0, 1]).range([2, radiusMax]);
             shape.radius = c=> shape.radiusScale(Math.abs(c.value));
+        }else if(shape.type == 'ellipse'){
+            var radiusMax = shapeSize/2;
+            shape.radiusScale = d3.scale.linear().domain([0, 1]).range([radiusMax, 2]);
+            shape.radiusX = c=> shape.radiusScale(Math.abs(c.value));
+            shape.radiusY = radiusMax;
+
+            shape.rotateVal = v => {
+                if(v==0) return "0";
+                if(v<0) return "-45";
+                return "45"
+            }
+        }else if(shape.type == 'rect'){
+            shape.size = shapeSize;
         }
-        
-        
         
     }
 
@@ -215,11 +226,7 @@ export class CorrelationMatrix extends Chart{
             });
 
         });
-
-
     }
-
-
 
     draw(){
         this.update();
@@ -245,15 +252,40 @@ export class CorrelationMatrix extends Chart{
             .data(plot.correlation.matrix.cells);
 
 
-        cells.enter().append(cellShape)
+        cells.enter().append("g")
             .attr("class", cellClass);
 
+        var shapes = cells.append(cellShape);
+        
         if(plot.correlation.shape.type=='circle'){
-            cells.attr("r", plot.correlation.shape.radius)
-                .attr("cx", c => plot.cellSize * c.col + plot.cellSize/2)
-                .attr("cy", c => plot.cellSize * c.row + plot.cellSize/2);
+            cells.attr("transform", c=> "translate("+(plot.cellSize * c.col + plot.cellSize/2)+","+(plot.cellSize * c.row + plot.cellSize/2)+")");
+            console.log( plot.correlation.shape.radius);
+            shapes
+                .attr("r", plot.correlation.shape.radius)
+                .attr("cx",0)
+                .attr("cy", 0);
         }
 
+        if(plot.correlation.shape.type=='ellipse'){
+            cells.attr("transform", c=> "translate("+(plot.cellSize * c.col + plot.cellSize/2)+","+(plot.cellSize * c.row + plot.cellSize/2)+")");
+            // cells.attr("transform", c=> "translate(300,150) rotate("+plot.correlation.shape.rotateVal(c.value)+")");
+            shapes
+                .attr("rx", plot.correlation.shape.radiusX)
+                .attr("ry", plot.correlation.shape.radiusY)
+                .attr("cx", 0)
+                .attr("cy", 0)
+
+                .attr("transform", c=> "rotate("+plot.correlation.shape.rotateVal(c.value)+")");
+        }
+
+
+        if(plot.correlation.shape.type=='rect'){
+            cells
+                .attr("width", plot.correlation.shape.size)
+                .attr("height", plot.correlation.shape.size)
+                .attr("x", c => plot.cellSize * c.col)
+                .attr("y", c => plot.cellSize * c.row);
+        }
 
         if(plot.tooltip){
             cells.on("mouseover", function(c) {
@@ -272,7 +304,7 @@ export class CorrelationMatrix extends Chart{
                 });
         }
 
-        cells.style("fill", c=> plot.correlation.color.scale(c.value));
+        shapes.style("fill", c=> plot.correlation.color.scale(c.value));
 
         cells.exit().remove();
     }
