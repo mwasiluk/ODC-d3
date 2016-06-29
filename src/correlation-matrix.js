@@ -80,15 +80,7 @@ export class CorrelationMatrix extends Chart{
             width = this.plot.cellSize*this.plot.variables.length + margin.left + margin.right;
 
         }
-
-        if(!width){
-
-
-            width = Math.min(parentWidth, maxWidth);
-        }
-        if(!this.plot.cellSize){
-
-        }
+        
         var height = width;
         if(!height){
             height =placeholderNode.getBoundingClientRect().height;
@@ -254,12 +246,11 @@ export class CorrelationMatrix extends Chart{
 
         cells.enter().append("g")
             .attr("class", cellClass);
-
+        cells.attr("transform", c=> "translate("+(plot.cellSize * c.col + plot.cellSize/2)+","+(plot.cellSize * c.row + plot.cellSize/2)+")");
         var shapes = cells.append(cellShape);
         
         if(plot.correlation.shape.type=='circle'){
-            cells.attr("transform", c=> "translate("+(plot.cellSize * c.col + plot.cellSize/2)+","+(plot.cellSize * c.row + plot.cellSize/2)+")");
-            console.log( plot.correlation.shape.radius);
+
             shapes
                 .attr("r", plot.correlation.shape.radius)
                 .attr("cx",0)
@@ -267,7 +258,6 @@ export class CorrelationMatrix extends Chart{
         }
 
         if(plot.correlation.shape.type=='ellipse'){
-            cells.attr("transform", c=> "translate("+(plot.cellSize * c.col + plot.cellSize/2)+","+(plot.cellSize * c.row + plot.cellSize/2)+")");
             // cells.attr("transform", c=> "translate(300,150) rotate("+plot.correlation.shape.rotateVal(c.value)+")");
             shapes
                 .attr("rx", plot.correlation.shape.radiusX)
@@ -280,11 +270,11 @@ export class CorrelationMatrix extends Chart{
 
 
         if(plot.correlation.shape.type=='rect'){
-            cells
+            shapes
                 .attr("width", plot.correlation.shape.size)
                 .attr("height", plot.correlation.shape.size)
-                .attr("x", c => plot.cellSize * c.col)
-                .attr("y", c => plot.cellSize * c.row);
+                .attr("x", -plot.cellSize/2)
+                .attr("y", -plot.cellSize/2);
         }
 
         if(plot.tooltip){
