@@ -20,5 +20,8 @@
   ],
   "dependencies": {
     "d3": "^3.5.17"
+  },
+  "devDependencies": {
+    "simple-statistics": "^2.0.0"
   }
 }
