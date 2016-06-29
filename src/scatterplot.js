@@ -1,4 +1,3 @@
-
 import {Chart, ChartConfig} from "./chart";
 import {Utils} from './utils'
 
@@ -243,52 +242,3 @@ export class ScatterPlot extends Chart{
 
     };
 }
-
-/*
-
-
- function ScatterPlot(placeholderSelector, data, config){
- var self =  this;
- this.defaultConfig = {
- svgClass: 'mw-d3-scatterplot',
- guides: false, //show axis guides
- tooltip: true, //show tooltip on dot hover
- x:{// X axis config
- label: 'X', // axis label
- key: 0,
- value: function(d) { return d[self.config.x.key] }, // x value accessor
- orient: "bottom",
- scale: "linear"
- },
- y:{// Y axis config
- label: 'Y', // axis label,
- key: 1,
- value: function(d) { return d[self.config.y.key] }, // y value accessor
- orient: "left",
- scale: "linear"
- },
- groups:{
- key: 2,
- value: function(d) { return d[self.config.groups.key] }, // grouping value accessor,
- label: ""
- },
- dot:{
- radius: 2,
- color: function(d) { return self.config.groups.value(d) }, // string or function returning color's value for color scale
- d3ColorCategory: 'category10'
- }
-
- };
- D3ChartBase.call(self, placeholderSelector, data, config);
- console.log(this.defaultConfig);
-
-
-
- }
-
-
-
- ScatterPlot.prototype.
-
-
- */

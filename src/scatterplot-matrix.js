@@ -115,10 +115,6 @@ export class ScatterPlotMatrix extends Chart {
             }
 
 
-        }else if(conf.groups.key){
-            this.plot.dot.color = function (d) {
-                return self.plot.dot.colorCategory(d[conf.groups.key]);
-            }
         }
 
 

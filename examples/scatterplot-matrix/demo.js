@@ -13,7 +13,8 @@ var config = {
         key: 'species'
     },
     x:{
-    }
+    },
+    dot:{}
 
 };
 var data2 = [
@@ -47,7 +48,7 @@ var data3 = [
 var plot;
 /*plot = new D3ScatterPlotMatrix("#scatterplot", data, conf);
 plot.init();*/
-d3.csv("flowers.csv", function(error, data) {
+d3.csv("../data/flowers.csv", function(error, data) {
     console.log(data);
     plot = new ODCD3.ScatterPlotMatrix("#scatterplot", data, config);
 

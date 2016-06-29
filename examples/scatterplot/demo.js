@@ -1,4 +1,4 @@
-var conf = {
+var confFlowers = {
     // width: 500,
     // height: 500,
     guides: true,
@@ -6,17 +6,27 @@ var conf = {
         // color: function(d) { return d[0]*d[1] }
     },
     x:{
-        // scale: "log"
+        key: 'petal length',
+        label: 'petal length'
+    },
+    y:{
+        key: 'petal width',
+        label: 'petal width'
     },
     groups:{
-        label: "group"
+        key: 'species',
+        label: "species"
     }
 
 };
 // conf = new  ODCD3.ScatterPlotConfig();
 // conf.guides = true;
 
-var data = [
+var confArray={
+
+};
+
+var dataArray = [
     [1,2, 1],
     [2,3, 2],
     [3,4, 1],
@@ -27,5 +37,11 @@ var data = [
     [5,4, 2]
 
 ];
-var plot = new ODCD3.ScatterPlot("#scatterplot", data, conf);
+var plot;
+var conf = confFlowers;
 
+d3.csv("../data/flowers.csv", function(error, data) {
+    console.log(data);
+    plot = new ODCD3.ScatterPlot("#scatterplot", data, conf);
+
+});
