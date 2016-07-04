@@ -70,11 +70,15 @@ export class CorrelationMatrix extends Chart{
         var parentWidth = placeholderNode.getBoundingClientRect().width;
         if(width){
 
+            if(!this.plot.cellSize){
+                this.plot.cellSize = Math.max(conf.cell.sizeMin,Math.min(conf.cell.sizeMax, (width - margin.left - margin.right)/this.plot.variables.length));
+            }
+
         }else{
             this.plot.cellSize = this.config.cell.size;
 
             if(!this.plot.cellSize){
-                this.plot.cellSize = Math.max(conf.cell.sizeMax,Math.min(conf.cell.sizeMax, parentWidth/this.plot.variables.length));
+                this.plot.cellSize = Math.max(conf.cell.sizeMin,Math.min(conf.cell.sizeMax, parentWidth/this.plot.variables.length));
             }
 
             width = this.plot.cellSize*this.plot.variables.length + margin.left + margin.right;

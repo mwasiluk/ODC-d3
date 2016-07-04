@@ -1,7 +1,6 @@
 
 var labels = ['a', 'b', 'c', 'd'];
 var config = {
-    size: 200,
     guides: true,
     brush: true,
     tooltip: true,
@@ -10,7 +9,9 @@ var config = {
         // labels: ['a', 'b', 'c', 'd', 'e']
     },
     cell:{
-        shape:"ellipse"
+        shape:"ellipse",
+        // size: 200
+
     },
     groups:{
         key: 'species'
