@@ -62,6 +62,7 @@ export class Chart{
         self.initPlot();
         self.initSvg();
         self.draw();
+        return this;
     }
 
     initSvg(){
@@ -111,11 +112,12 @@ export class Chart{
         if(data){
             this.setData(data);
         }
-        console.log('base uppdate')
-
+        console.log('base uppdate');
+        return this;
     }
 
     draw(){
         this.update();
+        return this;
     }
 }

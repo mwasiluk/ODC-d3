@@ -1,15 +1,13 @@
 
 var labels = ['a', 'b', 'c', 'd'];
 var config = {
-    guides: true,
-    brush: true,
     tooltip: true,
     variables: {
         // keys: ['petal length', 'petal width'],
         // labels: ['a', 'b', 'c', 'd', 'e']
     },
     cell:{
-        shape:"ellipse",
+        shape:"rect",
         // size: 200
 
     },
@@ -21,6 +19,7 @@ var config = {
     dot:{}
 
 };
+var data;
 var data2 = [
     [1, 2, 3, 4, 5],
     [3, 4, 5, 2, 4],
@@ -52,10 +51,19 @@ var data3 = [
 var plot;
 /*plot = new D3ScatterPlotMatrix("#scatterplot", data, conf);
 plot.init();*/
-d3.csv("../data/flowers.csv", function(error, data) {
+d3.csv("../data/flowers.csv", function(error, d) {
     console.log(data);
+    data = d;
 
 
     plot = new ODCD3.CorrelationMatrix("#plot", data, config);
 
+
 });
+
+
+function changeShape(event){
+    config.cell.shape = event.target.options[event.target.selectedIndex].value;
+    plot.setConfig(config).init();
+    // plot = new ODCD3.CorrelationMatrix("#plot", data, config);
+}
