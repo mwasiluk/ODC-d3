@@ -50,8 +50,17 @@ svg.mw-d3-scatterplot {
   svg.mw-d3-scatterplot .mw-axis.mw-no-guides line {
     stroke: #a1a1a1; }
 
+.odc-correlation-matrix circle {
+  color: lightskyblue;
+  color: darkred;
+  color: red;
+  color: orangered; }
+
 .odc-correlation-matrix .odc-label {
   font-size: 10px; }
 
 .odc-correlation-matrix .odc-highlight {
   font-weight: bold; }
+
+.odc-correlation-matrix .odc-legend text {
+  font-size: 10px; }

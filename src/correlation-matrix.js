@@ -7,6 +7,8 @@ export class CorrelationMatrixConfig extends ChartConfig{
     svgClass= 'odc-correlation-matrix';
     guides= false; //show axis guides
     tooltip= true; //show tooltip on dot hover
+    legend=true;
+    highlightLabels=true;
     variables={
         labels: undefined,
         keys: [], //optional array of variable keys
@@ -15,9 +17,9 @@ export class CorrelationMatrixConfig extends ChartConfig{
     };
     correlation={
         scale: "linear",
-        domain: [-1, 0, 1],
-        range: ["darkblue", "white", "crimson"],
-        value: (xValues, yValues) => StatisticsUtils.sampleCorrelation(xValues, yValues),
+        domain: [-1, -0.75, -0.5, 0, 0.5, 0.75, 1],
+        range: ["darkblue", "blue", "lightskyblue", "white",  "orangered", "crimson", "darkred"],
+        value: (xValues, yValues) => StatisticsUtils.sampleCorrelation(xValues, yValues)
 
     };
     cell={
@@ -26,6 +28,12 @@ export class CorrelationMatrixConfig extends ChartConfig{
         sizeMin: 5,
         sizeMax: 80,
         padding: 1
+    };
+    margin ={
+        left: 60,
+        right: 50,
+        top: 30,
+        bottom: 60
     };
 
     constructor(custom){
@@ -90,7 +98,7 @@ export class CorrelationMatrix extends Chart{
         }
 
         this.plot.width = width - margin.left - margin.right;
-        this.plot.height = height - margin.top - margin.bottom;
+        this.plot.height = this.plot.width;
 
 
 
@@ -229,6 +237,13 @@ export class CorrelationMatrix extends Chart{
         // this.update
         this.updateCells();
         this.updateVariableLabels();
+
+        if(this.config.legend){
+            this.updateLegend();
+        }
+
+
+
     };
 
     updateVariableLabels() {
@@ -351,19 +366,24 @@ export class CorrelationMatrix extends Chart{
 
 
         }
-        var highlightClass = self.config.cssClassPrefix+"highlight";
-        var xLabelClass = c=>plot.labelClass+"-x-"+c.col;
-        var yLabelClass = c=>plot.labelClass+"-y-"+c.row;
 
-        mouseoverCallbacks.push(c=>{
+        if(self.config.highlightLabels){
+            var highlightClass = self.config.cssClassPrefix+"highlight";
+            var xLabelClass = c=>plot.labelClass+"-x-"+c.col;
+            var yLabelClass = c=>plot.labelClass+"-y-"+c.row;
 
-            self.svgG.selectAll("text."+xLabelClass(c)).classed(highlightClass, true);
-            self.svgG.selectAll("text."+yLabelClass(c)).classed(highlightClass, true);
-        });
-        mouseoutCallbacks.push(c=>{
-            self.svgG.selectAll("text."+xLabelClass(c)).classed(highlightClass, false);
-            self.svgG.selectAll("text."+yLabelClass(c)).classed(highlightClass, false);
-        });
+
+            mouseoverCallbacks.push(c=>{
+
+                self.svgG.selectAll("text."+xLabelClass(c)).classed(highlightClass, true);
+                self.svgG.selectAll("text."+yLabelClass(c)).classed(highlightClass, true);
+            });
+            mouseoutCallbacks.push(c=>{
+                self.svgG.selectAll("text."+xLabelClass(c)).classed(highlightClass, false);
+                self.svgG.selectAll("text."+yLabelClass(c)).classed(highlightClass, false);
+            });
+        }
+
 
         cells.on("mouseover", c => {
             mouseoverCallbacks.forEach(callback=>callback(c));
@@ -378,4 +398,63 @@ export class CorrelationMatrix extends Chart{
     }
 
 
+    updateLegend() {
+        //Append a defs (for definition) element to your SVG
+        var defs = this.svg.append("defs");
+        var plot = this.plot;
+
+        //Append a linearGradient element to the defs and give it a unique id
+        var gradientId = this.config.cssClassPrefix+"linear-gradient";
+        var legendClass = this.config.cssClassPrefix+"legend";
+        var linearGradient = defs.append("linearGradient")
+            .attr("id", gradientId);
+
+        linearGradient
+            .attr("x1", "0%")
+            .attr("y1", "100%")
+            .attr("x2", "0%")
+            .attr("y2", "0%");
+
+
+        //Draw the rectangle and fill with gradient
+
+        var legendX = this.plot.width+10;
+        var legendY = 0;
+        var barWidth = 10;
+        var barHeight = this.plot.height-2;
+        var scale = plot.correlation.color.scale;
+
+        var legendGroup = this.svgG.append("g").attr("class", legendClass);
+        legendGroup.append("rect")
+            .attr("width", barWidth)
+            .attr("height", barHeight)
+            .attr("x", legendX)
+            .attr("y", legendY)
+            .style("fill", "url(#"+gradientId+")");
+
+
+        var ticks = legendGroup.selectAll("text")
+            .data( scale.domain() );
+        var ticksNumber =scale.domain().length-1;
+        ticks.enter().append("text")
+            .attr("x", legendX+barWidth)
+            .attr("y",  (d, i) =>  { console.log(barHeight -(i*barHeight/ticksNumber));  return barHeight -(i*barHeight/ticksNumber)})
+            .attr("dx", 3)
+            // .attr("dy", 1)
+            .attr("alignment-baseline", "middle")
+            .text(d=>d);
+
+        ticks.exit().remove();
+
+        //Append multiple color stops by using D3's data/enter step
+        var stops = linearGradient.selectAll("stop")
+            .data( scale.range() );
+
+        stops.enter().append("stop");
+
+        stops.attr("offset", (d,i) => i/(scale.range().length-1) )
+            .attr("stop-color", d => d );
+
+        stops.exit().remove();
+    }
 }

@@ -49,7 +49,6 @@ export class ScatterPlot extends Chart{
 
     setConfig(config){
         return super.setConfig(new ScatterPlotConfig(config));
-
     }
 
     initPlot(){

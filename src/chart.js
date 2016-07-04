@@ -2,7 +2,7 @@ import {Utils} from './utils'
 
 export class ChartConfig{
     cssClassPrefix = "odc-";
-    svgClass = 'mw-d3-chart';
+    svgClass = this.cssClassPrefix+'mw-d3-chart';
     width = undefined;
     height =  undefined;
     margin ={

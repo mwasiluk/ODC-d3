@@ -22,6 +22,7 @@
     "d3": "^3.5.17"
   },
   "devDependencies": {
-    "simple-statistics": "^2.0.0"
+    "simple-statistics": "^2.0.0",
+    "d3-legend": "^1.10.0"
   }
 }
