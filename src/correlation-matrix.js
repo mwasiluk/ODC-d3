@@ -8,11 +8,10 @@ export class CorrelationMatrixConfig extends ChartConfig{
     guides= false; //show axis guides
     tooltip= true; //show tooltip on dot hover
     variables={
-        scale: "ordinal",
         labels: undefined,
         keys: [], //optional array of variable keys
         value: (d, variableKey) => d[variableKey] , // variable value accessor
-        label:  (d, key) => key
+        scale: "ordinal"
     };
     correlation={
         scale: "linear",
@@ -28,7 +27,6 @@ export class CorrelationMatrixConfig extends ChartConfig{
         sizeMax: 80,
         padding: 1
     };
-
 
     constructor(custom){
         super();
@@ -66,6 +64,7 @@ export class CorrelationMatrix extends Chart{
         this.setupVariables();
         var width = conf.width;
         var placeholderNode = d3.select(this.placeholderSelector).node();
+        this.plot.placeholderNode=placeholderNode;
 
         var parentWidth = placeholderNode.getBoundingClientRect().width;
         if(width){
@@ -224,15 +223,62 @@ export class CorrelationMatrix extends Chart{
         });
     }
 
-    draw(){
-        this.update();
-    };
 
     update(newData){
         super.update(newData);
+        // this.update
         this.updateCells();
-        // this.updateAxes();
+        this.updateVariableLabels();
     };
+
+    updateVariableLabels() {
+        var self = this;
+        var plot = self.plot;
+        var labelClass = self.config.cssClassPrefix+"label";
+        var labelXClass = labelClass+" "+labelClass+"-x";
+        var labelYClass = labelClass+" "+labelClass+"-y";
+        plot.labelClass = labelClass;
+
+
+        var labelsX = self.svgG.selectAll(labelXClass)
+            .data(plot.variables);
+
+        labelsX.enter().append("text");
+
+
+        labelsX
+            .attr("x", (d, i) =>  i*plot.cellSize +plot.cellSize/2)
+            .attr("y",  plot.height)
+            .attr("dx", -2)
+            .attr("transform", (d, i) => "rotate(-90, "+(i*plot.cellSize+plot.cellSize/2  )+", "+plot.height+")")
+            .attr("text-anchor", "end")
+            .attr("class", (d,i) => labelXClass+" "+labelXClass+"-"+i)
+            // .attr("dominant-baseline", "hanging")
+            .text(v=>v);
+
+        labelsX.exit().remove();
+
+        //////
+
+        var labelsY = self.svgG.selectAll(labelYClass)
+            .data(plot.variables);
+
+        labelsY.enter().append("text");
+
+
+        labelsY
+            .attr("x", 0)
+            .attr("y",  (d, i) =>  i*plot.cellSize +plot.cellSize/2)
+            .attr("dx", -2)
+            .attr("text-anchor", "end")
+            .attr("class", (d,i) => labelYClass+" "+labelYClass+"-"+i)
+            // .attr("dominant-baseline", "hanging")
+            .text(v=>v);
+
+        labelsX.exit().remove();
+
+
+    }
 
     updateCells() {
 
@@ -281,8 +327,12 @@ export class CorrelationMatrix extends Chart{
                 .attr("y", -plot.cellSize/2);
         }
 
+        var mouseoverCallbacks = [];
+        var mouseoutCallbacks = [];
+
         if(plot.tooltip){
-            cells.on("mouseover", function(c) {
+
+            mouseoverCallbacks.push(c=>{
                 plot.tooltip.transition()
                     .duration(200)
                     .style("opacity", .9);
@@ -290,13 +340,37 @@ export class CorrelationMatrix extends Chart{
                 plot.tooltip.html(html)
                     .style("left", (d3.event.pageX + 5) + "px")
                     .style("top", (d3.event.pageY - 28) + "px");
-            })
-                .on("mouseout", function(d) {
-                    plot.tooltip.transition()
-                        .duration(500)
-                        .style("opacity", 0);
-                });
+            });
+
+            mouseoutCallbacks.push(c=>{
+                plot.tooltip.transition()
+                    .duration(500)
+                    .style("opacity", 0);
+            });
+
+
+
         }
+        var highlightClass = self.config.cssClassPrefix+"highlight";
+        var xLabelClass = c=>plot.labelClass+"-x-"+c.col;
+        var yLabelClass = c=>plot.labelClass+"-y-"+c.row;
+
+        mouseoverCallbacks.push(c=>{
+
+            self.svgG.selectAll("text."+xLabelClass(c)).classed(highlightClass, true);
+            self.svgG.selectAll("text."+yLabelClass(c)).classed(highlightClass, true);
+        });
+        mouseoutCallbacks.push(c=>{
+            self.svgG.selectAll("text."+xLabelClass(c)).classed(highlightClass, false);
+            self.svgG.selectAll("text."+yLabelClass(c)).classed(highlightClass, false);
+        });
+
+        cells.on("mouseover", c => {
+            mouseoverCallbacks.forEach(callback=>callback(c));
+        })
+         .on("mouseout", c => {
+             mouseoutCallbacks.forEach(callback=>callback(c));
+        });
 
         shapes.style("fill", c=> plot.correlation.color.scale(c.value));
 

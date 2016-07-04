@@ -11,6 +11,10 @@ var config = {
         // size: 200
 
     },
+    margin:{
+        left: 60,
+        bottom: 60
+    },
     groups:{
         key: 'species'
     },
