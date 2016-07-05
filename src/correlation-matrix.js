@@ -1,6 +1,7 @@
 import {Chart, ChartConfig} from "./chart";
 import {Utils} from './utils'
 import {StatisticsUtils} from './statistics-utils'
+import {Legend} from './legend'
 
 export class CorrelationMatrixConfig extends ChartConfig{
 
@@ -399,51 +400,16 @@ export class CorrelationMatrix extends Chart{
 
 
     updateLegend() {
-        //Append a defs (for definition) element to your SVG
-
+        
         var plot = this.plot;
-
-
         var legendX = this.plot.width+10;
         var legendY = 0;
         var barWidth = 10;
         var barHeight = this.plot.height-2;
         var scale = plot.correlation.color.scale;
 
-        //Append a linearGradient element to the defs and give it a unique id
-        var gradientId = this.config.cssClassPrefix+"linear-gradient";
-        var legendClass = this.config.cssClassPrefix+"legend";
+        plot.legend = new Legend(this.svg, this.svgG, scale, legendX, legendY).linearGradientBar(barWidth, barHeight);
 
-
-        var linearGradient = Utils.linearGradient(this.svg, gradientId, scale.range(), 0, 100, 0, 0);
-
-
-
-
-        //Draw the rectangle and fill with gradient
-
-
-        var legendGroup = this.svgG.append("g").attr("class", legendClass);
-        legendGroup.append("rect")
-            .attr("width", barWidth)
-            .attr("height", barHeight)
-            .attr("x", legendX)
-            .attr("y", legendY)
-            .style("fill", "url(#"+gradientId+")");
-
-
-        var ticks = legendGroup.selectAll("text")
-            .data( scale.domain() );
-        var ticksNumber =scale.domain().length-1;
-        ticks.enter().append("text")
-            .attr("x", legendX+barWidth)
-            .attr("y",  (d, i) =>  { console.log(barHeight -(i*barHeight/ticksNumber));  return barHeight -(i*barHeight/ticksNumber)})
-            .attr("dx", 3)
-            // .attr("dy", 1)
-            .attr("alignment-baseline", "middle")
-            .text(d=>d);
-
-        ticks.exit().remove();
 
     }
 }
