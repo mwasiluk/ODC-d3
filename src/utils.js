@@ -105,4 +105,27 @@ export class Utils {
         }
         return selection;
     };
+    
+    static linearGradient(svg, gradientId, range, x1, y1, x2, y2){
+        var defs = Utils.selectOrAppend(svg, "defs");
+        var linearGradient = defs.append("linearGradient")
+            .attr("id", gradientId);
+
+        linearGradient
+            .attr("x1", x1+"%")
+            .attr("y1", y1+"%")
+            .attr("x2", x2+"%")
+            .attr("y2", y2+"%");
+
+        //Append multiple color stops by using D3's data/enter step
+        var stops = linearGradient.selectAll("stop")
+            .data( range );
+
+        stops.enter().append("stop");
+
+        stops.attr("offset", (d,i) => i/(range.length-1) )
+            .attr("stop-color", d => d );
+
+        stops.exit().remove();
+    }
 }

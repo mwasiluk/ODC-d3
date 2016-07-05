@@ -400,29 +400,28 @@ export class CorrelationMatrix extends Chart{
 
     updateLegend() {
         //Append a defs (for definition) element to your SVG
-        var defs = this.svg.append("defs");
+
         var plot = this.plot;
 
-        //Append a linearGradient element to the defs and give it a unique id
-        var gradientId = this.config.cssClassPrefix+"linear-gradient";
-        var legendClass = this.config.cssClassPrefix+"legend";
-        var linearGradient = defs.append("linearGradient")
-            .attr("id", gradientId);
-
-        linearGradient
-            .attr("x1", "0%")
-            .attr("y1", "100%")
-            .attr("x2", "0%")
-            .attr("y2", "0%");
-
-
-        //Draw the rectangle and fill with gradient
 
         var legendX = this.plot.width+10;
         var legendY = 0;
         var barWidth = 10;
         var barHeight = this.plot.height-2;
         var scale = plot.correlation.color.scale;
+
+        //Append a linearGradient element to the defs and give it a unique id
+        var gradientId = this.config.cssClassPrefix+"linear-gradient";
+        var legendClass = this.config.cssClassPrefix+"legend";
+
+
+        var linearGradient = Utils.linearGradient(this.svg, gradientId, scale.range(), 0, 100, 0, 0);
+
+
+
+
+        //Draw the rectangle and fill with gradient
+
 
         var legendGroup = this.svgG.append("g").attr("class", legendClass);
         legendGroup.append("rect")
@@ -446,15 +445,5 @@ export class CorrelationMatrix extends Chart{
 
         ticks.exit().remove();
 
-        //Append multiple color stops by using D3's data/enter step
-        var stops = linearGradient.selectAll("stop")
-            .data( scale.range() );
-
-        stops.enter().append("stop");
-
-        stops.attr("offset", (d,i) => i/(scale.range().length-1) )
-            .attr("stop-color", d => d );
-
-        stops.exit().remove();
     }
 }
