@@ -1,0 +1,63 @@
+.odc-scatterplot-matrix {
+  background-color: white;
+  font-size: 11px;
+  height: 100%; }
+  .odc-scatterplot-matrix .odc-axis {
+    shape-rendering: crispEdges; }
+    .odc-scatterplot-matrix .odc-axis path {
+      display: none; }
+    .odc-scatterplot-matrix .odc-axis line {
+      stroke: #ddd; }
+    .odc-scatterplot-matrix .odc-axis.odc-no-guides line {
+      display: none; }
+  .odc-scatterplot-matrix .odc-frame {
+    shape-rendering: crispEdges;
+    fill: none;
+    stroke: #aaa; }
+  .odc-scatterplot-matrix .odc-cell text {
+    font-weight: bold;
+    text-transform: capitalize; }
+  .odc-scatterplot-matrix circle {
+    fill-opacity: .7; }
+    .odc-scatterplot-matrix circle.hidden {
+      fill: #ccc !important; }
+  .odc-scatterplot-matrix .extent {
+    fill: #000;
+    fill-opacity: .125;
+    stroke: #fff; }
+
+.odc-scatterplot {
+  background-color: white;
+  font-size: 11px;
+  height: 100%; }
+  .odc-scatterplot .odc-axis path {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges; }
+  .odc-scatterplot .odc-axis line {
+    shape-rendering: crispEdges;
+    stroke: #eaeaea; }
+  .odc-scatterplot .odc-axis.odc-no-guides line {
+    stroke: #a1a1a1; }
+
+.odc-correlation-matrix .odc-label {
+  font-size: 11px; }
+
+.odc-correlation-matrix .odc-highlight {
+  font-weight: bold; }
+
+.odc-correlation-matrix .odc-legend text {
+  font-size: 11px; }
+
+.odc-selectable {
+  cursor: pointer; }
+
+.odc-tooltip {
+  position: absolute;
+  pointer-events: none;
+  font-size: 11px;
+  background: #fdfdfd;
+  padding: 3px 5px;
+  border-radius: 8px;
+  box-shadow: 1px 3px 3px #b7b7b7;
+  text-align: center; }

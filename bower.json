@@ -1,0 +1,21 @@
+{
+  "name": "ODC-d3-page",
+  "homepage": "https://github.com/mwasiluk/ODC-d3",
+  "authors": [
+    "Michal Wasiluk"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "odc-d3": "^0.4.0"
+  }
+}

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Correlation matrix demo</title>
+    <link rel="stylesheet" href="../bower_components/odc-d3/dist/odc-d3.min.css">
+</head>
+<body>
+<h1>Correlation matrix demo</h1>
+<div class="config">
+    <select id="cell-shape" onchange="changeShape(event)">
+        <option value="rect">rect</option>
+        <option value="circle">circle</option>
+        <option value="ellipse">ellipse</option>
+    </select>
+</div>
+<div id="plot" style="float:left; min-width: 500px"></div>
+<div id="scatterplot"></div>
+
+<script src="../bower_components/d3/d3.min.js" charset="utf-8"></script>
+<script src="../bower_components/odc-d3/dist/odc-d3.min.js" charset="utf-8"></script>
+<script src="demo.js"></script>
+</body>
+</html>
