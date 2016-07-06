@@ -252,7 +252,7 @@ export class CorrelationMatrix extends Chart {
 
 
         var labelsX = self.svgG.selectAll(labelXClass)
-            .data(plot.variables);
+            .data(plot.variables, (d, i)=>d);
 
         labelsX.enter().append("text");
 
@@ -265,7 +265,7 @@ export class CorrelationMatrix extends Chart {
             .attr("text-anchor", "end")
             .attr("class", (d, i) => labelXClass + " " + labelXClass + "-" + i)
             // .attr("dominant-baseline", "hanging")
-            .text(v=>v);
+            .text(v=>plot.labelByVariable[v]);
 
         labelsX.exit().remove();
 
@@ -284,7 +284,7 @@ export class CorrelationMatrix extends Chart {
             .attr("text-anchor", "end")
             .attr("class", (d, i) => labelYClass + " " + labelYClass + "-" + i)
             // .attr("dominant-baseline", "hanging")
-            .text(v=>v);
+            .text(v=>plot.labelByVariable[v]);
 
         labelsX.exit().remove();
 
@@ -302,13 +302,20 @@ export class CorrelationMatrix extends Chart {
         var data = this.data;
 
         var cells = self.svgG.selectAll(cellClass)
-            .data(plot.correlation.matrix.cells);
+            .data(plot.correlation.matrix.cells, (c,i)=>i);
 
 
-        cells.enter().append("g")
+        var cellEnterG = cells.enter().append("g")
             .attr("class", cellClass);
         cells.attr("transform", c=> "translate(" + (plot.cellSize * c.col + plot.cellSize / 2) + "," + (plot.cellSize * c.row + plot.cellSize / 2) + ")");
-        var shapes = cells.append(cellShape);
+
+
+        var selector = "*:not(.cell-shape-"+cellShape+")";
+       
+        var wrongShapes = cells.selectAll(selector);
+        wrongShapes.remove();
+        
+        var shapes = cells.selectOrAppend(cellShape+".cell-shape-"+cellShape);
 
         if (plot.correlation.shape.type == 'circle') {
 
@@ -444,9 +451,14 @@ export class CorrelationMatrix extends Chart {
                 key: c.colVar,
                 label: self.plot.labelByVariable[c.colVar]
             };
+            if(self.scatterPlot){
+                self.scatterPlot.setConfig(scatterPlotConfig).init();
+            }else{
+                self.scatterPlot = new ScatterPlot(containerSelector, self.data, scatterPlotConfig);
+                this.attach("ScatterPlot", self.scatterPlot);
+            }
 
-            self.scatterPlot = new ScatterPlot(containerSelector, self.data, scatterPlotConfig);
-            this.attach("ScatterPlot", self.scatterPlot);
+
         });
 
 

@@ -1,5 +1,6 @@
 import {Utils} from './utils'
 
+
 export class ChartConfig {
     cssClassPrefix = "odc-";
     svgClass = this.cssClassPrefix + 'mw-d3-chart';
@@ -34,6 +35,7 @@ export class Chart {
     _layers = {};
     _events = {};
     _isAttached;
+    _isInitialized=false;
 
 
     constructor(base, data, config) {
@@ -76,6 +78,7 @@ export class Chart {
 
         self.initTooltip();
         self.draw();
+        this._isInitialized=true;
         return this;
     }
 
@@ -92,25 +95,22 @@ export class Chart {
         var height = self.plot.height + config.margin.top + config.margin.bottom;
         var aspect = width / height;
         if(!self._isAttached){
-
-            self.svg = d3.select(self.baseContainer).select("svg");
-            if (!self.svg.empty()) {
-                self.svg.remove();
-
+            if(!this._isInitialized){
+                d3.select(self.baseContainer).select("svg").remove();
             }
-            self.svg = d3.select(self.baseContainer).append("svg");
+            self.svg = d3.select(self.baseContainer).selectOrAppend("svg");
+
             self.svg
                 .attr("width", width)
                 .attr("height", height)
                 .attr("viewBox", "0 0 " + " " + width + " " + height)
                 .attr("preserveAspectRatio", "xMidYMid meet")
                 .attr("class", config.svgClass);
-            self.svgG = self.svg.append("g");
+            self.svgG = self.svg.selectOrAppend("g.main-group");
         }else{
             console.log(self.baseContainer);
             self.svg = self.baseContainer.svg;
-            self.svgG = self.svg.append("g")
-                .attr("class", config.svgClass);
+            self.svgG = self.svg.selectOrAppend("g.main-group."+config.svgClass)
         }
 
         self.svgG.attr("transform", "translate(" + config.margin.left + "," + config.margin.top + ")");

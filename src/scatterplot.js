@@ -161,15 +161,15 @@ export class ScatterPlot extends Chart{
     };
 
     drawAxisX(){
+
+        
         var self = this;
         var plot = self.plot;
         var axisConf = this.config.x;
-        self.svgG.append("g")
-            .attr("class", "mw-axis-x mw-axis"+(self.config.guides ? '' : ' mw-no-guides'))
+        self.svgG.selectOrAppend("g.mw-axis-x.mw-axis"+(self.config.guides ? '' : '.mw-no-guides'))
             .attr("transform", "translate(0," + plot.height + ")")
             .call(plot.x.axis)
-            .append("text")
-            .attr("class", "mw-label")
+            .selectOrAppend("text.mw-label")
             .attr("transform", "translate("+ (plot.width/2) +","+ (self.config.margin.bottom) +")")  // text is drawn off the screen top left, move down and out and rotate
             .attr("dy", "-1em")
             .style("text-anchor", "middle")
@@ -180,11 +180,9 @@ export class ScatterPlot extends Chart{
         var self = this;
         var plot = self.plot;
         var axisConf = this.config.y;
-        self.svgG.append("g")
-            .attr("class", "mw-axis mw-axis-y"+(self.config.guides ? '' : ' mw-no-guides'))
+        self.svgG.selectOrAppend("g.mw-axis-y.mw-axis"+(self.config.guides ? '' : '.mw-no-guides'))
             .call(plot.y.axis)
-            .append("text")
-            .attr("class", "mw-label")
+            .selectOrAppend("text.mw-label")
             .attr("transform", "translate("+ -self.config.margin.left +","+(plot.height/2)+")rotate(-90)")  // text is drawn off the screen top left, move down and out and rotate
             .attr("dy", "1em")
             .style("text-anchor", "middle")

@@ -101,7 +101,22 @@ export class Utils {
     static selectOrAppend(parent, selector, element) {
         var selection = parent.select(selector);
         if(selection.empty()){
-            return parent.append(element || selector);
+            if(element){
+                return parent.append(element);
+            }
+            var selectorParts = selector.split(/([\.\#])/);
+            element = parent.append(selectorParts.shift());
+            while (selectorParts.length > 1) {
+                var selectorModifier = selectorParts.shift();
+                var selectorItem = selectorParts.shift();
+                if (selectorModifier === ".") {
+                    element = element.classed(selectorItem, true);
+                } else if (selectorModifier === "#") {
+                    element = element.attr('id', selectorItem);
+                }
+            }
+            return element;
+
         }
         return selection;
     };
