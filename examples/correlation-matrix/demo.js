@@ -67,6 +67,7 @@ d3.csv("../data/flowers.csv", function(error, d) {
 
 function changeShape(event){
     config.cell.shape = event.target.options[event.target.selectedIndex].value;
-    plot = new ODCD3.CorrelationMatrix("#plot", data, config);
-    plot.attachScatterPlot("#scatterplot")
+
+    plot.setConfig(config).init();
+    // plot = new ODCD3.CorrelationMatrix("#plot", data, config);
 }

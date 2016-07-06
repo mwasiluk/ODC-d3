@@ -1,8 +1,8 @@
-.mw-d3-scatterplot-matrix{
+.odc-scatterplot-matrix{
   background-color: white;
   font-size: 11px;
   height: 100%;
-  .mw-axis{
+  .odc-axis{
     shape-rendering: crispEdges;
     path {
       display: none;
@@ -11,24 +11,24 @@
     line {
       stroke: #ddd;
     }
-    &.mw-no-guides{
+    &.odc-no-guides{
       line{
         display: none;
       }
     }
   }
 
-  .mw-dot {
+  .odc-dot {
     //stroke: #000;
   }
 
-  .mw-frame {
+  .odc-frame {
     shape-rendering: crispEdges;
     fill: none;
     stroke: #aaa;
   }
 
-  .mw-cell{
+  .odc-cell{
     text {
       font-weight: bold;
       text-transform: capitalize;
@@ -51,14 +51,3 @@
 
 }
 
-.mw-tooltip {
-  position: absolute;
-  pointer-events: none;
-  font-size: 11px;
-  background: #fdfdfd;
-  padding: 3px 5px;
-  border-radius: 8px;
-  box-shadow: 1px 3px 3px #b7b7b7;
-  text-align: center;
-  //border: 1px solid #ccc;
-}

@@ -127,8 +127,7 @@ export class Chart {
         var self = this;
         if (self.config.tooltip) {
             if(!self._isAttached ){
-                self.plot.tooltip = Utils.selectOrAppend(d3.select(self.baseContainer), 'div.mw-tooltip', 'div')
-                    .attr("class", "mw-tooltip")
+                self.plot.tooltip = d3.select(self.baseContainer).selectOrAppend('div.'+self.config.cssClassPrefix+'tooltip')
                     .style("opacity", 0);
             }else{
                 self.plot.tooltip= self.baseContainer.plot.tooltip;
@@ -333,5 +332,9 @@ export class Chart {
             return this.baseContainer.svg.node();
         }
         return d3.select(this.baseContainer).node();
+    }
+
+    prefixClass(clazz, addDot){
+        return addDot? '.': ''+this.config.cssClassPrefix+clazz;
     }
 }

@@ -1,0 +1,15 @@
+.odc-selectable{
+  cursor: pointer;
+}
+
+.odc-tooltip {
+  position: absolute;
+  pointer-events: none;
+  font-size: 11px;
+  background: #fdfdfd;
+  padding: 3px 5px;
+  border-radius: 8px;
+  box-shadow: 1px 3px 3px #b7b7b7;
+  text-align: center;
+  //border: 1px solid #ccc;
+}

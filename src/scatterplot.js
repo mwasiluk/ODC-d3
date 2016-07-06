@@ -3,7 +3,7 @@ import {Utils} from './utils'
 
 export class ScatterPlotConfig extends ChartConfig{
 
-    svgClass= 'mw-d3-scatterplot';
+    svgClass= this.cssClassPrefix+'scatterplot';
     guides= false; //show axis guides
     tooltip= true; //show tooltip on dot hover
     x={// X axis config
@@ -166,10 +166,10 @@ export class ScatterPlot extends Chart{
         var self = this;
         var plot = self.plot;
         var axisConf = this.config.x;
-        self.svgG.selectOrAppend("g.mw-axis-x.mw-axis"+(self.config.guides ? '' : '.mw-no-guides'))
+        self.svgG.selectOrAppend("g."+self.prefixClass('axis-x')+"."+self.prefixClass('axis')+(self.config.guides ? '' : '.'+self.prefixClass('no-guides')))
             .attr("transform", "translate(0," + plot.height + ")")
             .call(plot.x.axis)
-            .selectOrAppend("text.mw-label")
+            .selectOrAppend("text."+self.prefixClass('label'))
             .attr("transform", "translate("+ (plot.width/2) +","+ (self.config.margin.bottom) +")")  // text is drawn off the screen top left, move down and out and rotate
             .attr("dy", "-1em")
             .style("text-anchor", "middle")
@@ -180,9 +180,9 @@ export class ScatterPlot extends Chart{
         var self = this;
         var plot = self.plot;
         var axisConf = this.config.y;
-        self.svgG.selectOrAppend("g.mw-axis-y.mw-axis"+(self.config.guides ? '' : '.mw-no-guides'))
+        self.svgG.selectOrAppend("g."+self.prefixClass('axis-y')+"."+self.prefixClass('axis')+(self.config.guides ? '' : '.'+self.prefixClass('no-guides')))
             .call(plot.y.axis)
-            .selectOrAppend("text.mw-label")
+            .selectOrAppend("text."+self.prefixClass('label'))
             .attr("transform", "translate("+ -self.config.margin.left +","+(plot.height/2)+")rotate(-90)")  // text is drawn off the screen top left, move down and out and rotate
             .attr("dy", "1em")
             .style("text-anchor", "middle")
@@ -194,11 +194,12 @@ export class ScatterPlot extends Chart{
         var self = this;
         var plot = self.plot;
         var data = this.data;
-        var dots = self.svgG.selectAll(".mw-dot")
+        var dotClass = self.prefixClass('dot');
+        var dots = self.svgG.selectAll('.'+dotClass)
             .data(data);
 
         dots.enter().append("circle")
-            .attr("class", "mw-dot");
+            .attr("class", dotClass);
 
 
         dots.attr("r", self.config.dot.radius)

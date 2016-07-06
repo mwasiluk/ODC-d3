@@ -245,16 +245,16 @@ export class CorrelationMatrix extends Chart {
     updateVariableLabels() {
         var self = this;
         var plot = self.plot;
-        var labelClass = self.config.cssClassPrefix + "label";
-        var labelXClass = labelClass + " " + labelClass + "-x";
-        var labelYClass = labelClass + " " + labelClass + "-y";
+        var labelClass = self.prefixClass("label");
+        var labelXClass = labelClass + "-x";
+        var labelYClass = labelClass + "-y";
         plot.labelClass = labelClass;
 
 
-        var labelsX = self.svgG.selectAll(labelXClass)
-            .data(plot.variables, (d, i)=>d);
+        var labelsX = self.svgG.selectAll("text."+labelXClass)
+            .data(plot.variables, (d, i)=>i);
 
-        labelsX.enter().append("text");
+        labelsX.enter().append("text").attr("class", (d, i) => labelClass + " " +labelXClass+" "+ labelXClass + "-" + i);
 
 
         labelsX
@@ -263,7 +263,7 @@ export class CorrelationMatrix extends Chart {
             .attr("dx", -2)
             .attr("transform", (d, i) => "rotate(-90, " + (i * plot.cellSize + plot.cellSize / 2  ) + ", " + plot.height + ")")
             .attr("text-anchor", "end")
-            .attr("class", (d, i) => labelXClass + " " + labelXClass + "-" + i)
+
             // .attr("dominant-baseline", "hanging")
             .text(v=>plot.labelByVariable[v]);
 
@@ -271,7 +271,7 @@ export class CorrelationMatrix extends Chart {
 
         //////
 
-        var labelsY = self.svgG.selectAll(labelYClass)
+        var labelsY = self.svgG.selectAll("text."+labelYClass)
             .data(plot.variables);
 
         labelsY.enter().append("text");
@@ -282,11 +282,11 @@ export class CorrelationMatrix extends Chart {
             .attr("y", (d, i) => i * plot.cellSize + plot.cellSize / 2)
             .attr("dx", -2)
             .attr("text-anchor", "end")
-            .attr("class", (d, i) => labelYClass + " " + labelYClass + "-" + i)
+            .attr("class", (d, i) => labelClass + " " + labelYClass +" " + labelYClass + "-" + i)
             // .attr("dominant-baseline", "hanging")
             .text(v=>plot.labelByVariable[v]);
 
-        labelsX.exit().remove();
+        labelsY.exit().remove();
 
 
     }
@@ -295,20 +295,19 @@ export class CorrelationMatrix extends Chart {
 
         var self = this;
         var plot = self.plot;
-        var cellClass = self.config.cssClassPrefix + "cell";
+        var cellClass = self.prefixClass("cell");
         var cellShape = plot.correlation.shape.type;
 
+        var cells = self.svgG.selectAll("g."+cellClass)
+            .data(plot.correlation.matrix.cells);
 
-        var data = this.data;
-
-        var cells = self.svgG.selectAll(cellClass)
-            .data(plot.correlation.matrix.cells, (c,i)=>i);
-
+        console.log('cells.enter()',cells.enter());
 
         var cellEnterG = cells.enter().append("g")
-            .attr("class", cellClass);
+            .classed(cellClass, true);
         cells.attr("transform", c=> "translate(" + (plot.cellSize * c.col + plot.cellSize / 2) + "," + (plot.cellSize * c.row + plot.cellSize / 2) + ")");
 
+        cells.classed(self.config.cssClassPrefix + "selectable", !!self.scatterPlot);
 
         var selector = "*:not(.cell-shape-"+cellShape+")";
        
@@ -344,6 +343,7 @@ export class CorrelationMatrix extends Chart {
                 .attr("x", -plot.cellSize / 2)
                 .attr("y", -plot.cellSize / 2);
         }
+        shapes.style("fill", c=> plot.correlation.color.scale(c.value));
 
         var mouseoverCallbacks = [];
         var mouseoutCallbacks = [];
@@ -398,7 +398,7 @@ export class CorrelationMatrix extends Chart {
            self.trigger("cell-selected", c);
         });
 
-        shapes.style("fill", c=> plot.correlation.color.scale(c.value));
+
 
         cells.exit().remove();
     }
@@ -434,10 +434,10 @@ export class CorrelationMatrix extends Chart {
             guides: true
         };
 
-
+        self.scatterPlot=true;
 
         scatterPlotConfig = Utils.deepExtend(scatterPlotConfig, config);
-        console.log(scatterPlotConfig);
+        this.update();
 
         this.on("cell-selected", c=>{
 
@@ -451,7 +451,7 @@ export class CorrelationMatrix extends Chart {
                 key: c.colVar,
                 label: self.plot.labelByVariable[c.colVar]
             };
-            if(self.scatterPlot){
+            if(self.scatterPlot && self.scatterPlot !==true){
                 self.scatterPlot.setConfig(scatterPlotConfig).init();
             }else{
                 self.scatterPlot = new ScatterPlot(containerSelector, self.data, scatterPlotConfig);

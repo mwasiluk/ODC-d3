@@ -4,7 +4,7 @@ import {Utils} from './utils'
 
 export class ScatterPlotMatrixConfig extends ScatterPlotConfig{
 
-    svgClass= 'mw-d3-scatterplot-matrix';
+    svgClass= this.cssClassPrefix+'scatterplot-matrix';
     size= 200; //scatter plot cell size
     padding= 20; //scatter plot cell padding
     brush= true;
@@ -35,9 +35,6 @@ export class ScatterPlotMatrixConfig extends ScatterPlotConfig{
 
     constructor(custom){
         super();
-
-        // this.svgClass = 'mw-d3-scatterplot-matrix';
-        console.log(custom);
         Utils.deepExtend(this, custom);
     }
 
@@ -186,24 +183,33 @@ export class ScatterPlotMatrix extends Chart {
         var self =this;
         var n = self.plot.variables.length;
         var conf = this.config;
-        self.svgG.selectAll(".mw-axis-x.mw-axis")
+
+        var axisClass = self.prefixClass("axis");
+        var axisXClass = axisClass+"-x";
+        var axisYClass = axisClass+"-y";
+
+        var xAxisSelector = "g."+axisXClass+"."+axisClass;
+        var yAxisSelector = "g."+axisYClass+"."+axisClass;
+
+        var noGuidesClass = self.prefixClass("no-guides");
+        self.svgG.selectAll(xAxisSelector)
             .data(self.plot.variables)
-            .enter().append("g")
-            .attr("class", "mw-axis-x mw-axis"+(conf.guides ? '' : ' mw-no-guides'))
+            .enter().appendSelector(xAxisSelector)
+            .classed(noGuidesClass, !conf.guides)
             .attr("transform", function(d, i) { return "translate(" + (n - i - 1) * self.plot.size + ",0)"; })
             .each(function(d) { self.plot.x.scale.domain(self.plot.domainByVariable[d]); d3.select(this).call(self.plot.x.axis); });
 
-        self.svgG.selectAll(".mw-axis-y.mw-axis")
+        self.svgG.selectAll(yAxisSelector)
             .data(self.plot.variables)
-            .enter().append("g")
-            .attr("class", "mw-axis-y mw-axis"+(conf.guides ? '' : ' mw-no-guides'))
+            .enter().appendSelector(yAxisSelector)
+            .classed(noGuidesClass, !conf.guides)
             .attr("transform", function(d, i) { return "translate(0," + i * self.plot.size + ")"; })
             .each(function(d) { self.plot.y.scale.domain(self.plot.domainByVariable[d]); d3.select(this).call(self.plot.y.axis); });
 
-        var cell = self.svgG.selectAll(".mw-cell")
+        var cellClass =  self.prefixClass("cell");
+        var cell = self.svgG.selectAll("."+cellClass)
             .data(self.utils.cross(self.plot.variables, self.plot.variables))
-            .enter().append("g")
-            .attr("class", "mw-cell")
+            .enter().appendSelector("g."+cellClass)
             .attr("transform", function(d) { return "translate(" + (n - d.i - 1) * self.plot.size + "," + d.j * self.plot.size + ")"; });
 
         if(conf.brush){
@@ -232,8 +238,9 @@ export class ScatterPlotMatrix extends Chart {
             plot.x.scale.domain(plot.domainByVariable[p.x]);
             plot.y.scale.domain(plot.domainByVariable[p.y]);
 
+            var frameClass =  self.prefixClass("frame");
             cell.append("rect")
-                .attr("class", "mw-frame")
+                .attr("class", frameClass)
                 .attr("x", conf.padding / 2)
                 .attr("y", conf.padding / 2)
                 .attr("width", conf.size - conf.padding)

@@ -1,53 +1,43 @@
-.mw-d3-scatterplot-matrix {
+.odc-scatterplot-matrix {
   background-color: white;
   font-size: 11px;
   height: 100%; }
-  .mw-d3-scatterplot-matrix .mw-axis {
+  .odc-scatterplot-matrix .odc-axis {
     shape-rendering: crispEdges; }
-    .mw-d3-scatterplot-matrix .mw-axis path {
+    .odc-scatterplot-matrix .odc-axis path {
       display: none; }
-    .mw-d3-scatterplot-matrix .mw-axis line {
+    .odc-scatterplot-matrix .odc-axis line {
       stroke: #ddd; }
-    .mw-d3-scatterplot-matrix .mw-axis.mw-no-guides line {
+    .odc-scatterplot-matrix .odc-axis.odc-no-guides line {
       display: none; }
-  .mw-d3-scatterplot-matrix .mw-frame {
+  .odc-scatterplot-matrix .odc-frame {
     shape-rendering: crispEdges;
     fill: none;
     stroke: #aaa; }
-  .mw-d3-scatterplot-matrix .mw-cell text {
+  .odc-scatterplot-matrix .odc-cell text {
     font-weight: bold;
     text-transform: capitalize; }
-  .mw-d3-scatterplot-matrix circle {
+  .odc-scatterplot-matrix circle {
     fill-opacity: .7; }
-    .mw-d3-scatterplot-matrix circle.hidden {
+    .odc-scatterplot-matrix circle.hidden {
       fill: #ccc !important; }
-  .mw-d3-scatterplot-matrix .extent {
+  .odc-scatterplot-matrix .extent {
     fill: #000;
     fill-opacity: .125;
     stroke: #fff; }
 
-.mw-tooltip {
-  position: absolute;
-  pointer-events: none;
-  font-size: 11px;
-  background: #fdfdfd;
-  padding: 3px 5px;
-  border-radius: 8px;
-  box-shadow: 1px 3px 3px #b7b7b7;
-  text-align: center; }
-
-.mw-d3-scatterplot {
+.odc-scatterplot {
   background-color: white;
   font-size: 11px;
   height: 100%; }
-  .mw-d3-scatterplot .mw-axis path {
+  .odc-scatterplot .odc-axis path {
     fill: none;
     stroke: #000;
     shape-rendering: crispEdges; }
-  .mw-d3-scatterplot .mw-axis line {
+  .odc-scatterplot .odc-axis line {
     shape-rendering: crispEdges;
     stroke: #eaeaea; }
-  .mw-d3-scatterplot .mw-axis.mw-no-guides line {
+  .odc-scatterplot .odc-axis.odc-no-guides line {
     stroke: #a1a1a1; }
 
 .odc-correlation-matrix .odc-label {
@@ -58,3 +48,16 @@
 
 .odc-correlation-matrix .odc-legend text {
   font-size: 11px; }
+
+.odc-selectable {
+  cursor: pointer; }
+
+.odc-tooltip {
+  position: absolute;
+  pointer-events: none;
+  font-size: 11px;
+  background: #fdfdfd;
+  padding: 3px 5px;
+  border-radius: 8px;
+  box-shadow: 1px 3px 3px #b7b7b7;
+  text-align: center; }

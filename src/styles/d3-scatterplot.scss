@@ -1,8 +1,8 @@
-.mw-d3-scatterplot{
+.odc-scatterplot{
   background-color: white;
   font-size: 11px;
   height: 100%;
-  .mw-axis{
+  .odc-axis{
 
     path{
       fill: none;
@@ -13,7 +13,7 @@
       shape-rendering: crispEdges;
       stroke: #eaeaea;
     }
-    &.mw-no-guides{
+    &.odc-no-guides{
       line{
         //display: none;
         stroke: #a1a1a1;
@@ -21,7 +21,7 @@
     }
   }
 
-  .mw-dot {
+  .odc-dot {
     //stroke: #000;
   }
 

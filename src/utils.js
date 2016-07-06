@@ -98,29 +98,33 @@ export class Utils {
         return typeof a === 'function';
     };
 
+    static appendSelector(parent, selector) {
+        var selectorParts = selector.split(/([\.\#])/);
+        var element = parent.append(selectorParts.shift());
+        while (selectorParts.length > 1) {
+            var selectorModifier = selectorParts.shift();
+            var selectorItem = selectorParts.shift();
+            if (selectorModifier === ".") {
+                element = element.classed(selectorItem, true);
+            } else if (selectorModifier === "#") {
+                element = element.attr('id', selectorItem);
+            }
+        }
+        return element;
+    }
+
     static selectOrAppend(parent, selector, element) {
         var selection = parent.select(selector);
         if(selection.empty()){
             if(element){
                 return parent.append(element);
             }
-            var selectorParts = selector.split(/([\.\#])/);
-            element = parent.append(selectorParts.shift());
-            while (selectorParts.length > 1) {
-                var selectorModifier = selectorParts.shift();
-                var selectorItem = selectorParts.shift();
-                if (selectorModifier === ".") {
-                    element = element.classed(selectorItem, true);
-                } else if (selectorModifier === "#") {
-                    element = element.attr('id', selectorItem);
-                }
-            }
-            return element;
+            return Utils.appendSelector(parent, selector);
 
         }
         return selection;
     };
-    
+
     static linearGradient(svg, gradientId, range, x1, y1, x2, y2){
         var defs = Utils.selectOrAppend(svg, "defs");
         var linearGradient = defs.append("linearGradient")
