@@ -18,9 +18,7 @@ var config = {
     groups:{
         key: 'species'
     },
-    x:{
-    },
-    dot:{}
+    // width: 600
 
 };
 var data;

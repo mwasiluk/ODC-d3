@@ -28,7 +28,7 @@ export class CorrelationMatrixConfig extends ChartConfig {
         shape: "ellipse", //possible values: rect, circle, ellipse
         size: undefined,
         sizeMin: 5,
-        sizeMax: 80,
+        sizeMax: 250,
         padding: 1
     };
     margin = {
