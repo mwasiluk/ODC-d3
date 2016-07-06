@@ -25,6 +25,7 @@ export class ScatterPlotConfig extends ChartConfig{
         value: function(d, key) { return d[key] }, // grouping value accessor,
         label: ""
     };
+    transition= true;
 
     constructor(custom){
         super();
@@ -201,8 +202,12 @@ export class ScatterPlot extends Chart{
         dots.enter().append("circle")
             .attr("class", dotClass);
 
+        var dotsT = dots;
+        if(self.config.transition){
+            dotsT = dots.transition();
+        }
 
-        dots.attr("r", self.config.dot.radius)
+        dotsT.attr("r", self.config.dot.radius)
             .attr("cx", plot.x.map)
             .attr("cy", plot.y.map);
 
