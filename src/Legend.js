@@ -37,7 +37,7 @@ export class Legend {
         var ticksNumber =scale.domain().length-1;
         ticks.enter().append("text")
             .attr("x", barWidth)
-            .attr("y",  (d, i) =>  { console.log(barHeight -(i*barHeight/ticksNumber));  return barHeight -(i*barHeight/ticksNumber)})
+            .attr("y",  (d, i) =>  barHeight -(i*barHeight/ticksNumber))
             .attr("dx", 3)
             // .attr("dy", 1)
             .attr("alignment-baseline", "middle")

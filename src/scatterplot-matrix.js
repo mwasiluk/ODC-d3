@@ -74,16 +74,15 @@ export class ScatterPlotMatrix extends Chart {
 
 
         var width = conf.width;
-        var placeholderNode = d3.select(this.placeholderSelector).node();
-
+        var boundingClientRect = this.getBaseContainerNode().getBoundingClientRect();
         if (!width) {
             var maxWidth = margin.left + margin.right + this.plot.variables.length*this.plot.size;
-            width = Math.min(placeholderNode.getBoundingClientRect().width, maxWidth);
+            width = Math.min(boundingClientRect.width, maxWidth);
 
         }
         var height = width;
         if (!height) {
-            height = placeholderNode.getBoundingClientRect().height;
+            height = boundingClientRect.height;
         }
 
         this.plot.width = width - margin.left - margin.right;
@@ -200,13 +199,6 @@ export class ScatterPlotMatrix extends Chart {
             .attr("class", "mw-axis-y mw-axis"+(conf.guides ? '' : ' mw-no-guides'))
             .attr("transform", function(d, i) { return "translate(0," + i * self.plot.size + ")"; })
             .each(function(d) { self.plot.y.scale.domain(self.plot.domainByVariable[d]); d3.select(this).call(self.plot.y.axis); });
-
-
-        if(conf.tooltip){
-            self.plot.tooltip = this.utils.selectOrAppend(d3.select(self.placeholderSelector), 'div.mw-tooltip', 'div')
-                .attr("class", "mw-tooltip")
-                .style("opacity", 0);
-        }
 
         var cell = self.svgG.selectAll(".mw-cell")
             .data(self.utils.cross(self.plot.variables, self.plot.variables))

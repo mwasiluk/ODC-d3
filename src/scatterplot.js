@@ -64,7 +64,7 @@ export class ScatterPlot extends Chart{
         };
 
         var width = conf.width;
-        var placeholderNode = d3.select(this.placeholderSelector).node();
+        var placeholderNode = this.getBaseContainerNode();
 
         if(!width){
             width =placeholderNode.getBoundingClientRect().width;
