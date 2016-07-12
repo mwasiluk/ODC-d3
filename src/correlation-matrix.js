@@ -301,8 +301,6 @@ export class CorrelationMatrix extends Chart {
         var cells = self.svgG.selectAll("g."+cellClass)
             .data(plot.correlation.matrix.cells);
 
-        console.log('cells.enter()',cells.enter());
-
         var cellEnterG = cells.enter().append("g")
             .classed(cellClass, true);
         cells.attr("transform", c=> "translate(" + (plot.cellSize * c.col + plot.cellSize / 2) + "," + (plot.cellSize * c.row + plot.cellSize / 2) + ")");

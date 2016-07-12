@@ -16,7 +16,9 @@ var confFlowers = {
     groups:{
         key: 'species',
         label: "species"
-    }
+    },
+    mainRegression: false
+
 
 };
 
