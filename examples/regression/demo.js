@@ -17,7 +17,11 @@ var confFlowers = {
         key: 'species',
         label: "species"
     },
-    mainRegression: false
+    mainRegression: false,
+    groupRegression: true,
+    confidence:{
+        level: 0.95
+    }
 
 
 };

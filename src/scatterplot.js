@@ -191,12 +191,18 @@ export class ScatterPlot extends Chart{
     };
 
     update(newData){
-        // D3ChartBase.prototype.update.call(this, newData);
+        super.update(newData);
+
         var self = this;
         var plot = self.plot;
         var data = this.data;
         var dotClass = self.prefixClass('dot');
-        var dots = self.svgG.selectAll('.'+dotClass)
+        self.dotsContainerClass = self.prefixClass('dots-container');
+
+
+        var dotsContainer = self.svgG.selectOrAppend("g."+self.dotsContainerClass);
+
+        var dots = dotsContainer.selectAll('.'+dotClass)
             .data(data);
 
         dots.enter().append("circle")

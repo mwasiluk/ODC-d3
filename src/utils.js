@@ -98,9 +98,9 @@ export class Utils {
         return typeof a === 'function';
     };
 
-    static appendSelector(parent, selector) {
+    static insertOrAppendSelector(parent, selector, operation, before ) {
         var selectorParts = selector.split(/([\.\#])/);
-        var element = parent.append(selectorParts.shift());
+        var element = parent[operation](selectorParts.shift(), before);//":first-child"
         while (selectorParts.length > 1) {
             var selectorModifier = selectorParts.shift();
             var selectorItem = selectorParts.shift();
@@ -113,6 +113,14 @@ export class Utils {
         return element;
     }
 
+    static insertSelector(parent, selector, before) {
+        return Utils.insertOrAppendSelector(parent, selector, "insert", before);
+    }
+
+    static appendSelector(parent, selector) {
+        return Utils.insertOrAppendSelector(parent, selector, "append");
+    }
+
     static selectOrAppend(parent, selector, element) {
         var selection = parent.select(selector);
         if(selection.empty()){
@@ -121,6 +129,14 @@ export class Utils {
             }
             return Utils.appendSelector(parent, selector);
 
+        }
+        return selection;
+    };
+
+    static selectOrInsert(parent, selector, before) {
+        var selection = parent.select(selector);
+        if(selection.empty()){
+            return Utils.insertSelector(parent, selector, before);
         }
         return selection;
     };
