@@ -16,6 +16,6 @@
     "tests"
   ],
   "dependencies": {
-    "odc-d3": "^0.4.0"
+    "odc-d3": "latest"
   }
 }
