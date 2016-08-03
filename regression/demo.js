@@ -21,7 +21,8 @@ var confFlowers = {
     groupRegression: true,
     confidence:{
         level: 0.95
-    }
+    },
+    showLegend:true
 
 
 };
