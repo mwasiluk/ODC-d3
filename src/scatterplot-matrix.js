@@ -1,6 +1,7 @@
 import {Chart, ChartConfig} from "./chart";
 import {ScatterPlotConfig} from "./scatterplot";
 import {Utils} from './utils'
+import {Legend} from "./legend";
 
 export class ScatterPlotMatrixConfig extends ScatterPlotConfig{
 
@@ -52,18 +53,22 @@ export class ScatterPlotMatrix extends Chart {
     }
 
     initPlot() {
-
+        super.initPlot();
 
         var self = this;
-        var margin = this.config.margin;
+        var margin = this.plot.margin;
         var conf = this.config;
-        this.plot = {
-            x: {},
-            y: {},
-            dot: {
-                color: null//color scale mapping function
-            }
+        this.plot.x={};
+        this.plot.y={};
+        this.plot.dot={
+            color: null//color scale mapping function
         };
+
+
+        this.plot.showLegend = conf.showLegend;
+        if(this.plot.showLegend){
+            margin.right = conf.margin.right + conf.legend.width+conf.legend.margin*2;
+        }
 
         this.setupVariables();
 
@@ -294,15 +299,19 @@ export class ScatterPlotMatrix extends Chart {
 
                 dots.exit().remove();
             };
-
             p.update();
+
         }
 
 
+        this.updateLegend();
     };
 
-    update() {
+    update(data) {
+
+        super.update(data);
         this.plot.subplots.forEach(function(p){p.update()});
+        this.updateLegend();
     };
 
     drawBrush(cell) {
@@ -342,4 +351,36 @@ export class ScatterPlotMatrix extends Chart {
             if (brush.empty()) self.svgG.selectAll(".hidden").classed("hidden", false);
         }
     };
+
+    updateLegend() {
+
+        console.log('updateLegend');
+        var plot = this.plot;
+
+        var scale = plot.dot.colorCategory;
+        if(!scale.domain() || scale.domain().length<2){
+            plot.showLegend = false;
+        }
+
+        if(!plot.showLegend){
+            if(plot.legend && plot.legend.container){
+                plot.legend.container.remove();
+            }
+            return;
+        }
+
+
+        var legendX = this.plot.width + this.config.legend.margin;
+        var legendY = this.config.legend.margin;
+
+        plot.legend = new Legend(this.svg, this.svgG, scale, legendX, legendY);
+
+        var legendLinear = plot.legend.color()
+            .shapeWidth(this.config.legend.shapeWidth)
+            .orient('vertical')
+            .scale(scale);
+
+        plot.legend.container
+            .call(legendLinear);
+    }
 }

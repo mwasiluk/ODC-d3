@@ -1,4 +1,11 @@
 import {Utils} from "./utils";
+import {color, size, symbol} from "../bower_components/d3-legend/no-extend";
+
+/*var d3 = require('../bower_components/d3');
+*/
+// var legend = require('../bower_components/d3-legend/no-extend');
+//
+// module.exports.legend = legend;
 
 export class Legend {
 
@@ -6,6 +13,9 @@ export class Legend {
     legendClass=this.cssClassPrefix+"legend";
     container;
     scale;
+    color= color;
+    size = size;
+    symbol= symbol;
 
 
     constructor(svg, legendParent, scale, legendX, legendY){

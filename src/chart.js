@@ -91,8 +91,9 @@ export class Chart {
         var config = this.config;
         console.log(config.svgClass);
 
-        var width = self.plot.width + config.margin.left + config.margin.right;
-        var height = self.plot.height + config.margin.top + config.margin.bottom;
+        var margin = self.plot.margin;
+        var width = self.plot.width + margin.left + margin.right;
+        var height = self.plot.height + margin.top + margin.bottom;
         var aspect = width / height;
         if(!self._isAttached){
             if(!this._isInitialized){
@@ -113,7 +114,7 @@ export class Chart {
             self.svgG = self.svg.selectOrAppend("g.main-group."+config.svgClass)
         }
 
-        self.svgG.attr("transform", "translate(" + config.margin.left + "," + config.margin.top + ")");
+        self.svgG.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
         if (!config.width || config.height) {
             d3.select(window)
@@ -137,7 +138,15 @@ export class Chart {
     }
 
     initPlot() {
-
+        var margin = this.config.margin;
+        this.plot={
+            margin:{
+                top: margin.top,
+                bottom: margin.bottom,
+                left: margin.left,
+                right: margin.right
+            }
+        };
     }
 
     update(data) {
@@ -326,15 +335,23 @@ export class Chart {
 
         return this;
     };
+    getBaseContainer(){
+        if(this._isAttached){
+            return this.baseContainer.svg;
+        }
+        return d3.select(this.baseContainer);
+    }
 
     getBaseContainerNode(){
-        if(this._isAttached){
-            return this.baseContainer.svg.node();
-        }
-        return d3.select(this.baseContainer).node();
+
+        return this.getBaseContainer().node();
     }
 
     prefixClass(clazz, addDot){
         return addDot? '.': ''+this.config.cssClassPrefix+clazz;
+    }
+    computePlotSize() {
+        this.plot.width = Utils.availableWidth(this.config.width, this.getBaseContainer(), this.plot.margin);
+        this.plot.height = Utils.availableHeight(this.config.height, this.getBaseContainer(), this.plot.margin);
     }
 }

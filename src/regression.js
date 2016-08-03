@@ -3,6 +3,7 @@ import {ScatterPlot, ScatterPlotConfig} from "./scatterplot";
 import {Utils} from './utils'
 import {StatisticsUtils} from './statistics-utils'
 
+
 export class RegressionConfig extends ScatterPlotConfig{
 
     mainRegression = true;
@@ -216,6 +217,7 @@ export class Regression extends ScatterPlot{
     update(newData){
         super.update(newData);
         this.updateRegressionLines();
+
     };
 
     updateRegressionLines() {
@@ -276,6 +278,8 @@ export class Regression extends ScatterPlot{
 
 
     }
+
+
 
 }
 

@@ -1,11 +1,19 @@
 import {Chart, ChartConfig} from "./chart";
 import {Utils} from './utils'
+import {Legend} from "./legend";
 
 export class ScatterPlotConfig extends ChartConfig{
 
     svgClass= this.cssClassPrefix+'scatterplot';
     guides= false; //show axis guides
     tooltip= true; //show tooltip on dot hover
+    showLegend=true;
+    legend={
+        width: 80,
+        margin: 10,
+        shapeWidth: 20
+    };
+
     x={// X axis config
         label: 'X', // axis label
         key: 0,
@@ -53,30 +61,39 @@ export class ScatterPlot extends Chart{
     }
 
     initPlot(){
+        super.initPlot();
         var self=this;
-        var margin = this.config.margin;
+
         var conf = this.config;
-        this.plot={
-            x: {},
-            y: {},
-            dot: {
-                color: null//color scale mapping function
-            }
+
+        this.plot.x={};
+        this.plot.y={};
+        this.plot.dot={
+            color: null//color scale mapping function
         };
 
-        var width = conf.width;
-        var placeholderNode = this.getBaseContainerNode();
 
-        if(!width){
-            width =placeholderNode.getBoundingClientRect().width;
+        this.plot.showLegend = conf.showLegend;
+        if(this.plot.showLegend){
+            this.plot.margin.right = conf.margin.right + conf.legend.width+conf.legend.margin*2;
         }
-        var height = conf.height;
-        if(!height){
-            height =placeholderNode.getBoundingClientRect().height;
-        }
+        
 
-        this.plot.width = width - margin.left - margin.right;
-        this.plot.height = height - margin.top - margin.bottom;
+        this.computePlotSize();
+        
+
+
+        // var legendWidth = availableWidth;
+        // legend.width(legendWidth);
+        //
+        // wrap.select('.nv-legendWrap')
+        //     .datum(data)
+        //     .call(legend);
+        //
+        // if (legend.height() > margin.top) {
+        //     margin.top = legend.height();
+        //     availableHeight = nv.utils.availableHeight(height, container, margin);
+        // }
 
         this.setupX();
         this.setupY();
@@ -101,6 +118,7 @@ export class ScatterPlot extends Chart{
 
 
         }
+
 
         return this;
     }
@@ -171,7 +189,7 @@ export class ScatterPlot extends Chart{
             .attr("transform", "translate(0," + plot.height + ")")
             .call(plot.x.axis)
             .selectOrAppend("text."+self.prefixClass('label'))
-            .attr("transform", "translate("+ (plot.width/2) +","+ (self.config.margin.bottom) +")")  // text is drawn off the screen top left, move down and out and rotate
+            .attr("transform", "translate("+ (plot.width/2) +","+ (plot.margin.bottom) +")")  // text is drawn off the screen top left, move down and out and rotate
             .attr("dy", "-1em")
             .style("text-anchor", "middle")
             .text(axisConf.label);
@@ -184,7 +202,7 @@ export class ScatterPlot extends Chart{
         self.svgG.selectOrAppend("g."+self.prefixClass('axis-y')+"."+self.prefixClass('axis')+(self.config.guides ? '' : '.'+self.prefixClass('no-guides')))
             .call(plot.y.axis)
             .selectOrAppend("text."+self.prefixClass('label'))
-            .attr("transform", "translate("+ -self.config.margin.left +","+(plot.height/2)+")rotate(-90)")  // text is drawn off the screen top left, move down and out and rotate
+            .attr("transform", "translate("+ -plot.margin.left +","+(plot.height/2)+")rotate(-90)")  // text is drawn off the screen top left, move down and out and rotate
             .attr("dy", "1em")
             .style("text-anchor", "middle")
             .text(axisConf.label);
@@ -193,6 +211,12 @@ export class ScatterPlot extends Chart{
     update(newData){
         super.update(newData);
 
+        this.updateDots();
+
+        this.updateLegend();
+    };
+
+    updateDots() {
         var self = this;
         var plot = self.plot;
         var data = this.data;
@@ -200,16 +224,16 @@ export class ScatterPlot extends Chart{
         self.dotsContainerClass = self.prefixClass('dots-container');
 
 
-        var dotsContainer = self.svgG.selectOrAppend("g."+self.dotsContainerClass);
+        var dotsContainer = self.svgG.selectOrAppend("g." + self.dotsContainerClass);
 
-        var dots = dotsContainer.selectAll('.'+dotClass)
+        var dots = dotsContainer.selectAll('.' + dotClass)
             .data(data);
 
         dots.enter().append("circle")
             .attr("class", dotClass);
 
         var dotsT = dots;
-        if(self.config.transition){
+        if (self.config.transition) {
             dotsT = dots.transition();
         }
 
@@ -217,37 +241,70 @@ export class ScatterPlot extends Chart{
             .attr("cx", plot.x.map)
             .attr("cy", plot.y.map);
 
-        if(plot.tooltip){
-            dots.on("mouseover", function(d) {
+        if (plot.tooltip) {
+            dots.on("mouseover", function (d) {
                 plot.tooltip.transition()
                     .duration(200)
                     .style("opacity", .9);
-                var html = "(" + plot.x.value(d) + ", " +plot.y.value(d) + ")";
+                var html = "(" + plot.x.value(d) + ", " + plot.y.value(d) + ")";
                 var group = self.config.groups.value(d, self.config.groups.key);
-                if(group || group===0 ){
-                    html+="<br/>";
+                if (group || group === 0) {
+                    html += "<br/>";
                     var label = self.config.groups.label;
-                    if(label){
-                        html+=label+": ";
+                    if (label) {
+                        html += label + ": ";
                     }
-                    html+=group
+                    html += group
                 }
                 plot.tooltip.html(html)
                     .style("left", (d3.event.pageX + 5) + "px")
                     .style("top", (d3.event.pageY - 28) + "px");
             })
-                .on("mouseout", function(d) {
+                .on("mouseout", function (d) {
                     plot.tooltip.transition()
                         .duration(500)
                         .style("opacity", 0);
                 });
         }
 
-        if(plot.dot.color){
+        if (plot.dot.color) {
             dots.style("fill", plot.dot.color)
         }
 
         dots.exit().remove();
+    }
 
-    };
+    updateLegend() {
+
+
+        var plot = this.plot;
+
+        var scale = plot.dot.colorCategory;
+        if(!scale.domain() || scale.domain().length<2){
+            plot.showLegend = false;
+        }
+
+        if(!plot.showLegend){
+            if(plot.legend && plot.legend.container){
+                plot.legend.container.remove();
+            }
+            return;
+        }
+
+
+        var legendX = this.plot.width + this.config.legend.margin;
+        var legendY = this.config.legend.margin;
+
+        plot.legend = new Legend(this.svg, this.svgG, scale, legendX, legendY);
+
+        var legendLinear = plot.legend.color()
+            .shapeWidth(this.config.legend.shapeWidth)
+            .orient('vertical')
+            .scale(scale);
+        
+        plot.legend.container
+            .call(legendLinear);
+    }
+
+    
 }

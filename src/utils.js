@@ -41,11 +41,11 @@ export class Utils {
             Object.keys(source).forEach(key => {
                 if (Utils.isObjectNotArray(source[key])) {
                     if (!(key in target))
-                        Object.assign(output, { [key]: source[key] });
+                        Object.assign(output, {[key]: source[key]});
                     else
                         output[key] = Utils.mergeDeep(target[key], source[key]);
                 } else {
-                    Object.assign(output, { [key]: source[key] });
+                    Object.assign(output, {[key]: source[key]});
                 }
             });
         }
@@ -63,19 +63,19 @@ export class Utils {
         if (data.length) {
             var d = data[0];
             if (d instanceof Array) {
-                res=  d.map(function (v, i) {
+                res = d.map(function (v, i) {
                     return i;
                 });
-            }else if (typeof d === 'object'){
+            } else if (typeof d === 'object') {
 
                 for (var prop in d) {
-                    if(!d.hasOwnProperty(prop)) continue;
+                    if (!d.hasOwnProperty(prop)) continue;
 
                     res.push(prop);
                 }
             }
         }
-        if(!includeGroup){
+        if (!includeGroup) {
             var index = res.indexOf(groupKey);
             if (index > -1) {
                 res.splice(index, 1);
@@ -83,9 +83,11 @@ export class Utils {
         }
         return res
     };
+
     static isObjectNotArray(item) {
         return (item && typeof item === 'object' && !Array.isArray(item) && item !== null);
     };
+
     static isObject(a) {
         return a !== null && typeof a === 'object';
     };
@@ -98,7 +100,7 @@ export class Utils {
         return typeof a === 'function';
     };
 
-    static insertOrAppendSelector(parent, selector, operation, before ) {
+    static insertOrAppendSelector(parent, selector, operation, before) {
         var selectorParts = selector.split(/([\.\#])/);
         var element = parent[operation](selectorParts.shift(), before);//":first-child"
         while (selectorParts.length > 1) {
@@ -123,8 +125,8 @@ export class Utils {
 
     static selectOrAppend(parent, selector, element) {
         var selection = parent.select(selector);
-        if(selection.empty()){
-            if(element){
+        if (selection.empty()) {
+            if (element) {
                 return parent.append(element);
             }
             return Utils.appendSelector(parent, selector);
@@ -135,32 +137,48 @@ export class Utils {
 
     static selectOrInsert(parent, selector, before) {
         var selection = parent.select(selector);
-        if(selection.empty()){
+        if (selection.empty()) {
             return Utils.insertSelector(parent, selector, before);
         }
         return selection;
     };
 
-    static linearGradient(svg, gradientId, range, x1, y1, x2, y2){
+    static linearGradient(svg, gradientId, range, x1, y1, x2, y2) {
         var defs = Utils.selectOrAppend(svg, "defs");
         var linearGradient = defs.append("linearGradient")
             .attr("id", gradientId);
 
         linearGradient
-            .attr("x1", x1+"%")
-            .attr("y1", y1+"%")
-            .attr("x2", x2+"%")
-            .attr("y2", y2+"%");
+            .attr("x1", x1 + "%")
+            .attr("y1", y1 + "%")
+            .attr("x2", x2 + "%")
+            .attr("y2", y2 + "%");
 
         //Append multiple color stops by using D3's data/enter step
         var stops = linearGradient.selectAll("stop")
-            .data( range );
+            .data(range);
 
         stops.enter().append("stop");
 
-        stops.attr("offset", (d,i) => i/(range.length-1) )
-            .attr("stop-color", d => d );
+        stops.attr("offset", (d, i) => i / (range.length - 1))
+            .attr("stop-color", d => d);
 
         stops.exit().remove();
     }
+
+    static sanitizeHeight = function (height, container) {
+        return (height || parseInt(container.style('height'), 10) || 400);
+    };
+    
+    static sanitizeWidth = function (width, container) {
+        return (width || parseInt(container.style('width'), 10) || 960);
+    };
+
+    static availableHeight = function (height, container, margin) {
+        return Math.max(0, Utils.sanitizeHeight(height, container) - margin.top - margin.bottom);
+    };
+
+    static availableWidth = function (width, container, margin) {
+        return Math.max(0, Utils.sanitizeWidth(width, container) - margin.left - margin.right);
+    };
 }

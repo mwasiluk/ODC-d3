@@ -57,20 +57,23 @@ export class CorrelationMatrix extends Chart {
     }
 
     initPlot() {
+        super.initPlot();
         var self = this;
         var margin = this.config.margin;
         var conf = this.config;
-        this.plot = {
-            x: {},
-            correlation: {
-                matrix: undefined,
-                cells: undefined,
-                color: {},
-                shape: {}
-            }
 
-
+        this.plot.x={};
+        this.plot.correlation={
+            matrix: undefined,
+            cells: undefined,
+            color: {},
+            shape: {}
         };
+
+
+
+
+
         this.setupVariables();
         var width = conf.width;
         var placeholderNode = this.getBaseContainerNode();
@@ -429,7 +432,8 @@ export class CorrelationMatrix extends Chart {
                 key: self.config.groups.key,
                 label: self.config.groups.label
             },
-            guides: true
+            guides: true,
+            showLegend: false
         };
 
         self.scatterPlot=true;
