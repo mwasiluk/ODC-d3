@@ -5,6 +5,7 @@ export {ScatterPlot, ScatterPlotConfig} from "./scatterplot";
 export {ScatterPlotMatrix, ScatterPlotMatrixConfig} from "./scatterplot-matrix";
 export {CorrelationMatrix, CorrelationMatrixConfig} from './correlation-matrix'
 export {Regression, RegressionConfig} from './regression'
+export {Heatmap, HeatmapConfig} from './heatmap'
 export {StatisticsUtils} from './statistics-utils'
 export {Legend} from './legend'
 
