@@ -27,7 +27,7 @@ export class CorrelationMatrixConfig extends ChartConfig {
     cell = {
         shape: "ellipse", //possible values: rect, circle, ellipse
         size: undefined,
-        sizeMin: 5,
+        sizeMin: 15,
         sizeMax: 250,
         padding: 1
     };
@@ -262,7 +262,8 @@ export class CorrelationMatrix extends Chart {
             .attr("x", (d, i) => i * plot.cellSize + plot.cellSize / 2)
             .attr("y", plot.height)
             .attr("dx", -2)
-            .attr("transform", (d, i) => "rotate(-90, " + (i * plot.cellSize + plot.cellSize / 2  ) + ", " + plot.height + ")")
+            .attr("dy", 5)
+            .attr("transform", (d, i) => "rotate(-45, " + (i * plot.cellSize + plot.cellSize / 2  ) + ", " + plot.height + ")")
             .attr("text-anchor", "end")
 
             // .attr("dominant-baseline", "hanging")
