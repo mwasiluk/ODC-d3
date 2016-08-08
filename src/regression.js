@@ -238,7 +238,7 @@ export class Regression extends ScatterPlot{
             .attr('x', 0)
             .attr('y', 0);
 
-        regressionContainer.attr("clip-path", function(d,i) { return "url(#"+clipPathId+")"; });
+        regressionContainer.attr("clip-path", (d,i) => "url(#"+clipPathId+")");
 
         var regressionClass = this.prefixClass("regression");
         var confidenceAreaClass = self.prefixClass("confidence");
@@ -260,8 +260,8 @@ export class Regression extends ScatterPlot{
             // .attr("y1", r=> self.plot.y.scale(r.linePoints[0].y))
             // .attr("x2", r=> self.plot.x.scale(r.linePoints[1].x))
             // .attr("y2", r=> self.plot.y.scale(r.linePoints[1].y))
-            .attr("d", function(r) { return r.line(r.linePoints); })
-            .style("stroke", function(r) { return r.color; });
+            .attr("d", r => r.line(r.linePoints))
+            .style("stroke", r => r.color);
 
 
         var area = regression.enter()

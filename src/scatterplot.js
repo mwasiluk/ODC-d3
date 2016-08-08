@@ -17,20 +17,20 @@ export class ScatterPlotConfig extends ChartConfig{
     x={// X axis config
         label: 'X', // axis label
         key: 0,
-        value: function(d, key) { return d[key] }, // x value accessor
+        value: (d, key) => d[key], // x value accessor
         orient: "bottom",
         scale: "linear"
     };
     y={// Y axis config
         label: 'Y', // axis label,
         key: 1,
-        value: function(d, key) { return d[key] }, // y value accessor
+        value: (d, key) => d[key], // y value accessor
         orient: "left",
         scale: "linear"
     };
     groups={
         key: 2,
-        value: function(d, key) { return d[key] }, // grouping value accessor,
+        value: (d, key) => d[key] , // grouping value accessor,
         label: ""
     };
     transition= true;
@@ -40,7 +40,7 @@ export class ScatterPlotConfig extends ChartConfig{
         var config = this;
         this.dot={
             radius: 2,
-            color: function(d) { return config.groups.value(d, config.groups.key) }, // string or function returning color's value for color scale
+            color: d => config.groups.value(d, config.groups.key), // string or function returning color's value for color scale
             d3ColorCategory: 'category10'
         };
 
@@ -108,9 +108,7 @@ export class ScatterPlot extends Chart{
             if (typeof colorValue === 'string' || colorValue instanceof String){
                 this.plot.dot.color = colorValue;
             }else if(this.plot.dot.colorCategory){
-                this.plot.dot.color = function(d){
-                    return self.plot.dot.colorCategory(self.plot.dot.colorValue(d));
-                }
+                this.plot.dot.color = d =>  self.plot.dot.colorCategory(self.plot.dot.colorValue(d));
             }
 
 
@@ -137,7 +135,7 @@ export class ScatterPlot extends Chart{
          **/
         x.value = d => conf.value(d, conf.key);
         x.scale = d3.scale[conf.scale]().range([0, plot.width]);
-        x.map = function(d) { return x.scale(x.value(d));};
+        x.map = d => x.scale(x.value(d));
         x.axis = d3.svg.axis().scale(x.scale).orient(conf.orient);
         var data = this.data;
         plot.x.scale.domain([d3.min(data, plot.x.value)-1, d3.max(data, plot.x.value)+1]);
@@ -161,7 +159,7 @@ export class ScatterPlot extends Chart{
          */
         y.value = d => conf.value(d, conf.key);
         y.scale = d3.scale[conf.scale]().range([plot.height, 0]);
-        y.map = function(d) { return y.scale(y.value(d));};
+        y.map = d => y.scale(y.value(d));
         y.axis = d3.svg.axis().scale(y.scale).orient(conf.orient);
 
         if(this.config.guides){
@@ -242,7 +240,7 @@ export class ScatterPlot extends Chart{
             .attr("cy", plot.y.map);
 
         if (plot.tooltip) {
-            dots.on("mouseover", function (d) {
+            dots.on("mouseover", d => {
                 plot.tooltip.transition()
                     .duration(200)
                     .style("opacity", .9);
@@ -260,7 +258,7 @@ export class ScatterPlot extends Chart{
                     .style("left", (d3.event.pageX + 5) + "px")
                     .style("top", (d3.event.pageY - 28) + "px");
             })
-                .on("mouseout", function (d) {
+                .on("mouseout", d => {
                     plot.tooltip.transition()
                         .duration(500)
                         .style("opacity", 0);

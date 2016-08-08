@@ -23,15 +23,13 @@ export class ScatterPlotMatrixConfig extends ScatterPlotConfig{
     groups={
         key: undefined, //object property name or array index with grouping variable
         includeInPlot: false, //include group as variable in plot, boolean (default: false)
-        value: function(d, key) { return d[key] }, // grouping value accessor,
+        value: (d, key) => d[key], // grouping value accessor,
         label: ""
     };
     variables= {
         labels: [], //optional array of variable labels (for the diagonal of the plot).
         keys: [], //optional array of variable keys
-        value: function (d, variableKey) {// variable value accessor
-            return d[variableKey];
-        }
+        value: (d, variableKey) => d[variableKey] // variable value accessor
     };
 
     constructor(custom){
@@ -110,9 +108,7 @@ export class ScatterPlotMatrix extends Chart {
             if (typeof colorValue === 'string' || colorValue instanceof String) {
                 this.plot.dot.color = colorValue;
             } else if (this.plot.dot.colorCategory) {
-                this.plot.dot.color = function (d) {
-                    return self.plot.dot.colorCategory(self.plot.dot.colorValue(d));
-                }
+                this.plot.dot.color = d => self.plot.dot.colorCategory(self.plot.dot.colorValue(d));
             }
 
 
@@ -137,7 +133,7 @@ export class ScatterPlotMatrix extends Chart {
 
         plot.labels = [];
         plot.labelByVariable = {};
-        plot.variables.forEach(function(variableKey, index) {
+        plot.variables.forEach((variableKey, index) => {
             plot.domainByVariable[variableKey] = d3.extent(data, function(d) { return variablesConf.value(d, variableKey) });
             var label = variableKey;
             if(variablesConf.labels && variablesConf.labels.length>index){
@@ -161,9 +157,7 @@ export class ScatterPlotMatrix extends Chart {
 
         x.value = conf.variables.value;
         x.scale = d3.scale[conf.x.scale]().range([conf.padding / 2, plot.size - conf.padding / 2]);
-        x.map = function (d, variable) {
-            return x.scale(x.value(d, variable));
-        };
+        x.map = (d, variable) => x.scale(x.value(d, variable));
         x.axis = d3.svg.axis().scale(x.scale).orient(conf.x.orient).ticks(conf.ticks);
         x.axis.tickSize(plot.size * plot.variables.length);
 
@@ -177,9 +171,7 @@ export class ScatterPlotMatrix extends Chart {
 
         y.value = conf.variables.value;
         y.scale = d3.scale[conf.y.scale]().range([ plot.size - conf.padding / 2, conf.padding / 2]);
-        y.map = function (d, variable) {
-            return y.scale(y.value(d, variable));
-        };
+        y.map = (d, variable) => y.scale(y.value(d, variable));
         y.axis= d3.svg.axis().scale(y.scale).orient(conf.y.orient).ticks(conf.ticks);
         y.axis.tickSize(-plot.size * plot.variables.length);
     };
@@ -201,21 +193,21 @@ export class ScatterPlotMatrix extends Chart {
             .data(self.plot.variables)
             .enter().appendSelector(xAxisSelector)
             .classed(noGuidesClass, !conf.guides)
-            .attr("transform", function(d, i) { return "translate(" + (n - i - 1) * self.plot.size + ",0)"; })
+            .attr("transform", (d, i) => "translate(" + (n - i - 1) * self.plot.size + ",0)")
             .each(function(d) { self.plot.x.scale.domain(self.plot.domainByVariable[d]); d3.select(this).call(self.plot.x.axis); });
 
         self.svgG.selectAll(yAxisSelector)
             .data(self.plot.variables)
             .enter().appendSelector(yAxisSelector)
             .classed(noGuidesClass, !conf.guides)
-            .attr("transform", function(d, i) { return "translate(0," + i * self.plot.size + ")"; })
+            .attr("transform", (d, i) => "translate(0," + i * self.plot.size + ")")
             .each(function(d) { self.plot.y.scale.domain(self.plot.domainByVariable[d]); d3.select(this).call(self.plot.y.axis); });
 
         var cellClass =  self.prefixClass("cell");
         var cell = self.svgG.selectAll("."+cellClass)
             .data(self.utils.cross(self.plot.variables, self.plot.variables))
             .enter().appendSelector("g."+cellClass)
-            .attr("transform", function(d) { return "translate(" + (n - d.i - 1) * self.plot.size + "," + d.j * self.plot.size + ")"; });
+            .attr("transform", d => "translate(" + (n - d.i - 1) * self.plot.size + "," + d.j * self.plot.size + ")");
 
         if(conf.brush){
             this.drawBrush(cell);
@@ -226,11 +218,12 @@ export class ScatterPlotMatrix extends Chart {
 
 
         //Labels
-        cell.filter(function(d) { return d.i === d.j; }).append("text")
+        cell.filter(d => d.i === d.j)
+            .append("text")
             .attr("x", conf.padding)
             .attr("y", conf.padding)
             .attr("dy", ".71em")
-            .text(function(d) { return self.plot.labelByVariable[d.x]; });
+            .text( d => self.plot.labelByVariable[d.x]);
 
 
 
@@ -252,15 +245,15 @@ export class ScatterPlotMatrix extends Chart {
                 .attr("height", conf.size - conf.padding);
 
 
-            p.update = function(){
+            p.update = function() {
                 var subplot = this;
                 var dots = cell.selectAll("circle")
                     .data(self.data);
 
                 dots.enter().append("circle");
 
-                dots.attr("cx", function(d){return plot.x.map(d, subplot.x)})
-                    .attr("cy", function(d){return plot.y.map(d, subplot.y)})
+                dots.attr("cx", (d) => plot.x.map(d, subplot.x))
+                    .attr("cy", (d) => plot.y.map(d, subplot.y))
                     .attr("r", self.config.dot.radius);
 
                 if (plot.dot.color) {
@@ -268,7 +261,7 @@ export class ScatterPlotMatrix extends Chart {
                 }
 
                 if(plot.tooltip){
-                    dots.on("mouseover", function(d) {
+                    dots.on("mouseover", (d) => {
                         plot.tooltip.transition()
                             .duration(200)
                             .style("opacity", .9);
@@ -290,7 +283,7 @@ export class ScatterPlotMatrix extends Chart {
                             .style("left", (d3.event.pageX + 5) + "px")
                             .style("top", (d3.event.pageY - 28) + "px");
                     })
-                        .on("mouseout", function(d) {
+                        .on("mouseout", (d)=> {
                             plot.tooltip.transition()
                                 .duration(500)
                                 .style("opacity", 0);
@@ -310,7 +303,7 @@ export class ScatterPlotMatrix extends Chart {
     update(data) {
 
         super.update(data);
-        this.plot.subplots.forEach(function(p){p.update()});
+        this.plot.subplots.forEach(p => p.update());
         this.updateLegend();
     };
 

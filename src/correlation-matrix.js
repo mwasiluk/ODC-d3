@@ -179,9 +179,7 @@ export class CorrelationMatrix extends Chart {
         plot.labels = [];
         plot.labelByVariable = {};
         plot.variables.forEach((variableKey, index) => {
-            plot.domainByVariable[variableKey] = d3.extent(data, function (d) {
-                return variablesConf.value(d, variableKey)
-            });
+            plot.domainByVariable[variableKey] = d3.extent(data,  (d) => variablesConf.value(d, variableKey));
             var label = variableKey;
             if (variablesConf.labels && variablesConf.labels.length > index) {
 
