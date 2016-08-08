@@ -40,15 +40,6 @@
   .odc-scatterplot .odc-axis.odc-no-guides line {
     stroke: #a1a1a1; }
 
-.odc-heatmap .odc-label {
-  font-size: 11px; }
-
-.odc-heatmap .odc-highlight {
-  font-weight: bold; }
-
-.odc-heatmap .odc-legend text {
-  font-size: 11px; }
-
 .odc-correlation-matrix .odc-label {
   font-size: 11px; }
 
@@ -56,6 +47,15 @@
   font-weight: bold; }
 
 .odc-correlation-matrix .odc-legend text {
+  font-size: 11px; }
+
+.odc-heatmap .odc-label {
+  font-size: 11px; }
+
+.odc-heatmap .odc-highlight {
+  font-weight: bold; }
+
+.odc-heatmap .odc-legend text {
   font-size: 11px; }
 
 .odc-selectable {

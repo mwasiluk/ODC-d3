@@ -1,6 +1,11 @@
-.odc-heatmap{
+.odc-correlation-matrix{
 
-
+  circle {
+    //fill-opacity: .7;
+    //&.hidden {
+    //  fill: #ccc !important;
+    //}
+  }
   .odc-label{
     font-size: 11px;
   }
@@ -14,4 +19,6 @@
     }
   }
 }
+
+
 
