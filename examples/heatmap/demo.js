@@ -23,10 +23,12 @@ var confFlowers2 = {
     x:{
         key: 'species',
         title: 'species',
+        sortLabels: true
     },
     y:{
         key: 'petal width',
         title: 'petal width',
+        sortLabels: true,
         rotateLabels: false
     },
     z:{
@@ -43,14 +45,17 @@ var confFlowers2 = {
 
 var confFlowers3 = {
 
-    x:{
+    y:{
         key: 'species',
         title: 'species',
-        rotateLabels: false
+        sortLabels: true,
+        rotateLabels: true
+
     },
-    y:{
+    x:{
         key: 'petal width',
         title: 'petal width',
+        sortLabels: true,
         rotateLabels: false
     },
     z:{

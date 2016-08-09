@@ -16,13 +16,17 @@ export class HeatmapConfig extends ChartConfig {
         title: '', // axis title
         key: 0,
         value: (d) => d[this.x.key], // x value accessor
-        rotateLabels: true
+        rotateLabels: true,
+        sortLabels: false,
+        sortComparator: (a, b)=> Utils.isNumber(a) ? a-b : a.localeCompare(b)
     };
     y={// Y axis config
         title: '', // axis title,
         rotateLabels: true,
         key: 1,
-        value: (d) => d[this.y.key] // y value accessor
+        value: (d) => d[this.y.key], // y value accessor
+        sortLabels: false,
+        sortComparator: (a, b)=> Utils.isNumber(b) ? b-a : b.localeCompare(a)
     };
     z = {
         key: 3,
@@ -133,8 +137,12 @@ export class Heatmap extends Chart {
         });
 
 
-
-
+        if(config.x.sortLabels){
+            x.uniqueValues.sort(config.x.sortComparator);
+        }
+        if(config.y.sortLabels){
+            y.uniqueValues.sort(config.y.sortComparator);
+        }
 
 
         // this.setupValueMatrix();
