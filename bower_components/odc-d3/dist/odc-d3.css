@@ -49,6 +49,15 @@
 .odc-correlation-matrix .odc-legend text {
   font-size: 11px; }
 
+.odc-heatmap .odc-label {
+  font-size: 11px; }
+
+.odc-heatmap .odc-highlight {
+  font-weight: bold; }
+
+.odc-heatmap .odc-legend text {
+  font-size: 11px; }
+
 .odc-selectable {
   cursor: pointer; }
 
