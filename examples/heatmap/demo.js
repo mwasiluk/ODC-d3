@@ -44,7 +44,8 @@ var confFlowers2 = {
 };
 
 var confFlowers3 = {
-
+    width: 600,
+    height: 200,
     y:{
         key: 'species',
         title: 'species',

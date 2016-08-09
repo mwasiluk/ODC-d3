@@ -197,7 +197,7 @@ export class Heatmap extends Chart {
         if (this.config.width) {
 
             if (!this.config.cell.width) {
-                this.plot.cellWidth = Math.max(conf.cell.sizeMin, Math.min(conf.cell.sizeMax, (availableWidth - margin.left - margin.right) / this.plot.x.uniqueValues.length));
+                this.plot.cellWidth = Math.max(conf.cell.sizeMin, Math.min(conf.cell.sizeMax, (availableWidth) / this.plot.x.uniqueValues.length));
             }
 
 
@@ -205,7 +205,7 @@ export class Heatmap extends Chart {
             this.plot.cellWidth = this.config.cell.width;
 
             if (!this.plot.cellWidth) {
-                this.plot.cellWidth = Math.max(conf.cell.sizeMin, Math.min(conf.cell.sizeMax, (availableWidth- margin.left - margin.right) / this.plot.x.uniqueValues.length));
+                this.plot.cellWidth = Math.max(conf.cell.sizeMin, Math.min(conf.cell.sizeMax, (availableWidth) / this.plot.x.uniqueValues.length));
             }
 
 
@@ -215,13 +215,13 @@ export class Heatmap extends Chart {
 
         if(this.config.height){
             if (!this.config.cell.height) {
-                this.plot.cellHeight = Math.max(conf.cell.sizeMin, Math.min(conf.cell.sizeMax, (availableHeight - margin.top - margin.bottom) / this.plot.y.uniqueValues.length));
+                this.plot.cellHeight = Math.max(conf.cell.sizeMin, Math.min(conf.cell.sizeMax, (availableHeight) / this.plot.y.uniqueValues.length));
             }
         }else {
             this.plot.cellHeight = this.config.cell.height;
 
             if (!this.plot.cellHeight) {
-                this.plot.cellHeight = Math.max(conf.cell.sizeMin, Math.min(conf.cell.sizeMax, (availableHeight- margin.top - margin.bottom) / this.plot.y.uniqueValues.length));
+                this.plot.cellHeight = Math.max(conf.cell.sizeMin, Math.min(conf.cell.sizeMax, (availableHeight) / this.plot.y.uniqueValues.length));
             }
 
         }
