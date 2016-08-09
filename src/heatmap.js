@@ -10,7 +10,7 @@ export class HeatmapConfig extends ChartConfig {
     tooltip = {
         "noDataText": "N/A"
     };
-    legend = true;
+    showLegend = true;
     highlightLabels = true;
     x={// X axis config
         title: '', // axis title
@@ -33,14 +33,14 @@ export class HeatmapConfig extends ChartConfig {
     color = {
         noDataColor: "white",
         scale: "linear",
-        range: ["darkblue", "lightgreen", "darkred"]
+        range: ["darkblue", "lightskyblue", "orange", "crimson", "darkred"]
     };
     cell = {
         width: undefined,
         height: undefined,
         sizeMin: 15,
         sizeMax: 250,
-        padding: 1
+        padding: 0
     };
     margin = {
         left: 60,
@@ -171,7 +171,8 @@ export class Heatmap extends Chart {
             });
 
         });
-        z.domain = [minZ, 0, maxZ].sort(function(a, b){return a-b});
+        z.min = minZ;
+        z.max = maxZ;
         console.log(matrix,x.uniqueValues , y.uniqueValues );
     }
 
@@ -230,19 +231,28 @@ export class Heatmap extends Chart {
         var self = this;
         var config = self.config;
         var z = self.plot.z;
+        var range = config.color.range;
+        var extent = z.max - z.min;
+        if(config.color.scale=="log"){
+            z.domain = [];
+            range.forEach((c, i)=>{
+                var v = z.min + (extent/Math.pow(10, i));
+                z.domain.unshift(v)
+            });
+        }else{
+            z.domain = [];
+            range.forEach((c, i)=>{
+                var v = z.min + (extent * (i/(range.length-1)));
+                z.domain.push(v)
+            });
+        }
+        z.domain[0]=z.min; //removing unnecessary floating points
+        z.domain[z.domain.length-1]=z.max; //removing unnecessary floating points
+        console.log(z.domain);
 
         var plot = this.plot;
-//.domain(corrConf.domain)
 
-        var range = config.color.range.slice();
-        if(z.domain[0]===0){
-            z.domain.shift();
-            range.shift();
-        }else if(z.domain[2]===0){
-            z.domain.pop();
-            range.pop();
-        }
-
+        console.log(range);
         plot.z.color.scale = d3.scale[config.color.scale]().domain(z.domain).range(range);
         var shape = plot.z.shape = {};
 
@@ -262,7 +272,7 @@ export class Heatmap extends Chart {
         this.updateCells();
         this.updateVariableLabels();
 
-        if (this.config.legend) {
+        if (this.config.showLegend) {
             this.updateLegend();
         }
 

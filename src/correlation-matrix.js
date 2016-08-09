@@ -9,7 +9,7 @@ export class CorrelationMatrixConfig extends ChartConfig {
     svgClass = 'odc-correlation-matrix';
     guides = false; //show axis guides
     showTooltip = true; //show tooltip on dot hover
-    legend = true;
+    showLegend = true;
     highlightLabels = true;
     variables = {
         labels: undefined,
@@ -238,7 +238,7 @@ export class CorrelationMatrix extends Chart {
         this.updateCells();
         this.updateVariableLabels();
 
-        if (this.config.legend) {
+        if (this.config.showLegend) {
             this.updateLegend();
         }
     };

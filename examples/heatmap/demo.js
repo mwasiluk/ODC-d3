@@ -1,34 +1,69 @@
 var confFlowers = {
     // width: 500,
     // height: 500,
-    z:{
-        key: 'petal length',
-    },
-    y:{
-       /* key: 'petal width',
-        label: 'petal width'*/
-        key: 'species',
-        // title: "species"
-    },
+
+
     x:{
         key: 'species',
         // label: "species"
+    },
+    y:{
+        /* key: 'petal width',
+         label: 'petal width'*/
+        key: 'species'
+        // title: "species"
+    },
+    z:{
+        key: 'petal length'
     }
 };
 
 var confFlowers2 = {
-    z:{
-        key: 'petal length'
-    },
-    y:{
-         key: 'petal width',
-        title: 'petal width',
-        rotateLabels: false
-    },
+
     x:{
         key: 'species',
         title: 'species',
+    },
+    y:{
+        key: 'petal width',
+        title: 'petal width',
+        rotateLabels: false
+    },
+    z:{
+        key: 'petal length'
+    },
+
+    color : {
+        scale: "linear"
     }
+
+
+
+};
+
+var confFlowers3 = {
+
+    x:{
+        key: 'species',
+        title: 'species',
+        rotateLabels: false
+    },
+    y:{
+        key: 'petal width',
+        title: 'petal width',
+        rotateLabels: false
+    },
+    z:{
+        key: 'petal length'
+    },
+
+    color : {
+        scale: "log",
+        range: ["green", "orange", "darkred"]
+    }
+
+
+
 };
 
 
@@ -55,5 +90,6 @@ d3.csv("../data/flowers.csv", function(error, data) {
     plot = new ODCD3.Heatmap("#plot", data, conf);
 
     var plot2 =new ODCD3.Heatmap("#plot2", data, confFlowers2);
+    var plot3 =new ODCD3.Heatmap("#plot3", data, confFlowers3);
 
 });

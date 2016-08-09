@@ -16,20 +16,21 @@ export class Legend {
     color= color;
     size = size;
     symbol= symbol;
+    guid;
 
 
     constructor(svg, legendParent, scale, legendX, legendY){
         this.scale=scale;
         this.svg = svg;
-
+        this.guid = Utils.guid();
         this.container =  Utils.selectOrAppend(legendParent, "g."+this.legendClass, "g")
             .attr("transform", "translate("+legendX+","+legendY+")")
             .classed(this.legendClass, true);
 
     }
 
-    linearGradientBar(barWidth, barHeight){
-        var gradientId = this.cssClassPrefix+"linear-gradient";
+    linearGradientBar(barWidth, barHeight, title){
+        var gradientId = this.cssClassPrefix+"linear-gradient"+"-"+this.guid;
         var scale= this.scale;
 
         this.linearGradient = Utils.linearGradient(this.svg, gradientId, this.scale.range(), 0, 100, 0, 0);
