@@ -8,7 +8,7 @@ export class CorrelationMatrixConfig extends ChartConfig {
 
     svgClass = 'odc-correlation-matrix';
     guides = false; //show axis guides
-    tooltip = true; //show tooltip on dot hover
+    showTooltip = true; //show tooltip on dot hover
     legend = true;
     highlightLabels = true;
     variables = {

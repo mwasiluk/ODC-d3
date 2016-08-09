@@ -6,7 +6,7 @@ export class ScatterPlotConfig extends ChartConfig{
 
     svgClass= this.cssClassPrefix+'scatterplot';
     guides= false; //show axis guides
-    tooltip= true; //show tooltip on dot hover
+    showTooltip= true; //show tooltip on dot hover
     showLegend=true;
     legend={
         width: 80,

@@ -12,7 +12,7 @@ export class ChartConfig {
         top: 30,
         bottom: 50
     };
-    tooltip = false;
+    showTooltip = false;
 
     constructor(custom) {
         if (custom) {
@@ -126,7 +126,7 @@ export class Chart {
 
     initTooltip(){
         var self = this;
-        if (self.config.tooltip) {
+        if (self.config.showTooltip) {
             if(!self._isAttached ){
                 self.plot.tooltip = d3.select(self.baseContainer).selectOrAppend('div.'+self.config.cssClassPrefix+'tooltip')
                     .style("opacity", 0);

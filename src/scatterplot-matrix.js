@@ -10,7 +10,7 @@ export class ScatterPlotMatrixConfig extends ScatterPlotConfig{
     padding= 20; //scatter plot cell padding
     brush= true;
     guides= true; //show axis guides
-    tooltip= true; //show tooltip on dot hover
+    showTooltip= true; //show tooltip on dot hover
     ticks= undefined; //ticks number, (default: computed using cell size)
     x={// X axis config
         orient: "bottom",

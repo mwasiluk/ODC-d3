@@ -6,7 +6,10 @@ import {Legend} from './legend'
 export class HeatmapConfig extends ChartConfig {
 
     svgClass = 'odc-heatmap';
-    tooltip = true; //show tooltip on dot hover
+    showTooltip = true; //show tooltip on dot hover
+    tooltip = {
+        "noDataText": "N/A"
+    };
     legend = true;
     highlightLabels = true;
     x={// X axis config
@@ -28,8 +31,9 @@ export class HeatmapConfig extends ChartConfig {
 
     };
     color = {
+        noDataColor: "white",
         scale: "linear",
-        range: ["darkblue", "white", "darkred"]
+        range: ["darkblue", "lightgreen", "darkred"]
     };
     cell = {
         width: undefined,
@@ -146,7 +150,7 @@ export class Heatmap extends Chart {
             matrix.push(row);
 
             x.uniqueValues.forEach((v2, j) => {
-                var zVal = valueMap[v2][v1] || 0;
+                var zVal = valueMap[v2][v1] || undefined;
                 if(minZ === undefined || zVal<minZ){
                     minZ = zVal;
                 }
@@ -379,7 +383,7 @@ export class Heatmap extends Chart {
             .attr("x", -plot.cellWidth / 2)
             .attr("y", -plot.cellHeight / 2);
 
-        shapes.style("fill", c=> plot.z.color.scale(c.value));
+        shapes.style("fill", c=> c.value === undefined ? "white" : plot.z.color.scale(c.value));
 
         var mouseoverCallbacks = [];
         var mouseoutCallbacks = [];
@@ -390,7 +394,8 @@ export class Heatmap extends Chart {
                 plot.tooltip.transition()
                     .duration(200)
                     .style("opacity", .9);
-                var html = c.value;
+                var html = c.value === undefined ? self.config.tooltip.noDataText : c.value;
+
                 plot.tooltip.html(html)
                     .style("left", (d3.event.pageX + 5) + "px")
                     .style("top", (d3.event.pageY - 28) + "px");
