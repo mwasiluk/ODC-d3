@@ -45,19 +45,25 @@ var confFlowers2 = {
 
 var confFlowers3 = {
     width: 600,
-    height: 200,
+    // height: 200,
     y:{
-        key: 'species',
-        title: 'species',
-        sortLabels: true,
-        rotateLabels: true
+        key: 'sepal width',
+        title: 'sepal width',
 
+        sortLabels: true,
+        rotateLabels: false,
+
+        groups:{
+            keys: ['species',  'sepal width'],
+            labels: ['species', 'sepal length Label'],
+            value: (d,k) => k=='sepal width'? d[k] < 3 : d[k]
+        }
     },
     x:{
         key: 'petal width',
         title: 'petal width',
         sortLabels: true,
-        rotateLabels: false
+        rotateLabels: false,
     },
     z:{
         key: 'petal length'
@@ -66,16 +72,18 @@ var confFlowers3 = {
     color : {
         scale: "log",
         range: ["green", "orange", "darkred"]
-    }
+    },
+
 
 
 
 };
-
+// sepal length,sepal width,petal length,petal width,species
 
 var confArray={
 
 };
+
 
 var dataArray = [
     [1,2, 1],
@@ -88,6 +96,47 @@ var dataArray = [
     [5,4, 2]
 
 ];
+
+
+
+var configEurostat = {
+    y:{
+        key: 'geo',
+        title: 'geo',
+
+        sortLabels: true,
+        rotateLabels: true,
+
+        groups: {
+            keys: ['agrarea']
+        }
+        // groups:{
+        //     keys: ['sex'],
+        //     labels: ['sex'],
+        // }
+    },
+    x:{
+        key: 'time',
+        title: 'Time',
+        sortLabels: true,
+        rotateLabels: true,
+        groups:{
+            keys: ['time'],
+            labels: ['test'],
+            value: (d,k) => parseInt(d[k])<2010
+        }
+    },
+    z:{
+        key: 'value',
+        title: 'Population on 1 January',
+        scale: "linear"
+    }
+}
+
+
+
+
+
 var plot;
 var conf = confFlowers;
 
@@ -97,5 +146,11 @@ d3.csv("../data/flowers.csv", function(error, data) {
 
     var plot2 =new ODCD3.Heatmap("#plot2", data, confFlowers2);
     var plot3 =new ODCD3.Heatmap("#plot3", data, confFlowers3);
+
+});
+
+d3.json("../data/eurostat.json", function(error, data) {
+    console.log(data); // this is your data
+    var plot4 =new ODCD3.Heatmap("#plot4", data, configEurostat);
 
 });
