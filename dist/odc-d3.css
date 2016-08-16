@@ -58,6 +58,17 @@
 .odc-heatmap .odc-legend text {
   font-size: 11px; }
 
+.odc-heatmap .odc-group rect {
+  stroke-opacity: .7; }
+  .odc-heatmap .odc-group rect.highlighted {
+    stroke-width: 1;
+    stroke-opacity: 1; }
+
+.odc-heatmap .odc-group .title rect {
+  fill-opacity: .3; }
+  .odc-heatmap .odc-group .title rect.highlighted {
+    fill-opacity: 1; }
+
 .odc-selectable {
   cursor: pointer; }
 

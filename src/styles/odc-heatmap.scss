@@ -13,4 +13,25 @@
       font-size: 11px;
     }
   }
+
+  .odc-group{
+    rect{
+      stroke-opacity: .7;
+      &.highlighted {
+        stroke-width: 1;
+        stroke-opacity: 1;
+      }
+    }
+    .title{
+      rect{
+        fill-opacity: .3;
+
+        &.highlighted {
+          fill-opacity: 1;
+        }
+      }
+    }
+
+
+  }
 }

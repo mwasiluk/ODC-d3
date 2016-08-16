@@ -11,6 +11,9 @@ export class HeatmapConfig extends ChartConfig {
          noDataText: "N/A"
     };
     showLegend = true;
+    legend={
+        width: 30,
+    }
     highlightLabels = true;
     x={// X axis config
         title: '', // axis title
@@ -23,7 +26,10 @@ export class HeatmapConfig extends ChartConfig {
             keys: [],
             labels: [],
             value: (d, key) => d[key],
-
+            overlap: {
+                top: 20,
+                bottom: 20
+            }
         }
         
     };
@@ -37,7 +43,11 @@ export class HeatmapConfig extends ChartConfig {
         groups: {
             keys: [],
             labels: [],
-            value: (d, key) => d[key]
+            value: (d, key) => d[key],
+            overlap: {
+                left: 20,
+                right: 20
+            }
         }
     };
     z = {
@@ -63,7 +73,7 @@ export class HeatmapConfig extends ChartConfig {
         left: 60,
         right: 50,
         top: 30,
-        bottom: 60
+        bottom: 80
     };
 
     constructor(custom) {
@@ -101,10 +111,43 @@ export class Heatmap extends Chart {
 
 
         this.setupValues();
+
+        var titleRectWidth = 6;
+        this.plot.x.overlap ={
+            top:0,
+            bottom: 0
+        };
+        if(this.plot.groupByX){
+            let depth = self.config.x.groups.keys.length;
+            let allTitlesWidth = depth*(titleRectWidth);
+
+            this.plot.x.overlap.bottom = self.config.x.groups.overlap.bottom ;
+            this.plot.x.overlap.top = self.config.x.groups.overlap.top+ allTitlesWidth;
+            this.plot.margin.top = conf.margin.right + conf.x.groups.overlap.top;
+            this.plot.margin.bottom = conf.margin.bottom + conf.x.groups.overlap.bottom;
+        }
+
+
+        this.plot.y.overlap ={
+            left:0,
+            right: 0
+        };
+
+
+        if(this.plot.groupByY){
+            let depth = self.config.y.groups.keys.length;
+            let allTitlesWidth = depth*(titleRectWidth);
+            this.plot.y.overlap.right = self.config.y.groups.overlap.left + allTitlesWidth;
+            this.plot.y.overlap.left = self.config.y.groups.overlap.left;
+            this.plot.margin.left = conf.margin.left + this.plot.y.overlap.left;
+            this.plot.margin.right = conf.margin.right + this.plot.y.overlap.right;
+        }
+        this.plot.showLegend = conf.showLegend;
+        if(this.plot.showLegend){
+            this.plot.margin.right += conf.legend.width;
+        }
         this.computePlotSize();
         this.setupZScale();
-
-
 
         return this;
     }
@@ -242,7 +285,14 @@ export class Heatmap extends Chart {
             matrix.push(row);
 
             x.allValuesList.forEach((v2, j) => {
-                var zVal =valueMap[v1.group.index][v2.group.index][v1.val][v2.val];
+                var zVal = undefined;
+                try{
+                    zVal =valueMap[v1.group.index][v2.group.index][v1.val][v2.val]
+                }catch(e){
+                    // console.log(e);
+
+                }
+
                 var cell = {
                     rowVar: v1,
                     colVar: v2,
@@ -264,9 +314,7 @@ export class Heatmap extends Chart {
         var currentGroup = rootGroup;
         axisGroupsConfig.keys.forEach((groupKey, groupKeyIndex) => {
             currentGroup.key = groupKey;
-            if(axisGroupsConfig.labels && axisGroupsConfig.labels.length>groupKeyIndex){
-                currentGroup.label = axisGroupsConfig.labels[groupKeyIndex];
-            }
+
             if(!currentGroup.children){
                 currentGroup.children = {};
             }
@@ -278,8 +326,10 @@ export class Heatmap extends Chart {
                 currentGroup.children[groupingValue] = {
                     values: [],
                     children: null,
+                    groupingValue: groupingValue,
                     level: currentGroup.level + 1,
-                    index: rootGroup.lastIndex
+                    index: rootGroup.lastIndex,
+                    key: groupKey
                 }
             }
 
@@ -294,20 +344,36 @@ export class Heatmap extends Chart {
     }
 
     sortGroups(axis, group, axisConfig, gaps){
+        if(axisConfig.groups.labels && axisConfig.groups.labels.length>group.level){
+            group.label = axisConfig.groups.labels[group.level];
+        }else{
+            group.label = group.key;
+        }
+
         if(!gaps){
             gaps = [0];
         }
         if(gaps.length<=group.level){
             gaps.push(0);
         }
+
+        group.allValuesCount = group.allValuesCount || 0;
+        group.allValuesBeforeCount = group.allValuesBeforeCount || 0;
+
         group.gaps = gaps.slice();
+        group.gapsBefore = gaps.slice();
+
+
         group.gapsSize = Heatmap.computeGapsSize(group.gaps);
+        group.gapsBeforeSize = group.gapsSize;
         if(group.values){
             if(axisConfig.sortLabels){
                 group.values.sort(axisConfig.sortComparator);
             }
             group.values.forEach(v=>axis.allValuesList.push({val:v, group: group}));
+            group.allValuesBeforeCount = axis.totalValuesCount;
             axis.totalValuesCount += group.values.length;
+            group.allValuesCount +=group.values.length;
         }
 
         group.childrenList = [];
@@ -320,7 +386,8 @@ export class Heatmap extends Chart {
                     group.childrenList.push(child);
                     childrenCount++;
 
-                    this.sortGroups(axis, child, axisConfig, gaps)
+                    this.sortGroups(axis, child, axisConfig, gaps);
+                    group.allValuesCount +=child.allValuesCount;
                     gaps[group.level]+=1;
                 }
             }
@@ -329,16 +396,24 @@ export class Heatmap extends Chart {
                 gaps[group.level]-=1;
             }
 
+            group.gapsInside = [];
+            gaps.forEach((d,i)=>{
+                group.gapsInside.push(d-(group.gapsBefore[i]|| 0));
+            });
+            group.gapsInsideSize = Heatmap.computeGapsSize(group.gapsInside);
+
             if(axis.gaps.length < gaps.length){
                 axis.gaps = gaps;
             }
+
+
 
         }
 
     }
 
     static computeGapSize(gapLevel){
-        return 20/(gapLevel + 1);
+        return 24/(gapLevel + 1);
     }
 
     static computeGapsSize(gaps){
@@ -357,9 +432,9 @@ export class Heatmap extends Chart {
         var width = availableWidth;
         var height = availableHeight;
 
-
-
         var xGapsSize = Heatmap.computeGapsSize(plot.x.gaps);
+
+
         var computedCellWidth = Math.max(conf.cell.sizeMin, Math.min(conf.cell.sizeMax, (availableWidth-xGapsSize) / this.plot.x.totalValuesCount));
         if (this.config.width) {
 
@@ -440,7 +515,15 @@ export class Heatmap extends Chart {
 
     update(newData) {
         super.update(newData);
+        if(this.plot.groupByY){
+            this.drawGroupsY(this.plot.y.groups, this.svgG);
+        }
+        if(this.plot.groupByX){
+            this.drawGroupsX(this.plot.x.groups, this.svgG);
+        }
+
         this.updateCells();
+
         this.updateVariableLabels();
 
         if (this.config.showLegend) {
@@ -454,9 +537,9 @@ export class Heatmap extends Chart {
         var self = this;
         var plot = self.plot;
         self.svgG.selectOrAppend("g."+self.prefixClass('axis-x'))
-            .attr("transform", "translate(0," + plot.height + ")")
+            .attr("transform", "translate("+ (plot.width/2) +","+ (plot.height + plot.margin.bottom) +")")
             .selectOrAppend("text."+self.prefixClass('label'))
-            .attr("transform", "translate("+ (plot.width/2) +","+ (plot.margin.bottom) +")")  
+
             .attr("dy", "-1em")
             .style("text-anchor", "middle")
             .text(self.config.x.title);
@@ -479,25 +562,38 @@ export class Heatmap extends Chart {
         var labelYClass = labelClass + "-y";
         plot.labelClass = labelClass;
 
+        var offsetX = {
+            x:0,
+            y:0
+        };
+        let gapSize = Heatmap.computeGapSize(0);
+        if(plot.groupByX){
+            let overlap = self.config.x.groups.overlap;
+
+            offsetX.x= gapSize/2;
+            offsetX.y= overlap.bottom+gapSize/2+6;
+        }else if(plot.groupByY){
+            offsetX.y= gapSize;
+        }
+
 
         var labelsX = self.svgG.selectAll("text."+labelXClass)
             .data(plot.x.allValuesList, (d, i)=>i);
 
         labelsX.enter().append("text").attr("class", (d, i) => labelClass + " " +labelXClass+" "+ labelXClass + "-" + i);
 
-
         labelsX
-            .attr("x", (d, i) => (i * plot.cellWidth + plot.cellWidth / 2) +(d.group.gapsSize))
-            .attr("y", plot.height)
-            .attr("dy", 15)
+            .attr("x", (d, i) => (i * plot.cellWidth + plot.cellWidth / 2) +(d.group.gapsSize)+offsetX.x)
+            .attr("y", plot.height + offsetX.y)
+            .attr("dy", 10)
 
             .attr("text-anchor", "middle")
             .text(d=>d.val);
 
         if(self.config.x.rotateLabels){
-            labelsX.attr("transform", (d, i) => "rotate(-45, " + ((i * plot.cellWidth + plot.cellWidth / 2) +d.group.gapsSize  ) + ", " + plot.height + ")")
+            labelsX.attr("transform", (d, i) => "rotate(-45, " + ((i * plot.cellWidth + plot.cellWidth / 2) +d.group.gapsSize +offsetX.x ) + ", " + ( plot.height + offsetX.y) + ")")
                 .attr("dx", -2)
-                .attr("dy", 5)
+                .attr("dy", 8)
                 .attr("text-anchor", "end");
         }
 
@@ -510,10 +606,20 @@ export class Heatmap extends Chart {
 
         labelsY.enter().append("text");
 
+        var offsetY = {
+            x:0,
+            y:0
+        };
+        if(plot.groupByY){
+            let overlap = self.config.y.groups.overlap;
+            let gapSize = Heatmap.computeGapSize(0);
+            offsetY.x= -overlap.left;
 
+            offsetY.y= gapSize/2;
+        }
         labelsY
-            .attr("x", 0)
-            .attr("y", (d, i) => (i * plot.cellHeight + plot.cellHeight / 2) + d.group.gapsSize)
+            .attr("x", offsetY.x)
+            .attr("y", (d, i) => (i * plot.cellHeight + plot.cellHeight / 2) + d.group.gapsSize +offsetY.y)
             .attr("dx", -2)
             .attr("text-anchor", "end")
             .attr("class", (d, i) => labelClass + " " + labelYClass +" " + labelYClass + "-" + i)
@@ -522,7 +628,7 @@ export class Heatmap extends Chart {
 
         if(self.config.y.rotateLabels){
             labelsY
-                .attr("transform", (d, i) => "rotate(-45, " + (0  ) + ", " + (d.group.gapsSize+(i * plot.cellHeight + plot.cellHeight / 2)) + ")")
+                .attr("transform", (d, i) => "rotate(-45, " + (offsetY.x  ) + ", " + (d.group.gapsSize+(i * plot.cellHeight + plot.cellHeight / 2) +offsetY.y) + ")")
                 .attr("text-anchor", "end");
                 // .attr("dx", -7);
         }else{
@@ -534,16 +640,256 @@ export class Heatmap extends Chart {
 
     }
 
+    drawGroupsY(parentGroup, container, availableWidth) {
+
+        var self = this;
+        var plot = self.plot;
+
+        var groupClass = self.prefixClass("group");
+        var groupYClass = groupClass+"-y";
+        var groups = container.selectAll("g."+groupClass+"."+groupYClass)
+            .data(parentGroup.childrenList);
+
+        var valuesBeforeCount =0;
+        var gapsBeforeSize = 0;
+
+        var groupsEnterG = groups.enter().append("g");
+        groupsEnterG
+            .classed(groupClass, true)
+            .classed(groupYClass, true)
+            .append("rect").classed("group-rect", true);
+
+        var titleGroupEnter = groupsEnterG.appendSelector("g.title");
+        titleGroupEnter.append("rect");
+        titleGroupEnter.append("text");
+
+        var gapSize = Heatmap.computeGapSize(parentGroup.level);
+        var padding = gapSize/4;
+
+        var titleRectWidth = 6;
+        var depth = self.config.y.groups.keys.length - parentGroup.level;
+        var overlap ={
+            left:0,
+            right: 0
+        };
+
+        if(!availableWidth){
+            overlap.right = plot.y.overlap.left;
+            overlap.left = plot.y.overlap.left;
+            availableWidth =plot.width + gapSize + overlap.left+overlap.right;
+        }
+
+
+        groups
+            .attr("transform", (d, i) => {
+
+
+                var trnaslateVAl = "translate(" + (padding-overlap.left) + "," + ((plot.cellHeight * valuesBeforeCount) + i*gapSize + gapsBeforeSize + padding) + ")";
+                gapsBeforeSize+=(d.gapsInsideSize||0);
+                valuesBeforeCount+=d.allValuesCount||0;
+                return trnaslateVAl
+            });
+
+
+
+        var groupWidth = availableWidth-padding*2;
+
+        var titleGroups = groups.selectAll("g.title")
+            .attr("transform", (d, i) => "translate("+(groupWidth-titleRectWidth)+", 0)");
+
+        var tileRects = titleGroups.selectAll("rect")
+            .attr("width", titleRectWidth)
+            .attr("height", d=> {
+                return (d.gapsInsideSize||0) + plot.cellHeight*d.allValuesCount +padding*2
+            })
+            .attr("x", 0)
+            .attr("y", 0)
+            // .attr("fill", "lightgrey")
+            .attr("stroke-width", 0);
+
+        this.setGroupMouseCallbacks(parentGroup, tileRects);
+
+
+        groups.selectAll("rect.group-rect")
+            .attr("class", d=> "group-rect group-rect-"+d.index)
+            .attr("width", groupWidth)
+            .attr("height", d=> {
+                return (d.gapsInsideSize||0) + plot.cellHeight*d.allValuesCount +padding*2
+            })
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("fill", "white")
+            .attr("fill-opacity", 0)
+            .attr("stroke-width", 0.5)
+            .attr("stroke", "black")
+
+
+
+
+
+        groups.each(function(group){
+
+            self.drawGroupsY.call(self, group, d3.select(this), groupWidth-titleRectWidth);
+        });
+
+    }
+
+    drawGroupsX(parentGroup, container, availableHeight) {
+
+        var self = this;
+        var plot = self.plot;
+
+        var groupClass = self.prefixClass("group");
+        var groupXClass = groupClass+"-x";
+        var groups = container.selectAll("g."+groupClass+"."+groupXClass)
+            .data(parentGroup.childrenList);
+
+        var valuesBeforeCount =0;
+        var gapsBeforeSize = 0;
+
+        var groupsEnterG = groups.enter().append("g");
+        groupsEnterG
+            .classed(groupClass, true)
+            .classed(groupXClass, true)
+            .append("rect").classed("group-rect", true);
+
+        var titleGroupEnter = groupsEnterG.appendSelector("g.title");
+        titleGroupEnter.append("rect");
+        titleGroupEnter.append("text");
+
+        var gapSize = Heatmap.computeGapSize(parentGroup.level);
+        var padding = gapSize/4;
+        var titleRectHeight = 6;
+
+        var depth = self.config.x.groups.keys.length - parentGroup.level;
+
+        var overlap={
+            top:0,
+            bottom: 0
+        };
+
+        if(!availableHeight){
+            overlap.bottom = plot.x.overlap.bottom;
+            overlap.top = plot.x.overlap.top;
+
+            availableHeight =plot.height + gapSize + overlap.top+overlap.bottom;
+
+        }else{
+            overlap.top = -titleRectHeight;
+        }
+        // console.log('parentGroup',parentGroup, 'gapSize', gapSize, plot.x.overlap);
+
+        groups
+            .attr("transform", (d, i) => {
+
+                var trnaslateVAl = "translate(" + ((plot.cellWidth * valuesBeforeCount) + i*gapSize + gapsBeforeSize + padding) + ", "+(padding -overlap.top)+")";
+                gapsBeforeSize+=(d.gapsInsideSize||0);
+                valuesBeforeCount+=d.allValuesCount||0;
+                return trnaslateVAl
+            });
+
+        var groupHeight = availableHeight-padding*2;
+
+        var titleGroups = groups.selectAll("g.title")
+            .attr("transform", (d, i) => "translate(0, "+(0)+")");
+
+
+        var tileRects = titleGroups.selectAll("rect")
+            .attr("height", titleRectHeight)
+            .attr("width", d=> {
+                return (d.gapsInsideSize||0) + plot.cellWidth*d.allValuesCount +padding*2
+            })
+            .attr("x", 0)
+            .attr("y", 0)
+            // .attr("fill", "lightgrey")
+            .attr("stroke-width", 0);
+
+        this.setGroupMouseCallbacks(parentGroup, tileRects);
+
+
+        groups.selectAll("rect.group-rect")
+            .attr("class", d=> "group-rect group-rect-"+d.index)
+            .attr("height", groupHeight)
+            .attr("width", d=> {
+                return (d.gapsInsideSize||0) + plot.cellWidth*d.allValuesCount +padding*2
+            })
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("fill", "white")
+            .attr("fill-opacity", 0)
+            .attr("stroke-width", 0.5)
+            .attr("stroke", "black");
+
+        groups.each(function(group){
+            self.drawGroupsX.call(self, group, d3.select(this), groupHeight-titleRectHeight);
+        });
+
+    }
+
+    setGroupMouseCallbacks(parentGroup, tileRects) {
+        var plot = this.plot;
+        var self = this;
+        var mouseoverCallbacks = [];
+        mouseoverCallbacks.push(function (d) {
+            d3.select(this).classed('highlighted', true);
+            d3.select(this.parentNode.parentNode).selectAll("rect.group-rect-" + d.index).classed('highlighted', true);
+        });
+
+        var mouseoutCallbacks = [];
+        mouseoutCallbacks.push(function (d) {
+            d3.select(this).classed('highlighted', false);
+            d3.select(this.parentNode.parentNode).selectAll("rect.group-rect-" + d.index).classed('highlighted', false);
+        });
+        if (plot.tooltip) {
+
+            mouseoverCallbacks.push(d=> {
+                plot.tooltip.transition()
+                    .duration(200)
+                    .style("opacity", .9);
+                var html = parentGroup.label + ": " + d.groupingValue;
+
+                plot.tooltip.html(html)
+                    .style("left", (d3.event.pageX + 5) + "px")
+                    .style("top", (d3.event.pageY - 28) + "px");
+            });
+
+            mouseoutCallbacks.push(d=> {
+                plot.tooltip.transition()
+                    .duration(500)
+                    .style("opacity", 0);
+            });
+
+
+        }
+        tileRects.on("mouseover", function (d) {
+            var self = this;
+            mouseoverCallbacks.forEach(function (callback) {
+                callback.call(self, d)
+            });
+        });
+        tileRects.on("mouseout", function (d) {
+            var self = this;
+            mouseoutCallbacks.forEach(function (callback) {
+                callback.call(self, d)
+            });
+        });
+    }
+
     updateCells() {
 
         var self = this;
         var plot = self.plot;
+        var cellContainerClass = self.prefixClass("cells");
+        var gapSize = Heatmap.computeGapSize(0);
+        var paddingX = plot.x.groups.childrenList.length ? gapSize/2 : 0;
+        var paddingY = plot.y.groups.childrenList.length ? gapSize/2 : 0;
+        var cellContainer = self.svgG.selectOrAppend("g."+cellContainerClass);
+        cellContainer.attr("transform" , "translate("+paddingX+", "+paddingY+")");
+
         var cellClass = self.prefixClass("cell");
         var cellShape = plot.z.shape.type;
-        
-        
 
-        var cells = self.svgG.selectAll("g."+cellClass)
+        var cells = cellContainer.selectAll("g."+cellClass)
             .data(self.plot.cells);
 
         var cellEnterG = cells.enter().append("g")
@@ -559,6 +905,7 @@ export class Heatmap extends Chart {
             .attr("y", -plot.cellHeight / 2);
 
         shapes.style("fill", c=> c.value === undefined ? self.config.color.noDataColor : plot.z.color.scale(c.value));
+        shapes.attr("fill-opacity", d=> d.value === undefined ? 0 : 1);
 
         var mouseoverCallbacks = [];
         var mouseoutCallbacks = [];
@@ -623,13 +970,18 @@ export class Heatmap extends Chart {
 
         var plot = this.plot;
         var legendX = this.plot.width + 10;
+        if(this.plot.groupByY){
+            legendX+= Heatmap.computeGapSize(0)/2 +plot.y.overlap.right;
+        }
         var legendY = 0;
+        if(this.plot.groupByX){
+            legendY+= Heatmap.computeGapSize(0)/2 ;
+        }
         var barWidth = 10;
         var barHeight = this.plot.height - 2;
         var scale = plot.z.color.scale;
 
         plot.legend = new Legend(this.svg, this.svgG, scale, legendX, legendY).linearGradientBar(barWidth, barHeight);
-
 
     }
 
