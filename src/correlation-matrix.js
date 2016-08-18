@@ -11,6 +11,8 @@ export class CorrelationMatrixConfig extends ChartConfig {
     showTooltip = true; //show tooltip on dot hover
     showLegend = true;
     highlightLabels = true;
+    rotateLabelsX = true;
+    rotateLabelsY = true;
     variables = {
         labels: undefined,
         keys: [], //optional array of variable keys
@@ -263,11 +265,14 @@ export class CorrelationMatrix extends Chart {
             .attr("y", plot.height)
             .attr("dx", -2)
             .attr("dy", 5)
-            .attr("transform", (d, i) => "rotate(-45, " + (i * plot.cellSize + plot.cellSize / 2  ) + ", " + plot.height + ")")
             .attr("text-anchor", "end")
 
             // .attr("dominant-baseline", "hanging")
             .text(v=>plot.labelByVariable[v]);
+
+        if(this.config.rotateLabelsX){
+            labelsX.attr("transform", (d, i) => "rotate(-45, " + (i * plot.cellSize + plot.cellSize / 2  ) + ", " + plot.height + ")")
+        }
 
         labelsX.exit().remove();
 
@@ -287,6 +292,13 @@ export class CorrelationMatrix extends Chart {
             .attr("class", (d, i) => labelClass + " " + labelYClass +" " + labelYClass + "-" + i)
             // .attr("dominant-baseline", "hanging")
             .text(v=>plot.labelByVariable[v]);
+
+        if(this.config.rotateLabelsY){
+            labelsX.attr("transform", (d, i) => "rotate(-45, " + (i * plot.cellSize + plot.cellSize / 2  ) + ", " + plot.height + ")");
+            labelsY
+                .attr("transform", (d, i) => "rotate(-45, " + 0 + ", " + (i * plot.cellSize + plot.cellSize / 2) + ")")
+                .attr("text-anchor", "end");
+        }
 
         labelsY.exit().remove();
 
