@@ -56,8 +56,7 @@ export class HeatmapConfig extends ChartConfig {
         formatter: undefined// value formatter function
     };
     z = {
-        key: 3,
-        label: 'Z', // axis label,
+        key: 2,
         value: (d) =>  d[this.z.key],
         notAvailableValue: (v) =>  v === null || v===undefined,
 

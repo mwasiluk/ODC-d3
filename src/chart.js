@@ -128,7 +128,7 @@ export class Chart {
         var self = this;
         if (self.config.showTooltip) {
             if(!self._isAttached ){
-                self.plot.tooltip = d3.select(self.baseContainer).selectOrAppend('div.'+self.config.cssClassPrefix+'tooltip')
+                self.plot.tooltip = d3.select("body").selectOrAppend('div.'+self.config.cssClassPrefix+'tooltip')
                     .style("opacity", 0);
             }else{
                 self.plot.tooltip= self.baseContainer.plot.tooltip;

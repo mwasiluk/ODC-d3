@@ -3,6 +3,7 @@ confFlowers = new ODCD3.HeatmapConfig();
 confFlowers.legend.decimalPlaces=3;
 confFlowers.x.key='species';
 confFlowers.y.key='petal width';
+confFlowers.y.sortLabels=true;
 confFlowers.y.title= 'petal width';
 confFlowers.y.rotateLabels=false;
 confFlowers.z.key='petal length';
