@@ -1,7 +1,7 @@
 import {Chart, ChartConfig} from "./chart";
 import {Utils} from './utils'
-import {StatisticsUtils} from './statistics-utils'
 import {Legend} from './legend'
+
 
 export class HeatmapConfig extends ChartConfig {
 
@@ -92,6 +92,7 @@ export class HeatmapConfig extends ChartConfig {
     }
 }
 
+//TODO refactor
 export class Heatmap extends Chart {
     constructor(placeholderSelector, data, config) {
         super(placeholderSelector, data, new HeatmapConfig(config));
@@ -1004,11 +1005,15 @@ export class Heatmap extends Chart {
         var legendX = this.plot.width + 10;
         if(this.plot.groupByY){
             legendX+= Heatmap.computeGapSize(0)/2 +plot.y.overlap.right;
+        }else if(this.plot.groupByX){
+            legendX+= Heatmap.computeGapSize(0)/2;
         }
         var legendY = 0;
-        if(this.plot.groupByX){
-            legendY+= Heatmap.computeGapSize(0)/2 ;
+        if(this.plot.groupByX || this.plot.groupByY){
+            legendY+= Heatmap.computeGapSize(0)/2;
         }
+
+
         var barWidth = 10;
         var barHeight = this.plot.height - 2;
         var scale = plot.z.color.scale;
@@ -1016,6 +1021,4 @@ export class Heatmap extends Chart {
         plot.legend = new Legend(this.svg, this.svgG, scale, legendX, legendY, v => self.formatLegendValue(v)).linearGradientBar(barWidth, barHeight);
 
     }
-
-
 }

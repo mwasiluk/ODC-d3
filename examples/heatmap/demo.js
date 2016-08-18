@@ -9,33 +9,6 @@ confFlowers.z.key='petal length';
 confFlowers.cell.sizeMax=35;
 
 var confFlowers2 = {
-
-    x:{
-        key: 'species',
-        title: 'species',
-        sortLabels: true
-    },
-    y:{
-        key: 'petal width',
-        title: 'petal width',
-        sortLabels: true,
-        rotateLabels: false
-    },
-    z:{
-        key: 'petal length'
-    },
-
-    color : {
-        scale: "linear"
-    },
-
-    legend:{
-        decimalPlaces: 3
-    }
-
-};
-
-var confFlowers3 = {
     width: 600,
     // height: 200,
     y:{
@@ -47,27 +20,27 @@ var confFlowers3 = {
 
         groups:{
             keys: ['species',  'sepal width'],
-            value: (d,k) => k=='sepal width'? (d[k] < 3 ? ' < 3' : ' >= 3') : d[k]
+            value: function(d,k){return k=='sepal width'? (d[k] < 3 ? ' < 3' : ' >= 3') : d[k]}
         }
     },
-    x:{
+    x :{
         key: 'petal width',
         title: 'petal width',
         sortLabels: true,
         rotateLabels: true,
 
         /*groups:{
-            keys: ['petal width'],
-            labels: ['petal width'],
-            value: (d,k) => {
-                var val = parseFloat(d[k]);
-                if(!val || val < 1.5){
-                    return  'petal width < 1.5'
-                }
+         keys: ['petal width'],
+         labels: ['petal width'],
+         value: (d,k) => {
+         var val = parseFloat(d[k]);
+         if(!val || val < 1.5){
+         return  'petal width < 1.5'
+         }
 
-                 return 'petal width >= 1.5'
-            }
-        }*/
+         return 'petal width >= 1.5'
+         }
+         }*/
     },
     z:{
         key: 'petal length'
@@ -85,6 +58,39 @@ var confFlowers3 = {
 
 };
 
+var confFlowers3 = {
+    width: 600,
+    // height: 200,
+    x:{
+        key: 'sepal width',
+        title: 'sepal width',
+
+        sortLabels: true,
+        rotateLabels: true,
+
+        groups:{
+            keys: ['species',  'sepal width'],
+            labels: ['Species', 'Sepal width'],
+            value: function(d,k){ return k=='sepal width'? (d[k] < 3 ? ' < 3' : ' >= 3') : d[k]}
+        }
+    },
+    y:{
+        key: 'petal width',
+        title: 'petal width',
+        sortLabels: true,
+        rotateLabels: false
+    },
+    z:{
+        key: 'petal length'
+    },
+
+    color : {
+        scale: "log",
+        range: ["green", "orange", "darkred"]
+    }
+
+};
+
 var confFlowers4 = {
     width: 600,
     // height: 200,
@@ -97,8 +103,8 @@ var confFlowers4 = {
 
         groups:{
             keys: ['species',  'sepal width'],
-            labels: ['species label', 'sepal width Label'],
-            value: (d,k) => k=='sepal width'? (d[k] < 3 ? ' < 3' : ' >= 3') : d[k]
+            labels: ['Species', 'Sepal width'],
+            value: function(d,k){ return k=='sepal width'? (d[k] < 3 ? ' < 3' : ' >= 3') : d[k]}
         }
     },
     y:{
@@ -110,7 +116,7 @@ var confFlowers4 = {
         groups:{
             keys: ['petal width'],
             labels: ['petal width'],
-            value: (d,k) => {
+            value: function(d,k)  {
                 var val = parseFloat(d[k]);
                 if(!val || val < 1.5){
                     return  ' < 1.5'
@@ -178,7 +184,7 @@ var configEurostat = {
         groups:{
             keys: ['time'],
             labels: ['test'],
-            value: (d,k) => parseInt(d[k])<2010
+            value: function(d,k) { return parseInt(d[k])<2010}
         }
     },
     z:{
@@ -194,16 +200,18 @@ var configEurostat = {
 
 var plot;
 var conf = confFlowers;
+var plot2;
 var plot3;
+var plot4;
 d3.csv("../data/flowers.csv", function(error, data) {
     console.log(data);
     plot = new ODCD3.Heatmap("#plot", data, conf);
 
-    var plot2 =new ODCD3.Heatmap("#plot2", data, confFlowers3);
-    plot3 =new ODCD3.Heatmap("#plot3", data, confFlowers4);
-
+    plot2 =new ODCD3.Heatmap("#plot2", data, confFlowers2);
+    plot3 =new ODCD3.Heatmap("#plot3", data, confFlowers3);
+    plot4 =new ODCD3.Heatmap("#plot4", data, confFlowers4);
 });
-var plot4;
+
 // d3.json("../data/eurostat.json", function(error, data) {
 //     console.log(data); // this is your data
 //     plot4 =new ODCD3.Heatmap("#plot4", data, configEurostat);
