@@ -18,8 +18,9 @@ export class Legend {
     symbol= symbol;
     guid;
 
+    labelFormat = undefined;
 
-    constructor(svg, legendParent, scale, legendX, legendY){
+    constructor(svg, legendParent, scale, legendX, legendY, labelFormat){
         this.scale=scale;
         this.svg = svg;
         this.guid = Utils.guid();
@@ -27,11 +28,15 @@ export class Legend {
             .attr("transform", "translate("+legendX+","+legendY+")")
             .classed(this.legendClass, true);
 
+        this.labelFormat = labelFormat;
     }
+
+
 
     linearGradientBar(barWidth, barHeight, title){
         var gradientId = this.cssClassPrefix+"linear-gradient"+"-"+this.guid;
         var scale= this.scale;
+        var self = this;
 
         this.linearGradient = Utils.linearGradient(this.svg, gradientId, this.scale.range(), 0, 100, 0, 0);
 
@@ -52,7 +57,7 @@ export class Legend {
             .attr("dx", 3)
             // .attr("dy", 1)
             .attr("alignment-baseline", "middle")
-            .text(d=>d);
+            .text(d=> self.labelFormat ? self.labelFormat(d) : d);
 
         ticks.exit().remove();
 

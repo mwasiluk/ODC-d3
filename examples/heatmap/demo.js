@@ -1,22 +1,12 @@
-var confFlowers = {
-    // width: 500,
-    // height: 500,
 
-
-    x:{
-        key: 'species',
-        // label: "species"
-    },
-    y:{
-        /* key: 'petal width',
-         label: 'petal width'*/
-        key: 'species'
-        // title: "species"
-    },
-    z:{
-        key: 'petal length'
-    }
-};
+confFlowers = new ODCD3.HeatmapConfig();
+confFlowers.legend.decimalPlaces=3;
+confFlowers.x.key='species';
+confFlowers.y.key='petal width';
+confFlowers.y.title= 'petal width';
+confFlowers.y.rotateLabels=false;
+confFlowers.z.key='petal length';
+confFlowers.cell.sizeMax=35;
 
 var confFlowers2 = {
 
@@ -37,9 +27,11 @@ var confFlowers2 = {
 
     color : {
         scale: "linear"
+    },
+
+    legend:{
+        decimalPlaces: 3
     }
-
-
 
 };
 
@@ -85,7 +77,9 @@ var confFlowers3 = {
         // scale: "log",
         // range: ["green", "orange", "darkred"]
     },
-
+    legend:{
+        decimalPlaces: 3
+    }
 
 
 

@@ -13,6 +13,9 @@ export class HeatmapConfig extends ChartConfig {
     showLegend = true;
     legend={
         width: 30,
+
+        decimalPlaces: undefined,
+        formatter: v => this.legend.decimalPlaces === undefined ? v : Number(v).toFixed(this.legend.decimalPlaces)
     }
     highlightLabels = true;
     x={// X axis config
@@ -30,7 +33,8 @@ export class HeatmapConfig extends ChartConfig {
                 top: 20,
                 bottom: 20
             }
-        }
+        },
+        formatter: undefined // value formatter function
         
     };
     y={// Y axis config
@@ -48,13 +52,17 @@ export class HeatmapConfig extends ChartConfig {
                 left: 20,
                 right: 20
             }
-        }
+        },
+        formatter: undefined// value formatter function
     };
     z = {
         key: 3,
         label: 'Z', // axis label,
         value: (d) =>  d[this.z.key],
-        notAvailableValue: (v) =>  v === null || v===undefined
+        notAvailableValue: (v) =>  v === null || v===undefined,
+
+        decimalPlaces: undefined,
+        formatter: v => this.z.decimalPlaces === undefined ? v : Number(v).toFixed(this.z.decimalPlaces)// value formatter function
 
     };
     color = {
@@ -588,7 +596,7 @@ export class Heatmap extends Chart {
             .attr("dy", 10)
 
             .attr("text-anchor", "middle")
-            .text(d=>d.val);
+            .text(d=>self.formatValueX(d.val));
 
         if(self.config.x.rotateLabels){
             labelsX.attr("transform", (d, i) => "rotate(-45, " + ((i * plot.cellWidth + plot.cellWidth / 2) +d.group.gapsSize +offsetX.x ) + ", " + ( plot.height + offsetX.y) + ")")
@@ -624,7 +632,7 @@ export class Heatmap extends Chart {
             .attr("text-anchor", "end")
             .attr("class", (d, i) => labelClass + " " + labelYClass +" " + labelYClass + "-" + i)
 
-            .text(d=>d.val);
+            .text(d=>self.formatValueY(d.val));
 
         if(self.config.y.rotateLabels){
             labelsY
@@ -916,7 +924,7 @@ export class Heatmap extends Chart {
                 plot.tooltip.transition()
                     .duration(200)
                     .style("opacity", .9);
-                var html = c.value === undefined ? self.config.tooltip.noDataText : c.value;
+                var html = c.value === undefined ? self.config.tooltip.noDataText : self.formatValueZ(c.value);
 
                 plot.tooltip.html(html)
                     .style("left", (d3.event.pageX + 5) + "px")
@@ -966,8 +974,32 @@ export class Heatmap extends Chart {
         cells.exit().remove();
     }
 
-    updateLegend() {
+    formatValueX(value){
+        if(!this.config.x.formatter) return value;
 
+        return this.config.x.formatter.call(this.config, value);
+    }
+
+    formatValueY(value){
+        if(!this.config.y.formatter) return value;
+
+        return this.config.y.formatter.call(this.config, value);
+    }
+
+    formatValueZ(value){
+        if(!this.config.z.formatter) return value;
+
+        return this.config.z.formatter.call(this.config, value);
+    }
+
+    formatLegendValue(value){
+        if(!this.config.legend.formatter) return value;
+
+        return this.config.legend.formatter.call(this.config, value);
+    }
+
+    updateLegend() {
+        var self= this;
         var plot = this.plot;
         var legendX = this.plot.width + 10;
         if(this.plot.groupByY){
@@ -981,7 +1013,7 @@ export class Heatmap extends Chart {
         var barHeight = this.plot.height - 2;
         var scale = plot.z.color.scale;
 
-        plot.legend = new Legend(this.svg, this.svgG, scale, legendX, legendY).linearGradientBar(barWidth, barHeight);
+        plot.legend = new Legend(this.svg, this.svgG, scale, legendX, legendY, v => self.formatLegendValue(v)).linearGradientBar(barWidth, barHeight);
 
     }
 
