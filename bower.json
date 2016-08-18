@@ -16,6 +16,9 @@
     "tests"
   ],
   "dependencies": {
-    "odc-d3": "latest"
+    "odc-d3": "latest",
+    "material-design-lite": "^1.2.0",
+    "font-awesome": "fontawesome#^4.6.3",
+    "jquery": "^3.1.0"
   }
 }

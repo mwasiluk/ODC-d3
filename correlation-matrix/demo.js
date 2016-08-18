@@ -59,7 +59,7 @@ d3.csv("../data/flowers.csv", function(error, d) {
 
 
     plot = new ODCD3.CorrelationMatrix("#plot", data, config);
-    plot.attachScatterPlot("#scatterplot")
+    plot.attachScatterPlot("#scatterplot");
 });
 
 

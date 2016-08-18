@@ -206,11 +206,14 @@ var plot3;
 var plot4;
 d3.csv("../data/flowers.csv", function(error, data) {
     // console.log(data);
-    plot = new ODCD3.Heatmap("#plot", data, conf);
+    $(document).ready(function(){
+        plot = new ODCD3.Heatmap("#plot", data, conf);
 
-    plot2 =new ODCD3.Heatmap("#plot2", data, confFlowers2);
-    plot3 =new ODCD3.Heatmap("#plot3", data, confFlowers3);
-    plot4 =new ODCD3.Heatmap("#plot4", data, confFlowers4);
+        plot2 =new ODCD3.Heatmap("#plot2", data, confFlowers2);
+        plot3 =new ODCD3.Heatmap("#plot3", data, confFlowers3);
+        plot4 =new ODCD3.Heatmap("#plot4", data, confFlowers4);
+    });
+
 });
 
 // d3.json("../data/eurostat.json", function(error, data) {
