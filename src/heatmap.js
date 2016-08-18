@@ -1003,14 +1003,15 @@ export class Heatmap extends Chart {
         var self= this;
         var plot = this.plot;
         var legendX = this.plot.width + 10;
+        var gapSize = Heatmap.computeGapSize(0);
         if(this.plot.groupByY){
-            legendX+= Heatmap.computeGapSize(0)/2 +plot.y.overlap.right;
+            legendX+= gapSize/2 +plot.y.overlap.right;
         }else if(this.plot.groupByX){
-            legendX+= Heatmap.computeGapSize(0)/2;
+            legendX+= gapSize;
         }
         var legendY = 0;
         if(this.plot.groupByX || this.plot.groupByY){
-            legendY+= Heatmap.computeGapSize(0)/2;
+            legendY+= gapSize/2;
         }
 
 

@@ -212,8 +212,8 @@ d3.csv("../data/flowers.csv", function(error, data) {
     plot4 =new ODCD3.Heatmap("#plot4", data, confFlowers4);
 });
 
-// d3.json("../data/eurostat.json", function(error, data) {
-//     console.log(data); // this is your data
-//     plot4 =new ODCD3.Heatmap("#plot4", data, configEurostat);
-//
-// });
+d3.json("../data/eurostat.json", function(error, data) {
+    console.log(data); // this is your data
+    // plot4 =new ODCD3.Heatmap("#plot4", data, configEurostat);
+
+});
