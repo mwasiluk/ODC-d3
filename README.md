@@ -10,7 +10,7 @@ Include odc-d3.min.js and odc-d3.min.css from 'dist' folder in your HTML.
 <script src="odc-d3.min.js"></script>
 ```
 
-odc-d3.min.js must be included after [d3.js](d3js.org).
+odc-d3.min.js must be included after [d3.js](https://d3js.org/).
 
 ### Bower
 You can install this package through `Bower` :
