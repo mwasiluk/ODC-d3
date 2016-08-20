@@ -7,7 +7,7 @@ var config = {
         // labels: ['a', 'b', 'c', 'd', 'e']
     },
     cell:{
-        shape:"rect",
+        shape:"ellipse",
         // size: 200
 
     },

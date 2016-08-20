@@ -49,14 +49,14 @@
                     <div class="config">
                         <label for="cell-shape">Cell shape:</label>
                         <select id="cell-shape" onchange="changeShape(event)">
+                            <option value="ellipse">ellipse</option>
                             <option value="rect">rect</option>
                             <option value="circle">circle</option>
-                            <option value="ellipse">ellipse</option>
+
                         </select>
                     </div>
-                    <div class="mdl-grid">
 
-                    </div>
+                    <span class="tip"><i class="fa fa-info-circle" aria-hidden="true"></i> Click any cell to view an attached scatter plot</span>
 
                     <div style="height: 520px">
                         <div id="plot" style="float: left; margin-top:25px; min-width: 500px;"></div>

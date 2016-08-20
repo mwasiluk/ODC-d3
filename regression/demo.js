@@ -1,10 +1,8 @@
 var confFlowers = {
-    // width: 500,
-    // height: 500,
+    width: 800,
+    height: 500,
     guides: true,
-    dot:{
-        // color: function(d) { return d[0]*d[1] }
-    },
+
     x:{
         key: 'petal length',
         label: 'petal length'
@@ -27,7 +25,6 @@ var confFlowers = {
 
 };
 
-
 var confArray={
 
 };
@@ -44,10 +41,25 @@ var dataArray = [
 
 ];
 var plot;
-var conf = confFlowers;
+var plot2;
 
-d3.csv("../data/flowers.csv", function(error, data) {
+var data;
+d3.csv("../data/flowers.csv", function(error, d) {
+    data = d;
     console.log(data);
-    plot = new ODCD3.Regression("#plot", data, conf);
 
+    plot = new ODCD3.Regression("#plot", data, confFlowers);
+
+
+
+});
+
+$("#confidence-level").on("change", function(event){
+    if(!data){
+        return ;
+    }
+    var val = $(this).val();
+    confFlowers.confidence.level = val/1000;
+    $("#confidence-level-display").text(confFlowers.confidence.level);
+    plot.setConfig(confFlowers).init();
 });
