@@ -8,6 +8,7 @@
 
     <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="code.css">
 </head>
 <body>
 <!-- The drawer is always open in large screens. The header is always shown,
@@ -16,9 +17,10 @@
                 mdl-layout--fixed-header">
     <header class="mdl-layout__header">
         <div class="mdl-layout__header-row">
-            <span class="mdl-layout-title">ODC-D3 - Open Data Charts for D3</span>
+            <span class="mdl-layout-title">ODC-D3 - Open Data Charts for D3.js</span>
             <div class="mdl-layout-spacer"></div>
-            <a href="https://github.com/mwasiluk/ODC-d3" class="mdl-navigation__link mdl-navigation__link--icon github"><i class="fa fa-github" aria-hidden="true"></i><span>GitHub</span></a>
+            <a href="https://github.com/mwasiluk/ODC-d3" class="mdl-navigation__link mdl-navigation__link--icon github" title="Source"><i class="fa fa-github" aria-hidden="true"></i><span>GitHub</span></a>
+            <a href="https://github.com/mwasiluk/ODC-d3/archive/master.zip" title="Download ODC-D3" class="mdl-navigation__link mdl-navigation__link--icon"><i class="fa fa-download" aria-hidden="true"></i> ZIP</a>
         </div>
     </header>
     <div class="mdl-layout__drawer">
@@ -36,11 +38,26 @@
             <div class="mdl-grid">
                 <div class="mdl-cell mdl-cell--12-col">
 
+                    <h1>ODC-D3 <smalL>Open Data Charts for D3.js</smalL></h1>
+                    <h2>Getting Started</h2>
+                    <p>Download <a href="http://d3js.org">d3.js</a>. This is the only required dependency.<br>
+                    Include odc-d3.min.js and odc-d3.min.css from 'dist' folder in your HTML.  </p>
+
+                    <div class="highlight highlight-text-html-basic"><pre>&lt;<span class="pl-ent">link</span> <span class="pl-e">href</span>=<span class="pl-s"><span class="pl-pds">"</span>odc-d3.min.css<span class="pl-pds">"</span></span> <span class="pl-e">rel</span>=<span class="pl-s"><span class="pl-pds">"</span>stylesheet<span class="pl-pds">"</span></span>&gt;
+&lt;<span class="pl-ent">script</span> <span class="pl-e">src</span>=<span class="pl-s"><span class="pl-pds">"</span>odc-d3.min.js<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">script</span>&gt;</pre></div>
+
+                    <p>odc-d3.min.js must be included after <a href="https://d3js.org/">d3.js</a>.</p>
+
+                    <h3>Bower</h3>
+
+                    <p>You can install this package through <code>Bower</code> :</p>
+
+<pre><code>bower install odc-d3 --save
+</code></pre>
 
 
 
-
-                    <h1>Examples</h1>
+                    <h2>Examples</h2>
                     <ul>
                         <li>
                             <a href="scatterplot">Scatterplot</a>
