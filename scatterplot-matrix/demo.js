@@ -7,7 +7,7 @@ var config = {
     brush: true,
     tooltip: true,
     variables: {
-        // keys: ['petal length', 'petal width'],
+        keys: ['petal length', 'petal width', 'sepal length']
         // labels: ['a', 'b', 'c', 'd', 'e']
     },
     groups:{
