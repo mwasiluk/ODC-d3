@@ -246,36 +246,51 @@ export class Regression extends ScatterPlot{
         var regression = regressionContainer.selectAll(regressionSelector)
             .data(self.plot.regressions);
 
-        var line = regression.enter()
-            .insertSelector(regressionSelector)
+        var regressionEnterG = regression.enter().insertSelector(regressionSelector);
+        var lineClass = self.prefixClass("line");
+        regressionEnterG
+
             .append("path")
-            .attr("class", self.prefixClass("line"))
+            .attr("class", lineClass)
             .attr("shape-rendering", "optimizeQuality");
             // .append("line")
             // .attr("class", "line")
             // .attr("shape-rendering", "optimizeQuality");
 
-        line
-            // .attr("x1", r=> self.plot.x.scale(r.linePoints[0].x))
+        var line = regression.select("path."+lineClass)
+            .style("stroke", r => r.color);
+        // .attr("x1", r=> self.plot.x.scale(r.linePoints[0].x))
             // .attr("y1", r=> self.plot.y.scale(r.linePoints[0].y))
             // .attr("x2", r=> self.plot.x.scale(r.linePoints[1].x))
             // .attr("y2", r=> self.plot.y.scale(r.linePoints[1].y))
-            .attr("d", r => r.line(r.linePoints))
-            .style("stroke", r => r.color);
 
 
-        var area = regression.enter()
-            .appendSelector(regressionSelector)
+        var lineT = line;
+        if (self.config.transition) {
+            lineT = line.transition();
+        }
+
+        lineT.attr("d", r => r.line(r.linePoints))
+
+
+        regressionEnterG
             .append("path")
             .attr("class", confidenceAreaClass)
-            .attr("shape-rendering", "optimizeQuality");
-
-
-        area
-            .attr("d", r => r.confidence.area(r.confidence.points))
+            .attr("shape-rendering", "optimizeQuality")
             .style("fill", r => r.color)
             .style("opacity", "0.4");
 
+
+
+        var area = regression.select("path."+confidenceAreaClass);
+
+        var areaT = area;
+        if (self.config.transition) {
+            areaT = area.transition();
+        }
+        areaT.attr("d", r => r.confidence.area(r.confidence.points));
+
+        regression.exit().remove();
 
     }
 

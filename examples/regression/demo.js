@@ -48,5 +48,9 @@ var conf = confFlowers;
 d3.csv("../data/flowers.csv", function(error, data) {
     console.log(data);
     plot = new ODCD3.Regression("#plot", data, conf);
-
+    setTimeout(function(){
+        conf.confidence.level = 0.99999;
+        // plot = new ODCD3.Regression("#plot", data, conf);
+        plot.setConfig(conf).init();
+    }, 1000);
 });

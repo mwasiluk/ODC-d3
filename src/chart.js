@@ -13,6 +13,7 @@ export class ChartConfig {
         bottom: 50
     };
     showTooltip = false;
+    transition = true;
 
     constructor(custom) {
         if (custom) {

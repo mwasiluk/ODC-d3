@@ -832,6 +832,8 @@ export class Heatmap extends Chart {
             self.drawGroupsX.call(self, group, d3.select(this), groupHeight-titleRectHeight);
         });
 
+        groups.exit().remove();
+
     }
 
     setGroupMouseCallbacks(parentGroup, tileRects) {
