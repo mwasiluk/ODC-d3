@@ -13,7 +13,7 @@ export class HeatmapConfig extends ChartConfig {
     showLegend = true;
     legend={
         width: 30,
-
+        rotateLabels: false,
         decimalPlaces: undefined,
         formatter: v => this.legend.decimalPlaces === undefined ? v : Number(v).toFixed(this.legend.decimalPlaces)
     }
@@ -67,6 +67,7 @@ export class HeatmapConfig extends ChartConfig {
     color = {
         noDataColor: "white",
         scale: "linear",
+        reverseScale: false,
         range: ["darkblue", "lightskyblue", "orange", "crimson", "darkred"]
     };
     cell = {
@@ -119,6 +120,7 @@ export class Heatmap extends Chart {
 
 
         this.setupValues();
+        this.buildCells();
 
         var titleRectWidth = 6;
         this.plot.x.overlap ={
@@ -260,12 +262,13 @@ export class Heatmap extends Chart {
             y.groups.values = y.uniqueValues;
         }
 
+        this.setupValuesBeforeGroupsSort();
+
         x.gaps=[];
         x.totalValuesCount=0;
         x.allValuesList=[];
         this.sortGroups(x, x.groups, config.x);
-
-
+        
         y.gaps=[];
         y.totalValuesCount=0;
         y.allValuesList=[];
@@ -274,7 +277,8 @@ export class Heatmap extends Chart {
         z.min = minZ;
         z.max = maxZ;
 
-        this.buildCells();
+    }
+    setupValuesBeforeGroupsSort() {
 
     }
     buildCells(){
@@ -490,27 +494,45 @@ export class Heatmap extends Chart {
         var z = self.plot.z;
         var range = config.color.range;
         var extent = z.max - z.min;
-        if(config.color.scale=="log"){
-            z.domain = [];
-            range.forEach((c, i)=>{
-                var v = z.min + (extent/Math.pow(10, i));
-                z.domain.unshift(v)
-            });
-        }else{
-            z.domain = [];
-            range.forEach((c, i)=>{
-                var v = z.min + (extent * (i/(range.length-1)));
+        var scale;
+        z.domain = [];
+        if (config.color.scale == "pow") {
+            var exponent = 10;
+            range.forEach((c, i)=> {
+                var v = z.max - (extent / Math.pow(10, i));
                 z.domain.push(v)
             });
+            scale = d3.scale.pow().exponent(exponent);
+        } else if (config.color.scale == "log") {
+
+            range.forEach((c, i)=> {
+                var v = z.min + (extent / Math.pow(10, i));
+                z.domain.unshift(v)
+
+            });
+
+            scale = d3.scale.log()
+        } else {
+            range.forEach((c, i)=> {
+                var v = z.min + (extent * (i / (range.length - 1)));
+                z.domain.push(v)
+            });
+            scale = d3.scale[config.color.scale]();
         }
+
+
         z.domain[0]=z.min; //removing unnecessary floating points
         z.domain[z.domain.length-1]=z.max; //removing unnecessary floating points
         console.log(z.domain);
 
+        if(config.color.reverseScale){
+            z.domain.reverse();
+        }
+
         var plot = this.plot;
 
         console.log(range);
-        plot.z.color.scale = d3.scale[config.color.scale]().domain(z.domain).range(range);
+        plot.z.color.scale = scale.domain(z.domain).range(range);
         var shape = plot.z.shape = {};
 
         var cellConf = this.config.cell;
@@ -1015,12 +1037,10 @@ export class Heatmap extends Chart {
             legendY+= gapSize/2;
         }
 
-
         var barWidth = 10;
         var barHeight = this.plot.height - 2;
         var scale = plot.z.color.scale;
-
-        plot.legend = new Legend(this.svg, this.svgG, scale, legendX, legendY, v => self.formatLegendValue(v)).linearGradientBar(barWidth, barHeight);
-
+        
+        plot.legend = new Legend(this.svg, this.svgG, scale, legendX, legendY, v => self.formatLegendValue(v)).setRotateLabels(self.config.legend.rotateLabels).linearGradientBar(barWidth, barHeight);
     }
 }

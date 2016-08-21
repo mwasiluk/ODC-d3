@@ -183,10 +183,17 @@ export class ScatterPlot extends Chart{
         var self = this;
         var plot = self.plot;
         var axisConf = this.config.x;
-        self.svgG.selectOrAppend("g."+self.prefixClass('axis-x')+"."+self.prefixClass('axis')+(self.config.guides ? '' : '.'+self.prefixClass('no-guides')))
-            .attr("transform", "translate(0," + plot.height + ")")
-            .call(plot.x.axis)
-            .selectOrAppend("text."+self.prefixClass('label'))
+        var axis = self.svgG.selectOrAppend("g."+self.prefixClass('axis-x')+"."+self.prefixClass('axis')+(self.config.guides ? '' : '.'+self.prefixClass('no-guides')))
+            .attr("transform", "translate(0," + plot.height + ")");
+        
+        var axisT = axis;
+        if (self.config.transition) {
+            axisT = axis.transition().ease("sin-in-out");
+        }
+
+        axisT.call(plot.x.axis);
+        
+        axis.selectOrAppend("text."+self.prefixClass('label'))
             .attr("transform", "translate("+ (plot.width/2) +","+ (plot.margin.bottom) +")")  // text is drawn off the screen top left, move down and out and rotate
             .attr("dy", "-1em")
             .style("text-anchor", "middle")
@@ -197,9 +204,16 @@ export class ScatterPlot extends Chart{
         var self = this;
         var plot = self.plot;
         var axisConf = this.config.y;
-        self.svgG.selectOrAppend("g."+self.prefixClass('axis-y')+"."+self.prefixClass('axis')+(self.config.guides ? '' : '.'+self.prefixClass('no-guides')))
-            .call(plot.y.axis)
-            .selectOrAppend("text."+self.prefixClass('label'))
+        var axis = self.svgG.selectOrAppend("g."+self.prefixClass('axis-y')+"."+self.prefixClass('axis')+(self.config.guides ? '' : '.'+self.prefixClass('no-guides')));
+
+        var axisT = axis;
+        if (self.config.transition) {
+            axisT = axis.transition().ease("sin-in-out");
+        }
+
+        axisT.call(plot.y.axis);
+
+        axis.selectOrAppend("text."+self.prefixClass('label'))
             .attr("transform", "translate("+ -plot.margin.left +","+(plot.height/2)+")rotate(-90)")  // text is drawn off the screen top left, move down and out and rotate
             .attr("dy", "1em")
             .style("text-anchor", "middle")

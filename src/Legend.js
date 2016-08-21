@@ -51,17 +51,33 @@ export class Legend {
         var ticks = this.container.selectAll("text")
             .data( scale.domain() );
         var ticksNumber =scale.domain().length-1;
-        ticks.enter().append("text")
-            .attr("x", barWidth)
+        ticks.enter().append("text");
+
+        ticks.attr("x", barWidth)
             .attr("y",  (d, i) =>  barHeight -(i*barHeight/ticksNumber))
             .attr("dx", 3)
             // .attr("dy", 1)
             .attr("alignment-baseline", "middle")
             .text(d=> self.labelFormat ? self.labelFormat(d) : d);
+        ticks.attr("dominant-baseline", "middle")
+        if(this.rotateLabels){
+            ticks
+                .attr("transform", (d, i) => "rotate(-45, " + barWidth + ", " + (barHeight -(i*barHeight/ticksNumber)) + ")")
+                .attr("text-anchor", "start")
+                .attr("dx", 5)
+                .attr("dy", 5);
+
+        }else{
+
+        }
 
         ticks.exit().remove();
 
         return this;
     }
 
+    setRotateLabels(rotateLabels) {
+        this.rotateLabels = rotateLabels;
+        return this;
+    }
 }

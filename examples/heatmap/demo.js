@@ -132,7 +132,7 @@ var confFlowers4 = {
     },
 
     color : {
-        scale: "log",
+        // scale: "log",
         range: ["green", "orange", "darkred"]
     },
 

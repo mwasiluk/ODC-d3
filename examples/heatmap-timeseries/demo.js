@@ -1,217 +1,94 @@
 
-confFlowers = new ODCD3.HeatmapTimeSeriesConfig();
-confFlowers.legend.decimalPlaces=3;
-confFlowers.x.key='species';
-confFlowers.y.key='petal width';
-confFlowers.y.sortLabels=true;
-confFlowers.y.title= 'petal width';
-confFlowers.y.rotateLabels=false;
-confFlowers.z.key='petal length';
-confFlowers.cell.sizeMax=35;
-
-var confFlowers2 = {
-    width: 600,
-    // height: 200,
-    y:{
-        key: 'sepal width',
-        title: 'sepal width',
-
-        sortLabels: true,
-        rotateLabels: false,
-
-        groups:{
-            keys: ['species',  'sepal width'],
-            value: function(d,k){return k=='sepal width'? (d[k] < 3 ? ' < 3' : ' >= 3') : d[k]}
-        }
-    },
-    x :{
-        key: 'petal width',
-        title: 'petal width',
-        sortLabels: true,
-        rotateLabels: true,
-
-        /*groups:{
-         keys: ['petal width'],
-         labels: ['petal width'],
-         value: (d,k) => {
-         var val = parseFloat(d[k]);
-         if(!val || val < 1.5){
-         return  'petal width < 1.5'
-         }
-
-         return 'petal width >= 1.5'
-         }
-         }*/
-    },
-    z:{
-        key: 'petal length'
-    },
-
-    color : {
-        // scale: "log",
-        // range: ["green", "orange", "darkred"]
-    },
-    legend:{
-        decimalPlaces: 3
-    }
-
-
-
-};
-
-var confFlowers3 = {
-    width: 600,
-    // height: 200,
-    x:{
-        key: 'sepal width',
-        title: 'sepal width',
-
-        sortLabels: true,
-        rotateLabels: true,
-
-        groups:{
-            keys: ['species',  'sepal width'],
-            labels: ['Species', 'Sepal width'],
-            value: function(d,k){ return k=='sepal width'? (d[k] < 3 ? ' < 3' : ' >= 3') : d[k]}
-        }
-    },
-    y:{
-        key: 'petal width',
-        title: 'petal width',
-        sortLabels: true,
-        rotateLabels: false
-    },
-    z:{
-        key: 'petal length'
-    },
-
-    color : {
-        scale: "log",
-        range: ["green", "orange", "darkred"]
-    }
-
-};
-
-var confFlowers4 = {
-    width: 600,
-    // height: 200,
-    x:{
-        key: 'sepal width',
-        title: 'sepal width',
-
-        sortLabels: true,
-        rotateLabels: true,
-
-        groups:{
-            keys: ['species',  'sepal width'],
-            labels: ['Species', 'Sepal width'],
-            value: function(d,k){ return k=='sepal width'? (d[k] < 3 ? ' < 3' : ' >= 3') : d[k]}
-        }
-    },
-    y:{
-        key: 'petal width',
-        title: 'petal width',
-        sortLabels: true,
-        rotateLabels: false,
-
-        groups:{
-            keys: ['petal width'],
-            labels: ['petal width'],
-            value: function(d,k)  {
-                var val = parseFloat(d[k]);
-                if(!val || val < 1.5){
-                    return  ' < 1.5'
-                }
-
-                return ' >= 1.5'
-            }
-        }
-    },
-    z:{
-        key: 'petal length'
-    },
-
-    color : {
-        scale: "log",
-        range: ["green", "orange", "darkred"]
-    },
-
-
-
-
-};
-// sepal length,sepal width,petal length,petal width,species
-
-var confArray={
-
-};
-
-
-var dataArray = [
-    [1,2, 1],
-    [2,3, 2],
-    [3,4, 1],
-    [6,4, 3],
-    [11,3, 1],
-    [1,3.5, 4],
-    [7,4, 1],
-    [5,4, 2]
-
-];
-
 
 
 var configEurostat = {
     y:{
         key: 'geo',
-        title: 'geo',
-
-        sortLabels: true,
-        rotateLabels: true,
-
-        groups: {
-            keys: ['agrarea']
-        }
-        // groups:{
-        //     keys: ['sex'],
-        //     labels: ['sex'],
-        // }
-    },
-    x:{
-        key: 'time',
-        title: 'Time',
         sortLabels: true,
         rotateLabels: true,
         groups:{
-            keys: ['time'],
-            labels: ['test'],
-            value: function(d,k) { return parseInt(d[k])<2010}
+            keys: ['geo'],
+            value: function(d,k) { return d[k]<='Poland'}
         }
     },
+    x:{
+        key: 'time',
+        sortLabels: true,
+        fillMissing: false
+        // groups:{
+        //     keys: ['time'],
+        //     labels: ['test'],
+        //     value: function(d,k) { return parseInt(d[k])<1990}
+        // }
+    },
     z:{
+        decimalPlaces: 2,
         key: 'value',
-        title: 'Population on 1 January',
-        scale: "linear"
-    }
-}
+        fillMissing: false,
+        formatter: function(v){
 
+            var nf = Intl.NumberFormat();
+            return nf.format(v);
+            // return  (Number(v)/1000000).toFixed(this.z.decimalPlaces) + " m"
+        }
+    },
+    color:{
+        scale: "linear",
+        reverseScale: false,
+        // range: ["darkblue", "orange", "darkred"]
+    },
+    cell:{
+        sizeMax: 20
+    },
+    legend:{
+        width: 35,
+        rotateLabels: true,
+        formatter: function(v){
+            var suffix ="";
+            if(v/1000000>=1){
+                suffix=" M";
+                v=Number(v/1000000).toFixed(3);
+            }
+
+            var nf = Intl.NumberFormat();
+            return nf.format(v)+suffix;
+
+        }
+        // formatter: function(v){return this.z.formatter.call(this,v)}
+    }
+};
 
 
 
 
 var plot;
-var conf = confFlowers;
 var plot2;
 var plot3;
 var plot4;
-d3.csv("../data/flowers.csv", function(error, data) {
-    console.log(data);
-    plot = new ODCD3.HeatmapTimeSeries("#plot", data, conf);
-    
-});
 
-d3.json("../data/eurostat.json", function(error, data) {
+d3.json("../data/eurostat3.json", function(error, data) {
     console.log(data); // this is your data
-    // plot4 =new ODCD3.Heatmap("#plot4", data, configEurostat);
+
+
+
+    var filtered  = data.filter(function (d, i){
+        return d.time % 4 == 0 && d.geo && d.geo.length<7 && d.sex == 'Total' && d.age == "Total";
+    });
+
+
+
+    console.log(filtered);
+    plot =new ODCD3.HeatmapTimeSeries("#plot", filtered, configEurostat);
+
+    var conf2 = _.cloneDeep(configEurostat);
+    // conf2.color.scale = "log";
+    conf2.x.fillMissing = true;
+    plo2 =new ODCD3.HeatmapTimeSeries("#plot2", filtered, conf2);
+
+    var conf3 = _.cloneDeep(configEurostat);
+    conf3.z.fillMissing = true;
+    conf3.x.fillMissing = true;
+    // conf3.color.range = ["darkblue", "orange", "darkred"]
+    plo3 =new ODCD3.HeatmapTimeSeries("#plot3", filtered, conf3);
 
 });
