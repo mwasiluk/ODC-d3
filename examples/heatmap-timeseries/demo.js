@@ -4,22 +4,19 @@
 var configEurostat = {
     y:{
         key: 'geo',
+        title: 'Country',
         sortLabels: true,
         rotateLabels: true,
         groups:{
             keys: ['geo'],
-            value: function(d,k) { return d[k]<='Poland'}
+            labels:['Name'],
+            value: function(d,k) { return d[k]<='Poland' ? '<=Poland' : '>Poland'}
         }
     },
     x:{
         key: 'time',
         sortLabels: true,
-        fillMissing: false
-        // groups:{
-        //     keys: ['time'],
-        //     labels: ['test'],
-        //     value: function(d,k) { return parseInt(d[k])<1990}
-        // }
+        fillMissing: false,
     },
     z:{
         decimalPlaces: 2,
@@ -75,20 +72,29 @@ d3.json("../data/eurostat3.json", function(error, data) {
         return d.time % 4 == 0 && d.geo && d.geo.length<7 && d.sex == 'Total' && d.age == "Total";
     });
 
-
-
     console.log(filtered);
+
     plot =new ODCD3.HeatmapTimeSeries("#plot", filtered, configEurostat);
 
     var conf2 = _.cloneDeep(configEurostat);
     // conf2.color.scale = "log";
     conf2.x.fillMissing = true;
-    plo2 =new ODCD3.HeatmapTimeSeries("#plot2", filtered, conf2);
+    plot2 =new ODCD3.HeatmapTimeSeries("#plot2", filtered, conf2);
 
     var conf3 = _.cloneDeep(configEurostat);
     conf3.z.fillMissing = true;
     conf3.x.fillMissing = true;
     // conf3.color.range = ["darkblue", "orange", "darkred"]
-    plo3 =new ODCD3.HeatmapTimeSeries("#plot3", filtered, conf3);
+    plot3 =new ODCD3.HeatmapTimeSeries("#plot3", filtered, conf3);
+
+    var conf4 = _.cloneDeep(conf3);
+    conf4.color.scale = "log";
+    conf4.color.reverseScale = false;
+    // conf4.color.range = ["darkblue", "yellow", "darkred"];
+    conf4.x.groups={
+        keys: ['time'],
+        value: function(d,k) { return parseInt(d[k])<1990 ? '<1990' : '>=1990'}
+    }
+    plot4 =new ODCD3.HeatmapTimeSeries("#plot4", filtered, conf4);
 
 });
