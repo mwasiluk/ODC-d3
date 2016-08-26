@@ -94,6 +94,10 @@ export class HeatmapConfig extends ChartConfig {
 
 //TODO refactor
 export class Heatmap extends Chart {
+
+    static maxGroupGapSize = 24;
+    static groupTitleRectHeight = 6;
+
     constructor(placeholderSelector, data, config) {
         super(placeholderSelector, data, new HeatmapConfig(config));
     }
@@ -278,12 +282,10 @@ export class Heatmap extends Chart {
         z.max = maxZ;
 
     }
-    setupValuesBeforeGroupsSort() {
+    setupValuesBeforeGroupsSort() {}
 
-    }
     buildCells(){
         var self = this;
-        var config = self.config;
         var x = self.plot.x;
         var y = self.plot.y;
         var z = self.plot.z;
@@ -300,10 +302,7 @@ export class Heatmap extends Chart {
                 var zVal = undefined;
                 try{
                     zVal =valueMap[v1.group.index][v2.group.index][v1.val][v2.val]
-                }catch(e){
-                    // console.log(e);
-
-                }
+                }catch(e){}
 
                 var cell = {
                     rowVar: v1,
@@ -425,7 +424,7 @@ export class Heatmap extends Chart {
     }
 
     static computeGapSize(gapLevel){
-        return 24/(gapLevel + 1);
+        return Heatmap.maxGroupGapSize/(gapLevel + 1);
     }
 
     static computeGapsSize(gaps){
@@ -554,7 +553,10 @@ export class Heatmap extends Chart {
 
         this.updateCells();
 
-        this.updateVariableLabels();
+        // this.updateVariableLabels();
+
+        this.updateAxisX();
+        this.updateAxisY();
 
         if (this.config.showLegend) {
             this.updateLegend();
@@ -566,25 +568,13 @@ export class Heatmap extends Chart {
     updateAxisTitles(){
         var self = this;
         var plot = self.plot;
-        self.svgG.selectOrAppend("g."+self.prefixClass('axis-x'))
-            .attr("transform", "translate("+ (plot.width/2) +","+ (plot.height + plot.margin.bottom) +")")
-            .selectOrAppend("text."+self.prefixClass('label'))
 
-            .attr("dy", "-1em")
-            .style("text-anchor", "middle")
-            .text(self.config.x.title);
 
-        self.svgG.selectOrAppend("g."+self.prefixClass('axis-y'))
-            .selectOrAppend("text."+self.prefixClass('label'))
-            .attr("transform", "translate("+ -plot.margin.left +","+(plot.height/2)+")rotate(-90)")
-            .attr("dy", "1em")
-            .style("text-anchor", "middle")
-            .text(self.config.y.title);
+
     }
 
 
-
-    updateVariableLabels() {
+    updateAxisX(){
         var self = this;
         var plot = self.plot;
         var labelClass = self.prefixClass("label");
@@ -631,6 +621,23 @@ export class Heatmap extends Chart {
         labelsX.exit().remove();
 
 
+        self.svgG.selectOrAppend("g."+self.prefixClass('axis-x'))
+            .attr("transform", "translate("+ (plot.width/2) +","+ (plot.height + plot.margin.bottom) +")")
+            .selectOrAppend("text."+self.prefixClass('label'))
+
+            .attr("dy", "-1em")
+            .style("text-anchor", "middle")
+            .text(self.config.x.title);
+    }
+
+    updateAxisY() {
+        var self = this;
+        var plot = self.plot;
+        var labelClass = self.prefixClass("label");
+        var labelYClass = labelClass + "-y";
+        plot.labelClass = labelClass;
+
+
         var labelsY = self.svgG.selectAll("text."+labelYClass)
             .data(plot.y.allValuesList);
 
@@ -668,6 +675,13 @@ export class Heatmap extends Chart {
         labelsY.exit().remove();
 
 
+        self.svgG.selectOrAppend("g."+self.prefixClass('axis-y'))
+            .selectOrAppend("text."+self.prefixClass('label'))
+            .attr("transform", "translate("+ -plot.margin.left +","+(plot.height/2)+")rotate(-90)")
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+            .text(self.config.y.title);
+
     }
 
     drawGroupsY(parentGroup, container, availableWidth) {
@@ -696,7 +710,7 @@ export class Heatmap extends Chart {
         var gapSize = Heatmap.computeGapSize(parentGroup.level);
         var padding = gapSize/4;
 
-        var titleRectWidth = 6;
+        var titleRectWidth =  Heatmap.groupTitleRectHeight;
         var depth = self.config.y.groups.keys.length - parentGroup.level;
         var overlap ={
             left:0,
@@ -712,12 +726,10 @@ export class Heatmap extends Chart {
 
         groups
             .attr("transform", (d, i) => {
-
-
-                var trnaslateVAl = "translate(" + (padding-overlap.left) + "," + ((plot.cellHeight * valuesBeforeCount) + i*gapSize + gapsBeforeSize + padding) + ")";
+                var translate = "translate(" + (padding-overlap.left) + "," + ((plot.cellHeight * valuesBeforeCount) + i*gapSize + gapsBeforeSize + padding) + ")";
                 gapsBeforeSize+=(d.gapsInsideSize||0);
                 valuesBeforeCount+=d.allValuesCount||0;
-                return trnaslateVAl
+                return translate
             });
 
 
@@ -789,7 +801,7 @@ export class Heatmap extends Chart {
 
         var gapSize = Heatmap.computeGapSize(parentGroup.level);
         var padding = gapSize/4;
-        var titleRectHeight = 6;
+        var titleRectHeight = Heatmap.groupTitleRectHeight;
 
         var depth = self.config.x.groups.keys.length - parentGroup.level;
 
@@ -801,7 +813,6 @@ export class Heatmap extends Chart {
         if(!availableHeight){
             overlap.bottom = plot.x.overlap.bottom;
             overlap.top = plot.x.overlap.top;
-
             availableHeight =plot.height + gapSize + overlap.top+overlap.bottom;
 
         }else{
@@ -811,11 +822,10 @@ export class Heatmap extends Chart {
 
         groups
             .attr("transform", (d, i) => {
-
-                var trnaslateVAl = "translate(" + ((plot.cellWidth * valuesBeforeCount) + i*gapSize + gapsBeforeSize + padding) + ", "+(padding -overlap.top)+")";
+                var translate = "translate(" + ((plot.cellWidth * valuesBeforeCount) + i*gapSize + gapsBeforeSize + padding) + ", "+(padding -overlap.top)+")";
                 gapsBeforeSize+=(d.gapsInsideSize||0);
                 valuesBeforeCount+=d.allValuesCount||0;
-                return trnaslateVAl
+                return translate
             });
 
         var groupHeight = availableHeight-padding*2;
