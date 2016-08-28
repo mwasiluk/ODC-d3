@@ -64,16 +64,13 @@ export class CorrelationMatrix extends Chart {
         var margin = this.config.margin;
         var conf = this.config;
 
-        this.plot.x={};
-        this.plot.correlation={
+        this.plot.x = {};
+        this.plot.correlation = {
             matrix: undefined,
             cells: undefined,
             color: {},
             shape: {}
         };
-
-
-
 
 
         this.setupVariables();
@@ -92,7 +89,7 @@ export class CorrelationMatrix extends Chart {
             this.plot.cellSize = this.config.cell.size;
 
             if (!this.plot.cellSize) {
-                this.plot.cellSize = Math.max(conf.cell.sizeMin, Math.min(conf.cell.sizeMax, (parentWidth- margin.left - margin.right) / this.plot.variables.length));
+                this.plot.cellSize = Math.max(conf.cell.sizeMin, Math.min(conf.cell.sizeMax, (parentWidth - margin.left - margin.right) / this.plot.variables.length));
             }
 
             width = this.plot.cellSize * this.plot.variables.length + margin.left + margin.right;
@@ -181,7 +178,7 @@ export class CorrelationMatrix extends Chart {
         plot.labels = [];
         plot.labelByVariable = {};
         plot.variables.forEach((variableKey, index) => {
-            plot.domainByVariable[variableKey] = d3.extent(data,  (d) => variablesConf.value(d, variableKey));
+            plot.domainByVariable[variableKey] = d3.extent(data, (d) => variablesConf.value(d, variableKey));
             var label = variableKey;
             if (variablesConf.labels && variablesConf.labels.length > index) {
 
@@ -240,27 +237,30 @@ export class CorrelationMatrix extends Chart {
         this.updateCells();
         this.updateVariableLabels();
 
+
         if (this.config.showLegend) {
             this.updateLegend();
         }
     };
 
     updateVariableLabels() {
+        this.plot.labelClass = this.prefixClass("label");
+        this.updateAxisX();
+        this.updateAxisY();
+    }
+
+    updateAxisX() {
         var self = this;
         var plot = self.plot;
-        var labelClass = self.prefixClass("label");
+        var labelClass = plot.labelClass;
         var labelXClass = labelClass + "-x";
-        var labelYClass = labelClass + "-y";
-        plot.labelClass = labelClass;
 
-
-        var labelsX = self.svgG.selectAll("text."+labelXClass)
+        var labels = self.svgG.selectAll("text." + labelXClass)
             .data(plot.variables, (d, i)=>i);
 
-        labelsX.enter().append("text").attr("class", (d, i) => labelClass + " " +labelXClass+" "+ labelXClass + "-" + i);
+        labels.enter().append("text").attr("class", (d, i) => labelClass + " " + labelXClass + " " + labelXClass + "-" + i);
 
-
-        labelsX
+        labels
             .attr("x", (d, i) => i * plot.cellSize + plot.cellSize / 2)
             .attr("y", plot.height)
             .attr("dx", -2)
@@ -270,39 +270,73 @@ export class CorrelationMatrix extends Chart {
             // .attr("dominant-baseline", "hanging")
             .text(v=>plot.labelByVariable[v]);
 
-        if(this.config.rotateLabelsX){
-            labelsX.attr("transform", (d, i) => "rotate(-45, " + (i * plot.cellSize + plot.cellSize / 2  ) + ", " + plot.height + ")")
+        if (this.config.rotateLabelsX) {
+            labels.attr("transform", (d, i) => "rotate(-45, " + (i * plot.cellSize + plot.cellSize / 2  ) + ", " + plot.height + ")")
         }
 
-        labelsX.exit().remove();
+        var maxWidth = self.computeXAxisLabelsWidth();
+        labels.each(function (label) {
+            Utils.placeTextWithEllipsisAndTooltip(d3.select(this), label, maxWidth, self.config.showTooltip ? self.plot.tooltip : false);
+        });
 
-        //////
+        labels.exit().remove();
+    }
 
-        var labelsY = self.svgG.selectAll("text."+labelYClass)
+    updateAxisY() {
+        var self = this;
+        var plot = self.plot;
+        var labelClass = plot.labelClass;
+        var labelYClass = plot.labelClass + "-y";
+        var labels = self.svgG.selectAll("text." + labelYClass)
             .data(plot.variables);
 
-        labelsY.enter().append("text");
+        labels.enter().append("text");
 
-
-        labelsY
+        labels
             .attr("x", 0)
             .attr("y", (d, i) => i * plot.cellSize + plot.cellSize / 2)
             .attr("dx", -2)
             .attr("text-anchor", "end")
-            .attr("class", (d, i) => labelClass + " " + labelYClass +" " + labelYClass + "-" + i)
+            .attr("class", (d, i) => labelClass + " " + labelYClass + " " + labelYClass + "-" + i)
             // .attr("dominant-baseline", "hanging")
             .text(v=>plot.labelByVariable[v]);
 
-        if(this.config.rotateLabelsY){
-            labelsX.attr("transform", (d, i) => "rotate(-45, " + (i * plot.cellSize + plot.cellSize / 2  ) + ", " + plot.height + ")");
-            labelsY
+        if (this.config.rotateLabelsY) {
+            labels
                 .attr("transform", (d, i) => "rotate(-45, " + 0 + ", " + (i * plot.cellSize + plot.cellSize / 2) + ")")
                 .attr("text-anchor", "end");
         }
 
-        labelsY.exit().remove();
+        var maxWidth = self.computeYAxisLabelsWidth();
+        labels.each(function (label) {
+            Utils.placeTextWithEllipsisAndTooltip(d3.select(this), label, maxWidth, self.config.showTooltip ? self.plot.tooltip : false);
+        });
 
+        labels.exit().remove();
+    }
 
+    computeYAxisLabelsWidth() {
+        var maxWidth = this.plot.margin.left;
+        if (!this.config.rotateLabelsY) {
+            return maxWidth;
+        }
+
+        maxWidth *= Utils.SQRT_2;
+        var fontSize = 11; //todo check actual font size
+        maxWidth -= fontSize / 2;
+
+        return maxWidth;
+    }
+
+    computeXAxisLabelsWidth(offset) {
+        if (!this.config.rotateLabelsX) {
+            return this.plot.cellSize - 2;
+        }
+        var size = this.plot.margin.bottom;
+        size *= Utils.SQRT_2;
+        var fontSize = 11; //todo check actual font size
+        size -= fontSize / 2;
+        return size;
     }
 
     updateCells() {
@@ -312,7 +346,7 @@ export class CorrelationMatrix extends Chart {
         var cellClass = self.prefixClass("cell");
         var cellShape = plot.correlation.shape.type;
 
-        var cells = self.svgG.selectAll("g."+cellClass)
+        var cells = self.svgG.selectAll("g." + cellClass)
             .data(plot.correlation.matrix.cells);
 
         var cellEnterG = cells.enter().append("g")
@@ -321,12 +355,12 @@ export class CorrelationMatrix extends Chart {
 
         cells.classed(self.config.cssClassPrefix + "selectable", !!self.scatterPlot);
 
-        var selector = "*:not(.cell-shape-"+cellShape+")";
-       
+        var selector = "*:not(.cell-shape-" + cellShape + ")";
+
         var wrongShapes = cells.selectAll(selector);
         wrongShapes.remove();
-        
-        var shapes = cells.selectOrAppend(cellShape+".cell-shape-"+cellShape);
+
+        var shapes = cells.selectOrAppend(cellShape + ".cell-shape-" + cellShape);
 
         if (plot.correlation.shape.type == 'circle') {
 
@@ -406,10 +440,9 @@ export class CorrelationMatrix extends Chart {
                 mouseoutCallbacks.forEach(callback=>callback(c));
             });
 
-        cells.on("click", c=>{
-           self.trigger("cell-selected", c);
+        cells.on("click", c=> {
+            self.trigger("cell-selected", c);
         });
-
 
 
         cells.exit().remove();
@@ -437,9 +470,9 @@ export class CorrelationMatrix extends Chart {
 
 
         var scatterPlotConfig = {
-            height: self.plot.height+self.config.margin.top+ self.config.margin.bottom,
-            width: self.plot.height+self.config.margin.top+ self.config.margin.bottom,
-            groups:{
+            height: self.plot.height + self.config.margin.top + self.config.margin.bottom,
+            width: self.plot.height + self.config.margin.top + self.config.margin.bottom,
+            groups: {
                 key: self.config.groups.key,
                 label: self.config.groups.label
             },
@@ -447,26 +480,25 @@ export class CorrelationMatrix extends Chart {
             showLegend: false
         };
 
-        self.scatterPlot=true;
+        self.scatterPlot = true;
 
         scatterPlotConfig = Utils.deepExtend(scatterPlotConfig, config);
         this.update();
 
-        this.on("cell-selected", c=>{
+        this.on("cell-selected", c=> {
 
 
-
-            scatterPlotConfig.x={
+            scatterPlotConfig.x = {
                 key: c.rowVar,
                 label: self.plot.labelByVariable[c.rowVar]
             };
-            scatterPlotConfig.y={
+            scatterPlotConfig.y = {
                 key: c.colVar,
                 label: self.plot.labelByVariable[c.colVar]
             };
-            if(self.scatterPlot && self.scatterPlot !==true){
+            if (self.scatterPlot && self.scatterPlot !== true) {
                 self.scatterPlot.setConfig(scatterPlotConfig).init();
-            }else{
+            } else {
                 self.scatterPlot = new ScatterPlot(containerSelector, self.data, scatterPlotConfig);
                 this.attach("ScatterPlot", self.scatterPlot);
             }

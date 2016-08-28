@@ -632,12 +632,12 @@ export class Heatmap extends Chart {
         }
 
 
-        var labelsX = self.svgG.selectAll("text." + labelXClass)
+        var labels = self.svgG.selectAll("text." + labelXClass)
             .data(plot.x.allValuesList, (d, i)=>i);
 
-        labelsX.enter().append("text").attr("class", (d, i) => labelClass + " " + labelXClass + " " + labelXClass + "-" + i);
+        labels.enter().append("text").attr("class", (d, i) => labelClass + " " + labelXClass + " " + labelXClass + "-" + i);
 
-        labelsX
+        labels
             .attr("x", (d, i) => (i * plot.cellWidth + plot.cellWidth / 2) + (d.group.gapsSize) + offsetX.x)
             .attr("y", plot.height + offsetX.y)
             .attr("dy", 10)
@@ -649,21 +649,21 @@ export class Heatmap extends Chart {
 
         var maxWidth = self.computeXAxisLabelsWidth(offsetX);
 
-        labelsX.each(function (label) {
+        labels.each(function (label) {
             var elem = d3.select(this),
                 text = self.formatValueX(label.val);
             Utils.placeTextWithEllipsisAndTooltip(elem, text, maxWidth, self.config.showTooltip ? self.plot.tooltip : false);
         });
 
         if (self.config.x.rotateLabels) {
-            labelsX.attr("transform", (d, i) => "rotate(-45, " + ((i * plot.cellWidth + plot.cellWidth / 2) + d.group.gapsSize + offsetX.x ) + ", " + ( plot.height + offsetX.y) + ")")
+            labels.attr("transform", (d, i) => "rotate(-45, " + ((i * plot.cellWidth + plot.cellWidth / 2) + d.group.gapsSize + offsetX.x ) + ", " + ( plot.height + offsetX.y) + ")")
                 .attr("dx", -2)
                 .attr("dy", 8)
                 .attr("text-anchor", "end");
         }
 
 
-        labelsX.exit().remove();
+        labels.exit().remove();
 
 
         self.svgG.selectOrAppend("g." + self.prefixClass('axis-x'))
@@ -683,10 +683,10 @@ export class Heatmap extends Chart {
         plot.labelClass = labelClass;
 
 
-        var labelsY = self.svgG.selectAll("text." + labelYClass)
+        var labels = self.svgG.selectAll("text." + labelYClass)
             .data(plot.y.allValuesList);
 
-        labelsY.enter().append("text");
+        labels.enter().append("text");
 
         var offsetY = {
             x: 0,
@@ -699,7 +699,7 @@ export class Heatmap extends Chart {
 
             offsetY.y = gapSize / 2;
         }
-        labelsY
+        labels
             .attr("x", offsetY.x)
             .attr("y", (d, i) => (i * plot.cellHeight + plot.cellHeight / 2) + d.group.gapsSize + offsetY.y)
             .attr("dx", -2)
@@ -713,23 +713,23 @@ export class Heatmap extends Chart {
 
         var maxWidth = self.computeYAxisLabelsWidth(offsetY);
 
-        labelsY.each(function (label) {
+        labels.each(function (label) {
             var elem = d3.select(this),
                 text = self.formatValueY(label.val);
             Utils.placeTextWithEllipsisAndTooltip(elem, text, maxWidth, self.config.showTooltip ? self.plot.tooltip : false);
         });
 
         if (self.config.y.rotateLabels) {
-            labelsY
+            labels
                 .attr("transform", (d, i) => "rotate(-45, " + (offsetY.x  ) + ", " + (d.group.gapsSize + (i * plot.cellHeight + plot.cellHeight / 2) + offsetY.y) + ")")
                 .attr("text-anchor", "end");
             // .attr("dx", -7);
         } else {
-            labelsY.attr("dominant-baseline", "middle")
+            labels.attr("dominant-baseline", "middle")
         }
 
 
-        labelsY.exit().remove();
+        labels.exit().remove();
 
 
         self.svgG.selectOrAppend("g." + self.prefixClass('axis-y'))
