@@ -1,4 +1,5 @@
 export class Utils {
+    static SQRT_2 = 1.41421356237;
     // usage example deepExtend({}, objA, objB); => should work similar to $.extend(true, {}, objA, objB);
     static deepExtend(out) {
 
@@ -169,7 +170,7 @@ export class Utils {
     static sanitizeHeight = function (height, container) {
         return (height || parseInt(container.style('height'), 10) || 400);
     };
-    
+
     static sanitizeWidth = function (width, container) {
         return (width || parseInt(container.style('width'), 10) || 960);
     };
@@ -183,12 +184,59 @@ export class Utils {
     };
 
     static guid() {
-    function s4() {
-        return Math.floor((1 + Math.random()) * 0x10000)
-            .toString(16)
-            .substring(1);
+        function s4() {
+            return Math.floor((1 + Math.random()) * 0x10000)
+                .toString(16)
+                .substring(1);
+        }
+
+        return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+            s4() + '-' + s4() + s4() + s4();
     }
-    return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-        s4() + '-' + s4() + s4() + s4();
-}
+
+    //places textString in textObj, adds an ellipsis if text can't fit in width
+    static placeTextWithEllipsis(textD3Obj, textString, width){
+        var textObj = textD3Obj.node();
+        textObj.textContent=textString;
+
+        var margin = 0;
+        var ellipsisLength = 9;
+        //ellipsis is needed
+        if (textObj.getComputedTextLength()>width+margin){
+            for (var x=textString.length-3;x>0;x-=1){
+                if (textObj.getSubStringLength(0,x)+ellipsisLength<=width+margin){
+                    textObj.textContent=textString.substring(0,x)+"...";
+                    return true;
+                }
+            }
+            textObj.textContent="..."; //can't place at all
+            return true;
+        }
+        return false;
+    }
+
+    static placeTextWithEllipsisAndTooltip(textD3Obj, textString, width, tooltip){
+        var ellipsisPlaced = Utils.placeTextWithEllipsis(textD3Obj, textString, width);
+        if(ellipsisPlaced && tooltip){
+            textD3Obj.on("mouseover", function (d) {
+                tooltip.transition()
+                    .duration(200)
+                    .style("opacity", .9);
+                tooltip.html(textString)
+                    .style("left", (d3.event.pageX + 5) + "px")
+                    .style("top", (d3.event.pageY - 28) + "px");
+            });
+
+            textD3Obj.on("mouseout", function (d) {
+                tooltip.transition()
+                    .duration(500)
+                    .style("opacity", 0);
+            });
+        }
+
+    }
+
+    static getFontSize(element){
+        return window.getComputedStyle(element, null).getPropertyValue("font-size");
+    }
 }

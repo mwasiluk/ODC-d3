@@ -15,8 +15,10 @@ var configEurostat = {
     },
     x:{
         key: 'time',
+        title: 'Year',
         sortLabels: true,
         fillMissing: false,
+        // rotateLabels: false
     },
     z:{
         decimalPlaces: 2,
@@ -69,7 +71,7 @@ d3.json("../data/eurostat3.json", function(error, data) {
 
 
     var filtered  = data.filter(function (d, i){
-        return d.time % 4 == 0 && d.geo && d.geo.length<7 && d.sex == 'Total' && d.age == "Total";
+        return d.time % 4 == 0 && d.geo && d.geo.length<20 && d.sex == 'Total' && d.age == "Total";
     });
 
     console.log(filtered);
