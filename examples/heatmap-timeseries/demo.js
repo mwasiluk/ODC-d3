@@ -81,13 +81,13 @@ d3.json("../data/eurostat3.json", function(error, data) {
     var conf2 = _.cloneDeep(configEurostat);
     // conf2.color.scale = "log";
     conf2.x.fillMissing = true;
-    plot2 =new ODCD3.HeatmapTimeSeries("#plot2", filtered, conf2);
+    // plot2 =new ODCD3.HeatmapTimeSeries("#plot2", filtered, conf2);
 
     var conf3 = _.cloneDeep(configEurostat);
     conf3.z.fillMissing = true;
     conf3.x.fillMissing = true;
     // conf3.color.range = ["darkblue", "orange", "darkred"]
-    plot3 =new ODCD3.HeatmapTimeSeries("#plot3", filtered, conf3);
+    plot3 =new ODCD3.HeatmapTimeSeries("#plot2", filtered, conf3);
 
     var conf4 = _.cloneDeep(conf3);
     conf4.color.scale = "log";
@@ -97,6 +97,35 @@ d3.json("../data/eurostat3.json", function(error, data) {
         keys: ['time'],
         value: function(d,k) { return parseInt(d[k])<1990 ? '<1990' : '>=1990'}
     }
-    plot4 =new ODCD3.HeatmapTimeSeries("#plot4", filtered, conf4);
+    // plot4 =new ODCD3.HeatmapTimeSeries("#plot2", filtered, conf4);
+
+});
+
+d3.csv("../data/test.csv", function(error, data) {
+    console.log(data);
+    var config = {
+        x:{
+            key: 'time',
+            sortLabels: true,
+            fillMissing: false,
+            // rotateLabels: false
+        },
+        y:{
+            key: 'a',
+            sortLabels: true,
+        },
+        z:{
+            key: 'b',
+            fillMissing: false
+        },
+        cell:{
+            sizeMax: 30
+        },
+    };
+    var conf2 = _.cloneDeep(config);
+    conf2.x.fillMissing=true;
+    conf2.z.fillMissing=true;
+    plot3 = new ODCD3.HeatmapTimeSeries("#plot3", data, config);
+    plot4 = new ODCD3.HeatmapTimeSeries("#plot4", data, conf2);
 
 });
