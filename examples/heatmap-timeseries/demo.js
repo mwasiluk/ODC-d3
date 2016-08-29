@@ -86,6 +86,7 @@ d3.json("../data/eurostat3.json", function(error, data) {
     var conf3 = _.cloneDeep(configEurostat);
     conf3.z.fillMissing = true;
     conf3.x.fillMissing = true;
+    // conf2.x.displayFormat='%a - %d';
     // conf3.color.range = ["darkblue", "orange", "darkred"]
     plot3 =new ODCD3.HeatmapTimeSeries("#plot2", filtered, conf3);
 
@@ -108,6 +109,7 @@ d3.csv("../data/test.csv", function(error, data) {
             key: 'time',
             sortLabels: true,
             fillMissing: false,
+            // displayFormat: '%d'
             // rotateLabels: false
         },
         y:{
@@ -124,7 +126,9 @@ d3.csv("../data/test.csv", function(error, data) {
     };
     var conf2 = _.cloneDeep(config);
     conf2.x.fillMissing=true;
+    conf2.x.displayFormat='%a - %d';
     conf2.z.fillMissing=true;
+
     plot3 = new ODCD3.HeatmapTimeSeries("#plot3", data, config);
     plot4 = new ODCD3.HeatmapTimeSeries("#plot4", data, conf2);
 

@@ -9,7 +9,8 @@ export class HeatmapTimeSeriesConfig extends HeatmapConfig {
         fillMissing: false, // fiill missing values with nearest previous value
         interval: undefined, //used in filling missing ticks
         intervalStep: 1,
-        format: undefined, //custom d3 time format
+        format: undefined, //input data d3 time format
+        displayFormat: undefined,//d3 time format for display
         intervalToFormats: [ //used to guess interval and format
             {
                 name: 'year',
@@ -39,7 +40,8 @@ export class HeatmapTimeSeriesConfig extends HeatmapConfig {
 
         sortComparator: function sortComparator(a, b) {
             return Utils.isString(a) ?  a.localeCompare(b) :  a - b;
-        }
+        },
+        formatter: undefined
     };
     z = {
         fillMissing: true // fiill missing values with nearest previous value
@@ -67,18 +69,26 @@ export class HeatmapTimeSeries extends Heatmap {
 
     setupValuesBeforeGroupsSort() {
 
+        this.plot.x.timeFormat = this.config.x.format;
+        if(this.config.x.displayFormat && !this.plot.x.timeFormat){
+            this.guessTimeFormat();
+        }
 
-        this.initTimeFormatAndInterval();
-
-        this.plot.x.intervalStep = this.config.x.intervalStep || 1;
-
-        this.plot.x.timeParser = d3.time.format(this.plot.x.timeFormat);
 
         super.setupValuesBeforeGroupsSort();
         if (!this.config.x.fillMissing) {
             return;
         }
+
         var self = this;
+
+        this.initTimeFormatAndInterval();
+
+        this.plot.x.intervalStep = this.config.x.intervalStep || 1;
+
+        this.plot.x.timeParser = this.getTimeParser();
+
+
 
         this.plot.x.uniqueValues.sort(this.config.x.sortComparator);
 
@@ -113,13 +123,30 @@ export class HeatmapTimeSeries extends Heatmap {
     }
 
     parseTime(x) {
-        var parser = this.plot.x.timeParser;
+        var parser = this.getTimeParser();
         return parser.parse(x);
     }
 
     formatTime(date){
-        var parser = this.plot.x.timeParser;
+        var parser = this.getTimeParser();
         return parser(date);
+    }
+
+    formatValueX(value) { //used only for display
+        if (this.config.x.formatter) return this.config.x.formatter.call(this.config, value);
+
+        if(this.config.x.displayFormat){
+            var date = this.parseTime(value);
+            return d3.time.format(this.config.x.displayFormat)(date);
+        }
+
+        if(!this.plot.x.timeFormat) return value;
+
+        if(Utils.isDate(value)){
+            return this.formatTime(value);
+        }
+
+        return value;
     }
 
     compareTimeValues(a, b){
@@ -162,7 +189,7 @@ export class HeatmapTimeSeries extends Heatmap {
 
 
     initTimeFormatAndInterval() {
-        this.plot.x.timeFormat = this.config.x.format;
+
         this.plot.x.interval = this.config.x.interval;
 
         if(!this.plot.x.timeFormat){
@@ -211,6 +238,14 @@ export class HeatmapTimeSeries extends Heatmap {
 
         }
 
+    }
+
+
+    getTimeParser() {
+        if(!this.plot.x.timeParser){
+            this.plot.x.timeParser = d3.time.format(this.plot.x.timeFormat);
+        }
+        return this.plot.x.timeParser;
     }
 }
 
