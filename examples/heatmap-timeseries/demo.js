@@ -66,15 +66,15 @@ var plot3;
 var plot4;
 
 d3.json("../data/eurostat3.json", function(error, data) {
-    console.log(data); // this is your data
+    // console.log(data); // this is your data
 
 
 
     var filtered  = data.filter(function (d, i){
-        return d.time % 4 == 0 && d.geo && d.geo.length<20 && d.sex == 'Total' && d.age == "Total";
+        return d.time % 4 == 0 && d.geo > 'H' && d.geo.length<25 && d.sex == 'Total' && d.age == "Total";
     });
 
-    console.log(filtered);
+    // console.log(filtered);
 
     plot =new ODCD3.HeatmapTimeSeries("#plot", filtered, configEurostat);
 

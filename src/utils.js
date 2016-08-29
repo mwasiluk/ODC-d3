@@ -101,6 +101,14 @@ export class Utils {
         return typeof a === 'function';
     };
 
+    static isDate(a){
+        return Object.prototype.toString.call(a) === '[object Date]'
+    }
+
+    static isString(a){
+        return typeof a === 'string' || a instanceof String
+    }
+
     static insertOrAppendSelector(parent, selector, operation, before) {
         var selectorParts = selector.split(/([\.\#])/);
         var element = parent[operation](selectorParts.shift(), before);//":first-child"
