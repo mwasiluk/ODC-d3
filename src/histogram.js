@@ -14,9 +14,9 @@ export class HistogramConfig extends ChartConfig{
     x={// X axis config
         label: '', // axis label
         key: 0,
-        value: (d, key) => d[key], // x value accessor
+        value: (d, key) => Utils.isNumber(d) ? d : d[key], // x value accessor
         scale: "linear",
-        ticks: undefined
+        ticks: undefined,
     };
     y={// Y axis config
         label: '', // axis label,
@@ -115,10 +115,6 @@ export class Histogram extends Chart{
         y.scale = d3.scale[conf.scale]().range([plot.height, 0]);
 
         y.axis = d3.svg.axis().scale(y.scale).orient(conf.orient);
-
-        if(this.config.guides){
-            y.axis.tickSize(-plot.width);
-        }
 
         var data = this.data;
         plot.y.scale.domain([0, d3.max(plot.histogramBins, d=>d.y)]);

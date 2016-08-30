@@ -3,10 +3,10 @@ var confFlowers = {
         key: 'petal length',
         label: 'petal length'
     },
-    groups:{
-        key: 'species',
-        label: "species"
-    }
+    // groups:{
+    //     key: 'species',
+    //     label: "species"
+    // }
 
 };
 // conf = new  ODCD3.ScatterPlotConfig();
@@ -27,11 +27,23 @@ var dataArray = [
     [5,4, 2]
 
 ];
-var plot;
+var plot, plot2;
 var conf = confFlowers;
+
+
+
+
+var values = d3.range(1000).map(d3.random.bates(20));
+plot = new ODCD3.Histogram("#plot", values, {
+    x:{
+        ticks: 14
+    }
+});
 
 d3.csv("../data/flowers.csv", function(error, data) {
     console.log(data);
-    plot = new ODCD3.Histogram("#plot", data, conf);
+    plot2 = new ODCD3.Histogram("#plot2", data, conf);
 
 });
+
+
