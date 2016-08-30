@@ -40,22 +40,22 @@
                 <div class="mdl-cell mdl-cell--12-col">
 
 
-
-                    <h1>Heatmap demo</h1>
+                    <h1>Histogram demo</h1>
 
                     <p>
-                        <a href="https://github.com/mwasiluk/ODC-d3/wiki/Heatmap"><i class="fa fa-book" aria-hidden="true"></i> Wiki page</a> <br/>
+                        <a href="https://github.com/mwasiluk/ODC-d3/wiki/Histogram"><i class="fa fa-book" aria-hidden="true"></i> Wiki page</a> <br/>
+                    </p>
+                    <p>
+                        Histogram of randomly generated data with an Irwin–Hall distribution
+                        <button type="button" class="mdl-button mdl-js-button mdl-button--icon" id="generateNewButton">
+                            <i class="material-icons">refresh</i>
+                        </button>
+                    </p>
+                    <div id="plot" style=" max-width: 600px;margin-bottom: 40px"></div>
+                    <p>
                         <a href="../data/flowers.csv"><i class="fa fa-download" aria-hidden="true"></i>CSV data</a>
                     </p>
-
-
-                    <div id="plot" style="min-width: 500px; margin-bottom: 30px"></div>
-
-                    <div id="plot2" style="min-width: 500px; margin-bottom: 30px"></div>
-
-                    <div id="plot3" style="min-width: 500px; margin-bottom: 30px"></div>
-
-                    <div id="plot4" style="min-width: 500px"></div>
+                    <div id="plot2" style=" max-width: 600px;margin-bottom: 40px"></div>
 
 
                 </div>
@@ -63,9 +63,9 @@
         </div>
     </main>
 </div>
-<script src="../bower_components/jquery/dist/jquery.min.js" charset="utf-8"></script>
 <script src="../bower_components/d3/d3.min.js" charset="utf-8"></script>
 <script src="../bower_components/odc-d3/dist/odc-d3.min.js" charset="utf-8"></script>
+<script src="../bower_components/jquery/dist/jquery.min.js" charset="utf-8"></script>
 <script src="demo.js"></script>
 <script src="../google-analytics.js"></script>
 <script src="../bower_components/material-design-lite/material.min.js"></script>

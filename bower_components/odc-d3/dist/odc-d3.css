@@ -69,6 +69,21 @@
   .odc-heatmap .odc-group .title rect.highlighted {
     fill-opacity: 1; }
 
+.odc-histogram {
+  background-color: white;
+  font-size: 11px; }
+  .odc-histogram .odc-axis path {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges; }
+  .odc-histogram .odc-axis line {
+    shape-rendering: crispEdges;
+    stroke: #eaeaea; }
+  .odc-histogram .odc-axis.odc-no-guides line {
+    stroke: #a1a1a1; }
+  .odc-histogram .odc-bar rect {
+    fill: steelblue; }
+
 .odc-selectable {
   cursor: pointer; }
 
