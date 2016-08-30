@@ -6,7 +6,7 @@ import {ScatterPlot} from './scatterplot'
 
 export class CorrelationMatrixConfig extends ChartConfig {
 
-    svgClass = 'odc-correlation-matrix';
+    svgClass = this.cssClassPrefix+'correlation-matrix';
     guides = false; //show axis guides
     showTooltip = true; //show tooltip on dot hover
     showLegend = true;

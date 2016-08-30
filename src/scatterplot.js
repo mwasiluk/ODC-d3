@@ -80,20 +80,6 @@ export class ScatterPlot extends Chart{
         
 
         this.computePlotSize();
-        
-
-
-        // var legendWidth = availableWidth;
-        // legend.width(legendWidth);
-        //
-        // wrap.select('.nv-legendWrap')
-        //     .datum(data)
-        //     .call(legend);
-        //
-        // if (legend.height() > margin.top) {
-        //     margin.top = legend.height();
-        //     availableHeight = nv.utils.availableHeight(height, container, margin);
-        // }
 
         this.setupX();
         this.setupY();
@@ -113,7 +99,6 @@ export class ScatterPlot extends Chart{
 
 
         }else{
-
 
         }
 
@@ -171,15 +156,7 @@ export class ScatterPlot extends Chart{
         plot.y.scale.domain([d3.min(data, plot.y.value)-1, d3.max(data, plot.y.value)+1]);
     };
 
-    draw(){
-        this.drawAxisX();
-        this.drawAxisY();
-        this.update();
-    };
-
     drawAxisX(){
-
-        
         var self = this;
         var plot = self.plot;
         var axisConf = this.config.x;
@@ -222,6 +199,8 @@ export class ScatterPlot extends Chart{
 
     update(newData){
         super.update(newData);
+        this.drawAxisX();
+        this.drawAxisY();
 
         this.updateDots();
 

@@ -1,0 +1,27 @@
+.odc-histogram{
+  background-color: white;
+  font-size: 11px;
+  .odc-axis{
+
+    path{
+      fill: none;
+      stroke: #000;
+      shape-rendering: crispEdges;
+    }
+    line {
+      shape-rendering: crispEdges;
+      stroke: #eaeaea;
+    }
+    &.odc-no-guides{
+      line{
+        //display: none;
+        stroke: #a1a1a1;
+      }
+    }
+  }
+  .odc-bar rect {
+    fill: steelblue;
+  }
+
+
+}

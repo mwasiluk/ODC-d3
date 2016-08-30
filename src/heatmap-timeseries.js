@@ -6,7 +6,7 @@ import {StatisticsUtils} from './statistics-utils'
 
 export class HeatmapTimeSeriesConfig extends HeatmapConfig {
     x = {
-        fillMissing: false, // fiill missing values with nearest previous value
+        fillMissing: false, // fill missing values using interval and intervalStep
         interval: undefined, //used in filling missing ticks
         intervalStep: 1,
         format: undefined, //input data d3 time format
