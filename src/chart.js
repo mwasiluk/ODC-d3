@@ -161,7 +161,6 @@ export class Chart {
 
             this._attached[attachmentName].update(attachmentData);
         }
-        console.log('base uppdate');
         return this;
     }
 
@@ -354,5 +353,9 @@ export class Chart {
     computePlotSize() {
         this.plot.width = Utils.availableWidth(this.config.width, this.getBaseContainer(), this.plot.margin);
         this.plot.height = Utils.availableHeight(this.config.height, this.getBaseContainer(), this.plot.margin);
+    }
+
+    transitionEnabled(){
+        return this._isInitialized && this.config.transition;
     }
 }

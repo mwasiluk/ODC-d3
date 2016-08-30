@@ -164,7 +164,7 @@ export class ScatterPlot extends Chart{
             .attr("transform", "translate(0," + plot.height + ")");
         
         var axisT = axis;
-        if (self.config.transition) {
+        if (self.transitionEnabled()) {
             axisT = axis.transition().ease("sin-in-out");
         }
 
@@ -184,7 +184,7 @@ export class ScatterPlot extends Chart{
         var axis = self.svgG.selectOrAppend("g."+self.prefixClass('axis-y')+"."+self.prefixClass('axis')+(self.config.guides ? '' : '.'+self.prefixClass('no-guides')));
 
         var axisT = axis;
-        if (self.config.transition) {
+        if (self.transitionEnabled()) {
             axisT = axis.transition().ease("sin-in-out");
         }
 
@@ -224,7 +224,7 @@ export class ScatterPlot extends Chart{
             .attr("class", dotClass);
 
         var dotsT = dots;
-        if (self.config.transition) {
+        if (self.transitionEnabled()) {
             dotsT = dots.transition();
         }
 

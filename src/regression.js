@@ -266,7 +266,7 @@ export class Regression extends ScatterPlot{
 
 
         var lineT = line;
-        if (self.config.transition) {
+        if (self.transitionEnabled()) {
             lineT = line.transition();
         }
 
@@ -285,7 +285,7 @@ export class Regression extends ScatterPlot{
         var area = regression.select("path."+confidenceAreaClass);
 
         var areaT = area;
-        if (self.config.transition) {
+        if (self.transitionEnabled()) {
             areaT = area.transition();
         }
         areaT.attr("d", r => r.confidence.area(r.confidence.points));

@@ -190,13 +190,17 @@ export class Histogram extends Chart{
             .append("rect")
             .attr("x", 1);
 
-        bar.attr("transform", function(d) { return "translate(" + plot.x.scale(d.x) + "," + (plot.y.scale(d.y)) + ")"; });
+
         var barRect = bar.select("rect");
 
         var barRectT = barRect;
-        if (self.config.transition) {
+        var barT = bar;
+        if (this.transitionEnabled()) {
             barRectT = barRect.transition();
+            barT = bar.transition();
         }
+
+        barT.attr("transform", function(d) { return "translate(" + plot.x.scale(d.x) + "," + (plot.y.scale(d.y)) + ")"; });
 
         barRectT
             .attr("width",  plot.x.scale(plot.histogramBins[0].dx) - plot.x.scale(0)- 1)
