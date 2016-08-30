@@ -21,15 +21,9 @@ var configEurostat = {
         // rotateLabels: false
     },
     z:{
-        decimalPlaces: 2,
+        // decimalPlaces: 2,
         key: 'value',
-        fillMissing: false,
-        formatter: function(v){
-
-            var nf = Intl.NumberFormat();
-            return nf.format(v);
-            // return  (Number(v)/1000000).toFixed(this.z.decimalPlaces) + " m"
-        }
+        fillMissing: false
     },
     color:{
         scale: "linear",
@@ -41,18 +35,7 @@ var configEurostat = {
     },
     legend:{
         width: 35,
-        rotateLabels: true,
-        formatter: function(v){
-            var suffix ="";
-            if(v/1000000>=1){
-                suffix=" M";
-                v=Number(v/1000000).toFixed(3);
-            }
-
-            var nf = Intl.NumberFormat();
-            return nf.format(v)+suffix;
-
-        }
+        rotateLabels: true
         // formatter: function(v){return this.z.formatter.call(this,v)}
     }
 };

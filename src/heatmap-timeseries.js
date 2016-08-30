@@ -47,6 +47,18 @@ export class HeatmapTimeSeriesConfig extends HeatmapConfig {
         fillMissing: true // fiill missing values with nearest previous value
     };
 
+    legend = {
+        formatter: function (v) {
+            var suffix = "";
+            if (v / 1000000 >= 1) {
+                suffix = " M";
+                v = Number(v / 1000000).toFixed(3);
+            }
+            var nf = Intl.NumberFormat();
+            return nf.format(v) + suffix;
+        }
+    };
+
     constructor(custom) {
         super();
 
