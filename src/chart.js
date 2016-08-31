@@ -140,13 +140,12 @@ export class Chart {
 
     initPlot() {
         var margin = this.config.margin;
-        this.plot={
-            margin:{
-                top: margin.top,
-                bottom: margin.bottom,
-                left: margin.left,
-                right: margin.right
-            }
+        this.plot = this.plot || {};
+        this.plot.margin = {
+            top: margin.top,
+            bottom: margin.bottom,
+            left: margin.left,
+            right: margin.right
         };
     }
 

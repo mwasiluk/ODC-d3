@@ -1,15 +1,16 @@
+var flowerGroups = {
+    key: 'species',
+    label: "Species"
+};
+
 var confFlowers = {
     x:{
-        key: 'petal length',
-        label: 'petal length'
+        key: 'sepal width',
+        label: 'sepal width'
     },
-    groups:{
-        key: 'species',
-        label: "Species"
-    }
-    // groups: false
-
+    groups:flowerGroups
 };
+
 // conf = new  ODCD3.ScatterPlotConfig();
 // conf.guides = true;
 
@@ -49,5 +50,15 @@ d3.csv("../data/flowers.csv", function(error, data) {
     plot2 = new ODCD3.Histogram("#plot2", data, conf);
 
 });
+$("#plot2-stacked").change(function(){
 
+    confFlowers.groups = this.checked ?  flowerGroups : false;
 
+    plot2.setConfig(confFlowers).init();
+});
+
+$("#plot2-x-key").change(function(){
+
+    confFlowers.x.label = confFlowers.x.key =  $(this).val();
+    plot2.setConfig(confFlowers).init();
+});

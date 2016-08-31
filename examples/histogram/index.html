@@ -9,11 +9,24 @@
 <h1>Histogram demo</h1>
 
 <div id="plot" style=" max-width: 600px;margin-bottom: 40px"></div>
+<p>
+    <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="plot2-stacked">
+        <input type="checkbox" id="plot2-stacked" class="mdl-checkbox__input" checked>
+        <span class="mdl-checkbox__label">Stacked</span>
+    </label>
+    <select id="plot2-x-key">
+        <option value="sepal width">sepal width</option>
+        <option value="sepal length">sepal length</option>
+        <option value="petal width">petal width</option>
+        <option value="petal length">petal length</option>
+    </select>
+</p>
 <div id="plot2" style=" max-width: 600px;margin-bottom: 40px"></div>
 
 
 <script src="../../bower_components/d3/d3.min.js" charset="utf-8"></script>
 <script src="../../dist/odc-d3.js" charset="utf-8"></script>
+<script src="../../bower_components/jquery/dist/jquery.min.js" charset="utf-8"></script>
 <script src="demo.js"></script>
 </body>
 </html>

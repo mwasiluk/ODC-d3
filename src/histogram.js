@@ -65,7 +65,6 @@ export class Histogram extends Chart{
             color: null//color scale mapping function
         };
 
-
         this.plot.showLegend = conf.showLegend;
         if(this.plot.showLegend){
             this.plot.margin.right = conf.margin.right + conf.legend.width+conf.legend.margin*2;
@@ -267,7 +266,7 @@ export class Histogram extends Chart{
                     .style("opacity", 0);
             });
         }
-
+        layer.exit().remove();
         bar.exit().remove();
     }
 
