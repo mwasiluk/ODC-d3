@@ -1,9 +1,14 @@
+var flowerGroups = {
+    key: 'species',
+    label: "Species"
+}
+
 var confFlowers = {
     x:{
-        key: 'petal length',
-        label: 'petal length'
-    }
-
+        key: 'sepal width',
+        label: 'sepal width'
+    },
+    groups:flowerGroups
 };
 
 var confArray={
@@ -46,3 +51,16 @@ $("#generateNewButton").click(function(){
     values = generateRandomData();
     plot.setData(values).init();
 });
+
+$("#plot2-stacked").change(function(){
+
+    confFlowers.groups = this.checked ?  flowerGroups : false;
+
+    plot2.setConfig(confFlowers).init();
+});
+$("#plot2-x-key").change(function(){
+
+    confFlowers.x.label = confFlowers.x.key =  $(this).val();
+    plot2.setConfig(confFlowers).init();
+});
+

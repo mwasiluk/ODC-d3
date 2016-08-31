@@ -81,8 +81,6 @@
     stroke: #eaeaea; }
   .odc-histogram .odc-axis.odc-no-guides line {
     stroke: #a1a1a1; }
-  .odc-histogram .odc-bar rect {
-    fill: steelblue; }
 
 .odc-selectable {
   cursor: pointer; }
