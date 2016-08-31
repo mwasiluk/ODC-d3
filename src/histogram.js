@@ -5,11 +5,12 @@ import {Legend} from "./legend";
 export class HistogramConfig extends ChartConfig{
 
     svgClass= this.cssClassPrefix+'histogram';
-    showLegend=false;
+    showLegend=true;
     showTooltip =true;
-    legend={//TODO
+    legend={
         width: 80,
-        margin: 10
+        margin: 10,
+        shapeWidth: 20
     };
     x={// X axis config
         label: '', // axis label
@@ -23,11 +24,13 @@ export class HistogramConfig extends ChartConfig{
         orient: "left",
         scale: "linear"
     };
-    groups={ //TODO stack grouping
-        key: 2,
-        value: (d, key) => d[key] , // grouping value accessor,
+    groups={
+        key: 1,
+        value: (d) => d[this.groups.key] , // grouping value accessor,
         label: ""
     };
+    color = undefined // string or function returning color's value for color scale
+    d3ColorCategory= 'category10';
     transition= true;
 
     constructor(custom){
@@ -74,8 +77,18 @@ export class Histogram extends Chart{
 
         this.setupX();
         this.setupHistogram();
+        this.setupGroupStacks();
         this.setupY();
 
+        if(conf.d3ColorCategory){
+            this.plot.colorCategory = d3.scale[conf.d3ColorCategory]();
+        }
+        var colorValue = conf.color;
+        if (colorValue && typeof colorValue === 'string' || colorValue instanceof String){
+            this.plot.color = colorValue;
+        }else if(this.plot.colorCategory){
+            this.plot.color = d =>  self.plot.colorCategory(d.key);
+        }
 
         return this;
     }
@@ -131,6 +144,23 @@ export class Histogram extends Chart{
             .bins(ticks);
         plot.histogramBins = plot.histogram(this.data);
 
+    }
+
+    setupGroupStacks() {
+        this.plot.groupingEnabled = this.config.groups && this.config.groups.value;
+
+        this.plot.stack = d3.layout.stack().values(function(d) {
+                return d.histogramBins;
+            });
+
+
+        this.plot.groupedData =  d3.nest().key(d => this.plot.groupingEnabled ? this.config.groups.value.call(this.config, d) : 'root' ).entries(this.data);
+        this.plot.groupedData.forEach(d=>{
+            d.histogramBins = this.plot.histogram(d.values);
+
+        });
+        this.plot.stackedHistograms = this.plot.stack(this.plot.groupedData);
+        // console.log('this.plot.groupedData',this.plot.groupedData, 'this.plot.stackedHistograms ',this.plot.stackedHistograms );
 
     }
 
@@ -181,9 +211,19 @@ export class Histogram extends Chart{
         var plot = self.plot;
 
         console.log(plot.histogramBins, plot.height);
+
+
+        var layerClass = this.prefixClass("layer");
+
         var barClass = this.prefixClass("bar");
-        var bar = self.svgG.selectAll("."+barClass)
-            .data(plot.histogramBins);
+        var layer = self.svgG.selectAll("."+layerClass)
+            .data(plot.stackedHistograms);
+
+        layer.enter().append("g")
+            .attr("class", layerClass);
+
+        var bar = layer.selectAll("."+barClass)
+            .data(d => d.histogramBins);
 
         bar.enter().append("g")
             .attr("class", barClass)
@@ -195,16 +235,23 @@ export class Histogram extends Chart{
 
         var barRectT = barRect;
         var barT = bar;
+        var layerT = layer;
         if (this.transitionEnabled()) {
             barRectT = barRect.transition();
             barT = bar.transition();
+            layerT= layer.transition();
         }
 
-        barT.attr("transform", function(d) { return "translate(" + plot.x.scale(d.x) + "," + (plot.y.scale(d.y)) + ")"; });
+        barT.attr("transform", function(d) { return "translate(" + plot.x.scale(d.x) + "," + (plot.y.scale(d.y0 +d.y)) + ")"; });
 
         barRectT
             .attr("width",  plot.x.scale(plot.histogramBins[0].dx) - plot.x.scale(0)- 1)
             .attr("height", d =>   plot.height - plot.y.scale(d.y));
+
+        if(this.plot.color){
+            layerT
+                .attr("fill", this.plot.color);
+        }
 
         if (plot.tooltip) {
             bar.on("mouseover", d => {
@@ -236,9 +283,33 @@ export class Histogram extends Chart{
 
 
     updateLegend() {
+        var plot = this.plot;
 
+        var scale = plot.colorCategory;
+        if(!scale.domain() || scale.domain().length<2){
+            plot.showLegend = false;
+        }
+
+        if(!plot.showLegend){
+            if(plot.legend && plot.legend.container){
+                plot.legend.container.remove();
+            }
+            return;
+        }
+
+
+        var legendX = this.plot.width + this.config.legend.margin;
+        var legendY = this.config.legend.margin;
+
+        plot.legend = new Legend(this.svg, this.svgG, scale, legendX, legendY);
+
+        var legendLinear = plot.legend.color()
+            .shapeWidth(this.config.legend.shapeWidth)
+            .orient('vertical')
+            .scale(scale);
+
+        plot.legend.container
+            .call(legendLinear);
     }
-
-
 
 }
