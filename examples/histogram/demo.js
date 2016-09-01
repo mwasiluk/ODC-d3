@@ -8,7 +8,8 @@ var confFlowers = {
         key: 'sepal width',
         label: 'sepal width'
     },
-    groups:flowerGroups
+    frequency: true,
+    groups:false
 };
 
 // conf = new  ODCD3.ScatterPlotConfig();
@@ -53,6 +54,12 @@ d3.csv("../data/flowers.csv", function(error, data) {
 $("#plot2-stacked").change(function(){
 
     confFlowers.groups = this.checked ?  flowerGroups : false;
+
+    plot2.setConfig(confFlowers).init();
+});
+$("#plot2-frequency").change(function(){
+
+    confFlowers.frequency = this.checked;
 
     plot2.setConfig(confFlowers).init();
 });

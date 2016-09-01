@@ -24,6 +24,7 @@ export class HistogramConfig extends ChartConfig{
         orient: "left",
         scale: "linear"
     };
+    frequency=true;
     groups={
         key: 1,
         value: (d) => d[this.groups.key] , // grouping value accessor,
@@ -114,9 +115,7 @@ export class Histogram extends Chart{
         }
         var data = this.data;
         plot.x.scale.domain([d3.min(data, plot.x.value), d3.max(data, plot.x.value)]);
-
-
-
+        
     };
 
     setupY (){
@@ -138,7 +137,7 @@ export class Histogram extends Chart{
         var y = plot.y;
         var ticks = this.config.x.ticks ? x.scale.ticks(this.config.x.ticks) : x.scale.ticks();
 
-        plot.histogram = d3.layout.histogram()
+        plot.histogram = d3.layout.histogram().frequency(this.config.frequency)
             .value(x.value)
             .bins(ticks);
         plot.histogramBins = plot.histogram(this.data);
@@ -146,21 +145,21 @@ export class Histogram extends Chart{
     }
 
     setupGroupStacks() {
+        var self=this;
         this.plot.groupingEnabled = this.config.groups && this.config.groups.value;
-
-        this.plot.stack = d3.layout.stack().values(function(d) {
-                return d.histogramBins;
-            });
-
-
+        
+        this.plot.stack = d3.layout.stack().values(d=>d.histogramBins);
         this.plot.groupedData =  d3.nest().key(d => this.plot.groupingEnabled ? this.config.groups.value.call(this.config, d) : 'root' ).entries(this.data);
         this.plot.groupedData.forEach(d=>{
-            d.histogramBins = this.plot.histogram(d.values);
-
+            d.histogramBins = this.plot.histogram.frequency(this.config.frequency || this.plot.groupingEnabled)(d.values);
+            if(!this.config.frequency && this.plot.groupingEnabled){
+                d.histogramBins.forEach(b => {
+                    b.dy = b.dy/this.data.length
+                    b.y = b.y/this.data.length
+                });
+            }
         });
         this.plot.stackedHistograms = this.plot.stack(this.plot.groupedData);
-        // console.log('this.plot.groupedData',this.plot.groupedData, 'this.plot.stackedHistograms ',this.plot.stackedHistograms );
-
     }
 
     drawAxisX(){
@@ -208,10 +207,7 @@ export class Histogram extends Chart{
     drawHistogram() {
         var self = this;
         var plot = self.plot;
-
-        console.log(plot.histogramBins, plot.height);
-
-
+        
         var layerClass = this.prefixClass("layer");
 
         var barClass = this.prefixClass("bar");
@@ -276,7 +272,7 @@ export class Histogram extends Chart{
         this.drawAxisY();
 
         this.drawHistogram();
-        
+
         this.updateLegend();
     };
 
