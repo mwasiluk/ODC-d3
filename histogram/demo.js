@@ -55,7 +55,6 @@ $("#generateNewButton").click(function(){
 $("#plot2-stacked").change(function(){
 
     confFlowers.groups = this.checked ?  flowerGroups : false;
-
     plot2.setConfig(confFlowers).init();
 });
 $("#plot2-x-key").change(function(){
@@ -64,3 +63,16 @@ $("#plot2-x-key").change(function(){
     plot2.setConfig(confFlowers).init();
 });
 
+$("#plot2-frequency").change(function(){
+
+    confFlowers.frequency = this.checked;
+
+    plot2.setConfig(confFlowers).init();
+});
+
+$("#plot1-frequency").change(function(){
+
+    irwinHallConfig.frequency = this.checked;
+
+    plot.setConfig(irwinHallConfig).init();
+});

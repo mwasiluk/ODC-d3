@@ -51,12 +51,24 @@
                             <i class="material-icons">refresh</i>
                         </button>
                     </p>
+                    <p>
+                        <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="plot1-frequency">
+                            <input type="checkbox" id="plot1-frequency" class="mdl-checkbox__input" checked>
+                            <span class="mdl-checkbox__label">Frequency</span>
+                        </label><br/>
+                        <span class="tip"><i class="fa fa-info-circle" aria-hidden="true"></i>Frequency option specifies the meaning of the generated bins’ y-values. If frequency is true, which is the default, the y-value represents the count of elements in the bin. If false, it represents the probability of a random element in the sample population being in that bin</span>
+
+                    </p>
                     <div id="plot" style=" max-width: 600px;margin-bottom: 40px"></div>
                     <p>
                         <a href="../data/flowers.csv"><i class="fa fa-download" aria-hidden="true"></i>CSV data</a><br/>
                         <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="plot2-stacked">
                             <input type="checkbox" id="plot2-stacked" class="mdl-checkbox__input" checked>
                             <span class="mdl-checkbox__label">Stacked</span>
+                        </label>
+                        <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="plot2-frequency">
+                            <input type="checkbox" id="plot2-frequency" class="mdl-checkbox__input" checked>
+                            <span class="mdl-checkbox__label">Frequency</span>
                         </label>
 
                         <select id="plot2-x-key">
