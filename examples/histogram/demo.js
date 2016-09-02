@@ -39,9 +39,7 @@ var conf = confFlowers;
 var values = d3.range(1000).map(d3.random.bates(20));
 plot = new ODCD3.Histogram("#plot", values, {
     x:{
-        ticks: 14,
-        groups: false
-
+        ticks: 14
     }
 });
 
