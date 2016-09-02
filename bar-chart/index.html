@@ -1,8 +1,7 @@
 <html>
 <head>
-    <title>ODC-D3 - Open Data Charts for D3</title>
     <!-- Material Design Lite -->
-
+    <title>ODC-D3 - Open Data Charts for D3</title>
     <link rel="stylesheet" href="../bower_components/material-design-lite/material.min.css">
     <!-- Material Design icon font -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
@@ -42,30 +41,20 @@
                 <div class="mdl-cell mdl-cell--12-col">
 
 
-                    <h1>Correlation matrix demo</h1>
+                    <h1>Bar Chart demo</h1>
 
                     <p>
-                        <a href="https://github.com/mwasiluk/ODC-d3/wiki/Correlation-Matrix"><i class="fa fa-book" aria-hidden="true"></i> Wiki page</a> <br/>
-                        <a href="../data/flowers.csv"><i class="fa fa-download" aria-hidden="true"></i>CSV data</a>
+                        <a href="https://github.com/mwasiluk/ODC-d3/wiki/Bar-Chart"><i class="fa fa-book" aria-hidden="true"></i> Wiki page</a> <br/>
+                    </p>
+                    <p>
+                        Bar charts of randomly generated data (inspired by Lee Byron's test data generator)
+                        <button type="button" class="mdl-button mdl-js-button mdl-button--icon" id="generateNewButton">
+                            <i class="material-icons">refresh</i>
+                        </button>
                     </p>
 
-                    <div class="config">
-                        <label for="cell-shape">Cell shape:</label>
-                        <select id="cell-shape" onchange="changeShape(event)">
-                            <option value="ellipse">ellipse</option>
-                            <option value="rect">rect</option>
-                            <option value="circle">circle</option>
-
-                        </select>
-                    </div>
-
-                    <span class="tip"><i class="fa fa-info-circle" aria-hidden="true"></i> Click any cell to view an attached scatter plot</span>
-
-                    <div style="height: 520px">
-                        <div id="plot" style="float: left; margin-top:25px; min-width: 500px;"></div>
-                        <div id="scatterplot"></div>
-                    </div>
-
+                    <div id="plot" style=" max-width: 600px;margin-bottom: 40px"></div>
+                    <div id="plot2" style=" max-width: 600px;margin-bottom: 40px"></div>
 
 
                 </div>
@@ -75,6 +64,7 @@
 </div>
 <script src="../bower_components/d3/d3.min.js" charset="utf-8"></script>
 <script src="../bower_components/odc-d3/dist/odc-d3.min.js" charset="utf-8"></script>
+<script src="../bower_components/jquery/dist/jquery.min.js" charset="utf-8"></script>
 <script src="demo.js"></script>
 <script src="../google-analytics.js"></script>
 <script src="../bower_components/material-design-lite/material.min.js"></script>
