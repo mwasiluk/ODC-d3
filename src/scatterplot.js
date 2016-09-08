@@ -347,10 +347,10 @@ export class ScatterPlot extends Chart{
         }
     }
 
-
-
+    
     setData(data){
         super.setData(data);
         this.enabledGroups = null;
+        return this;
     }
 }
