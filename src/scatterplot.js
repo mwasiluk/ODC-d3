@@ -35,7 +35,7 @@ export class ScatterPlotConfig extends ChartConfig{
     };
     dot = {
         radius: 2,
-        color: d => this.groups.value(d, this.groups.key), // string or function returning color's value for color scale
+        color: d => this.groups ? this.groups.value(d, this.groups.key) : '', // string or function returning color's value for color scale
         d3ColorCategory: 'category10'
     };
     transition= true;
@@ -255,7 +255,7 @@ export class ScatterPlot extends Chart{
                     .duration(200)
                     .style("opacity", .9);
                 var html = "(" + plot.x.value(d) + ", " + plot.y.value(d) + ")";
-                var group = self.config.groups.value(d, self.config.groups.key);
+                var group = self.config.groups ?  self.config.groups.value(d, self.config.groups.key) : null;
                 if (group || group === 0) {
                     html += "<br/>";
                     var label = self.config.groups.label;

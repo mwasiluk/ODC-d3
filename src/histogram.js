@@ -83,8 +83,11 @@ export class Histogram extends Chart{
         if (colorValue && typeof colorValue === 'string' || colorValue instanceof String){
             this.plot.color = colorValue;
         }else if(this.plot.colorCategory){
-            var domain = Object.getOwnPropertyNames(d3.map(this.data, d => this.config.groups.value.call(this.config, d))['_']);
-            self.plot.colorCategory.domain(domain);
+            if(this.config.groups){
+                var domain = Object.getOwnPropertyNames(d3.map(this.data, d => this.config.groups.value.call(this.config, d))['_']);
+                self.plot.colorCategory.domain(domain);
+            }
+
             this.plot.color = d =>  self.plot.colorCategory(d.key);
         }
 

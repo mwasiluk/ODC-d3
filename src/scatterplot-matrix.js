@@ -249,7 +249,6 @@ export class ScatterPlotMatrix extends Chart {
 
 
         function plotSubplot(p) {
-            console.log('plotSubplot');
             var plot = self.plot;
             plot.subplots.push(p);
             var cell = d3.select(this);
@@ -297,7 +296,7 @@ export class ScatterPlotMatrix extends Chart {
                             .style("left", (d3.event.pageX + 5) + "px")
                             .style("top", (d3.event.pageY - 28) + "px");
 
-                        var group = self.config.groups.value(d);
+                        var group = self.config.groups ? self.config.groups.value(d) : false;
                         if(group || group===0 ){
                             html+="<br/>";
                             var label = self.config.groups.label;
