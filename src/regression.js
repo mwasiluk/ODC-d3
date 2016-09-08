@@ -47,7 +47,7 @@ export class Regression extends ScatterPlot{
 
 
         if(groupsAvailable && self.config.mainRegression){
-            var regression = this.initRegression(this.data, false);
+            var regression = this.initRegression(this.plot.data, false);
             self.plot.regressions.push(regression);
         }
 
@@ -60,7 +60,7 @@ export class Regression extends ScatterPlot{
     initGroupRegression() {
         var self = this;
         var dataByGroup = {};
-        self.data.forEach (d=>{
+        this.plot.data.forEach (d=>{
             var groupVal = self.config.groups.value(d, self.config.groups.key);
 
             if(!groupVal && groupVal!==0){
@@ -244,7 +244,7 @@ export class Regression extends ScatterPlot{
         var confidenceAreaClass = self.prefixClass("confidence");
         var regressionSelector = "g."+regressionClass;
         var regression = regressionContainer.selectAll(regressionSelector)
-            .data(self.plot.regressions);
+            .data(self.plot.regressions, (d,i)=> d.group);
 
         var regressionEnterG = regression.enter().insertSelector(regressionSelector);
         var lineClass = self.prefixClass("line");
@@ -277,7 +277,6 @@ export class Regression extends ScatterPlot{
             .append("path")
             .attr("class", confidenceAreaClass)
             .attr("shape-rendering", "optimizeQuality")
-            .style("fill", r => r.color)
             .style("opacity", "0.4");
 
 
@@ -289,7 +288,7 @@ export class Regression extends ScatterPlot{
             areaT = area.transition();
         }
         areaT.attr("d", r => r.confidence.area(r.confidence.points));
-
+        areaT.style("fill", r => r.color)
         regression.exit().remove();
 
     }

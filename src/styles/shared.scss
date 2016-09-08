@@ -14,3 +14,15 @@
   z-index: 1000;
   //border: 1px solid #ccc;
 }
+
+.odc-legend{
+  .legendCells{
+    .cell{
+      cursor: pointer;
+
+      &.odc-disabled{
+        opacity: 0.4!important;
+      }
+    }
+  }
+}

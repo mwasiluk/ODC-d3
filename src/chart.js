@@ -90,7 +90,6 @@ export class Chart {
     initSvg() {
         var self = this;
         var config = this.config;
-        console.log(config.svgClass);
 
         var margin = self.plot.margin;
         var width = self.plot.width + margin.left + margin.right;

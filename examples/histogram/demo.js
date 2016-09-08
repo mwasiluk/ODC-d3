@@ -9,7 +9,7 @@ var confFlowers = {
         label: 'sepal width'
     },
     frequency: true,
-    groups:false
+    groups:flowerGroups
 };
 
 // conf = new  ODCD3.ScatterPlotConfig();

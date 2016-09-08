@@ -75,10 +75,6 @@ export class Histogram extends Chart{
         this.computePlotSize();
 
 
-        this.setupX();
-        this.setupHistogram();
-        this.setupGroupStacks();
-        this.setupY();
 
         if(conf.d3ColorCategory){
             this.plot.colorCategory = d3.scale[conf.d3ColorCategory]();
@@ -87,8 +83,16 @@ export class Histogram extends Chart{
         if (colorValue && typeof colorValue === 'string' || colorValue instanceof String){
             this.plot.color = colorValue;
         }else if(this.plot.colorCategory){
+            var domain = Object.getOwnPropertyNames(d3.map(this.data, d => this.config.groups.value.call(this.config, d))['_']);
+            self.plot.colorCategory.domain(domain);
             this.plot.color = d =>  self.plot.colorCategory(d.key);
         }
+
+        this.plot.data = this.getDataToPlot();
+        this.setupX();
+        this.setupHistogram();
+        this.setupGroupStacks();
+        this.setupY();
 
         return this;
     }
@@ -113,7 +117,7 @@ export class Histogram extends Chart{
         if(conf.ticks){
             x.axis.ticks(conf.ticks);
         }
-        var data = this.data;
+        var data = this.plot.data;
         plot.x.scale.domain([d3.min(data, plot.x.value), d3.max(data, plot.x.value)]);
         
     };
@@ -127,7 +131,7 @@ export class Histogram extends Chart{
 
         y.axis = d3.svg.axis().scale(y.scale).orient(conf.orient);
 
-        var data = this.data;
+        var data = this.plot.data;
         plot.y.scale.domain([0, d3.max(plot.histogramBins, d=>d.y)]);
     };
 
@@ -140,7 +144,7 @@ export class Histogram extends Chart{
         plot.histogram = d3.layout.histogram().frequency(this.config.frequency)
             .value(x.value)
             .bins(ticks);
-        plot.histogramBins = plot.histogram(this.data);
+        plot.histogramBins = plot.histogram(this.plot.data);
 
     }
 
@@ -149,17 +153,25 @@ export class Histogram extends Chart{
         this.plot.groupingEnabled = this.config.groups && this.config.groups.value;
         
         this.plot.stack = d3.layout.stack().values(d=>d.histogramBins);
-        this.plot.groupedData =  d3.nest().key(d => this.plot.groupingEnabled ? this.config.groups.value.call(this.config, d) : 'root' ).entries(this.data);
+        this.plot.groupedData =  d3.nest().key(d => this.plot.groupingEnabled ? this.config.groups.value.call(this.config, d) : 'root' ).entries(this.plot.data);
         this.plot.groupedData.forEach(d=>{
             d.histogramBins = this.plot.histogram.frequency(this.config.frequency || this.plot.groupingEnabled)(d.values);
             if(!this.config.frequency && this.plot.groupingEnabled){
                 d.histogramBins.forEach(b => {
-                    b.dy = b.dy/this.data.length
-                    b.y = b.y/this.data.length
+                    b.dy = b.dy/this.plot.data.length
+                    b.y = b.y/this.plot.data.length
                 });
             }
         });
         this.plot.stackedHistograms = this.plot.stack(this.plot.groupedData);
+    }
+
+    getDataToPlot(){
+        if(!this.enabledGroups){
+            return this.data;
+        }
+
+        return this.data.filter(d => this.enabledGroups.indexOf(this.config.groups.value.call(this.config, d))>-1);
     }
 
     drawAxisX(){
@@ -239,8 +251,9 @@ export class Histogram extends Chart{
 
         barT.attr("transform", function(d) { return "translate(" + plot.x.scale(d.x) + "," + (plot.y.scale(d.y0 +d.y)) + ")"; });
 
+        var dx = plot.histogramBins.length ?  plot.x.scale(plot.histogramBins[0].dx) : 0;
         barRectT
-            .attr("width",  plot.x.scale(plot.histogramBins[0].dx) - plot.x.scale(0)- 1)
+            .attr("width",  dx - plot.x.scale(0)- 1)
             .attr("height", d =>   plot.height - plot.y.scale(d.y));
 
         if(this.plot.color){
@@ -298,13 +311,49 @@ export class Histogram extends Chart{
 
         plot.legend = new Legend(this.svg, this.svgG, scale, legendX, legendY);
 
-        var legendLinear = plot.legend.color()
+        plot.legendColor = plot.legend.color()
             .shapeWidth(this.config.legend.shapeWidth)
             .orient('vertical')
             .scale(scale);
 
+
+        plot.legendColor.on('cellclick', c=> this.onLegendCellClick(c));
+
         plot.legend.container
-            .call(legendLinear);
+            .call(plot.legendColor);
     }
 
+    onLegendCellClick(cellValue){
+        this.updateEnabledGroups(cellValue);
+
+        var isDisabled = this.enabledGroups.indexOf(cellValue)<0;
+        this.plot.legend.container.selectAll("g.cell").each(function(cell){
+            if(cell == cellValue){
+                d3.select(this).classed("odc-disabled", isDisabled);
+            }
+
+        });
+
+        this.init();
+    }
+
+    updateEnabledGroups(cellValue) {
+        if (!this.enabledGroups) {
+            this.enabledGroups = this.plot.colorCategory.domain().slice();
+        }
+        var index = this.enabledGroups.indexOf(cellValue);
+
+        if (index < 0) {
+            this.enabledGroups.push(cellValue);
+        } else {
+            this.enabledGroups.splice(index, 1);
+        }
+    }
+
+
+
+    setData(data){
+        super.setData(data);
+        this.enabledGroups = null;
+    }
 }

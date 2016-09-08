@@ -80,4 +80,6 @@ export class Legend {
         this.rotateLabels = rotateLabels;
         return this;
     }
+
+    
 }
