@@ -1,18 +1,12 @@
-import {Chart, ChartConfig} from "./chart";
+import {ChartWithColorGroups, ChartWithColorGroupsConfig} from "./chart-with-color-groups";
 import {Utils} from './utils'
 import {Legend} from "./legend";
 
-export class ScatterPlotConfig extends ChartConfig{
+export class ScatterPlotConfig extends ChartWithColorGroupsConfig{
 
     svgClass= this.cssClassPrefix+'scatterplot';
     guides= false; //show axis guides
     showTooltip= true; //show tooltip on dot hover
-    showLegend=true;
-    legend={
-        width: 80,
-        margin: 10,
-        shapeWidth: 20
-    };
 
     x={// X axis config
         label: 'X', // axis label
@@ -29,15 +23,9 @@ export class ScatterPlotConfig extends ChartConfig{
         scale: "linear"
     };
     groups={
-        key: 2,
-        value: (d, key) => d[key] , // grouping value accessor,
-        label: ""
+        key: 2
     };
-    dot = {
-        radius: 2,
-        color: d => this.groups ? this.groups.value(d, this.groups.key) : '', // string or function returning color's value for color scale
-        d3ColorCategory: 'category10'
-    };
+    dotRadius = 2;
     transition= true;
 
     constructor(custom){
@@ -52,7 +40,7 @@ export class ScatterPlotConfig extends ChartConfig{
     }
 }
 
-export class ScatterPlot extends Chart{
+export class ScatterPlot extends ChartWithColorGroups{
     constructor(placeholderSelector, data, config) {
         super(placeholderSelector, data, new ScatterPlotConfig(config));
     }
@@ -69,58 +57,12 @@ export class ScatterPlot extends Chart{
 
         this.plot.x={};
         this.plot.y={};
-        this.plot.dot={
-            color: null//color scale mapping function
-        };
-
-
-        this.plot.showLegend = conf.showLegend;
-        if(this.plot.showLegend){
-            this.plot.margin.right = conf.margin.right + conf.legend.width+conf.legend.margin*2;
-        }
-        
 
         this.computePlotSize();
-
-
-        this.setupGroups();
-
-        this.plot.data = this.getDataToPlot();
         this.setupX();
         this.setupY();
 
-
-
         return this;
-    }
-
-    setupGroups() {
-        var self=this;
-        var conf = this.config;
-        this.plot.groupValue = d => conf.groups.value(d, conf.groups.key);
-        if(conf.dot.d3ColorCategory){
-            this.plot.dot.colorCategory = d3.scale[conf.dot.d3ColorCategory]();
-        }
-        var colorValue = conf.dot.color;
-        if(colorValue){
-            this.plot.dot.colorValue = colorValue;
-
-            if (typeof colorValue === 'string' || colorValue instanceof String){
-                this.plot.dot.color = colorValue;
-            }else if(this.plot.dot.colorCategory){
-                var domain = Object.getOwnPropertyNames(d3.map(this.data, d => self.plot.dot.colorValue.call(self,d))['_']);
-                self.plot.dot.colorCategory.domain(domain);
-                this.plot.dot.color = d =>  self.plot.dot.colorCategory(self.plot.dot.colorValue.call(self,d));
-            }
-        }
-    }
-
-    getDataToPlot(){
-        if(!this.enabledGroups){
-            return this.data;
-        }
-
-        return this.data.filter(d => this.enabledGroups.indexOf(this.plot.groupValue(d))>-1);
     }
 
     setupX(){
@@ -220,8 +162,6 @@ export class ScatterPlot extends Chart{
         this.drawAxisY();
 
         this.updateDots();
-
-        this.updateLegend();
     };
 
     updateDots() {
@@ -230,7 +170,6 @@ export class ScatterPlot extends Chart{
         var data = plot.data;
         var dotClass = self.prefixClass('dot');
         self.dotsContainerClass = self.prefixClass('dots-container');
-
 
         var dotsContainer = self.svgG.selectOrAppend("g." + self.dotsContainerClass);
 
@@ -245,7 +184,7 @@ export class ScatterPlot extends Chart{
             dotsT = dots.transition();
         }
 
-        dotsT.attr("r", self.config.dot.radius)
+        dotsT.attr("r", self.config.dotRadius)
             .attr("cx", plot.x.map)
             .attr("cy", plot.y.map);
 
@@ -275,82 +214,10 @@ export class ScatterPlot extends Chart{
                 });
         }
 
-        if (plot.dot.color) {
-            dots.style("fill", plot.dot.color)
+        if (plot.color) {
+            dots.style("fill", plot.color)
         }
 
         dots.exit().remove();
-    }
-
-    updateLegend() {
-
-        var self =this;
-        var plot = this.plot;
-
-        var scale = plot.dot.colorCategory;
-
-
-
-        if(!scale.domain() || scale.domain().length<2){
-            plot.showLegend = false;
-        }
-
-        if(!plot.showLegend){
-            if(plot.legend && plot.legend.container){
-                plot.legend.container.remove();
-            }
-            return;
-        }
-
-
-        var legendX = this.plot.width + this.config.legend.margin;
-        var legendY = this.config.legend.margin;
-
-        plot.legend = new Legend(this.svg, this.svgG, scale, legendX, legendY);
-
-        plot.legendColor = plot.legend.color()
-            .shapeWidth(this.config.legend.shapeWidth)
-            .orient('vertical')
-            .scale(scale);
-
-
-        plot.legendColor.on('cellclick', c=> self.onLegendCellClick(c));
-        
-        plot.legend.container
-            .call(plot.legendColor);
-    }
-
-    onLegendCellClick(cellValue){
-        this.updateEnabledGroups(cellValue);
-
-        var isDisabled = this.enabledGroups.indexOf(cellValue)<0;
-        this.plot.legend.container.selectAll("g.cell").each(function(cell){
-            if(cell == cellValue){
-                d3.select(this).classed("odc-disabled", isDisabled);
-            }
-
-        });
-
-        this.init();
-    }
-
-    updateEnabledGroups(cellValue) {
-        if (!this.enabledGroups) {
-            this.enabledGroups = this.plot.dot.colorCategory.domain().slice();
-        }
-        var index = this.enabledGroups.indexOf(cellValue);
-
-        if (index < 0) {
-            this.enabledGroups.push(cellValue);
-        } else {
-            this.enabledGroups.splice(index, 1);
-        }
-    }
-
-    
-    setData(data){
-        super.setData(data);
-        this.enabledGroups = null;
-        return this;
     }
 }

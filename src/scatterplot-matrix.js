@@ -1,4 +1,4 @@
-import {Chart, ChartConfig} from "./chart";
+import {ChartWithColorGroups} from "./chart-with-color-groups";
 import {ScatterPlotConfig} from "./scatterplot";
 import {Utils} from './utils'
 import {Legend} from "./legend";
@@ -23,8 +23,6 @@ export class ScatterPlotMatrixConfig extends ScatterPlotConfig{
     groups={
         key: undefined, //object property name or array index with grouping variable
         includeInPlot: false, //include group as variable in plot, boolean (default: false)
-        value: (d, key) => d[key], // grouping value accessor,
-        label: ""
     };
     variables= {
         labels: [], //optional array of variable labels (for the diagonal of the plot).
@@ -40,7 +38,7 @@ export class ScatterPlotMatrixConfig extends ScatterPlotConfig{
 
 }
 
-export class ScatterPlotMatrix extends Chart {
+export class ScatterPlotMatrix extends ChartWithColorGroups {
     constructor(placeholderSelector, data, config) {
         super(placeholderSelector, data, new ScatterPlotMatrixConfig(config));
     }
@@ -61,16 +59,7 @@ export class ScatterPlotMatrix extends Chart {
         this.plot.dot={
             color: null//color scale mapping function
         };
-
-
-        this.plot.showLegend = conf.showLegend;
-        if(this.plot.showLegend){
-            margin.right = conf.margin.right + conf.legend.width+conf.legend.margin*2;
-        }
-
-        this.setupGroups();
-
-        this.plot.data = this.getDataToPlot();
+        
         this.setupVariables();
 
         this.plot.size = conf.size;
@@ -106,37 +95,6 @@ export class ScatterPlotMatrix extends Chart {
         return this;
 
     };
-
-    setupGroups() {
-        var self=this;
-        var conf = this.config;
-        this.plot.groupValue = d => conf.groups.value(d, conf.groups.key);
-        if(conf.dot.d3ColorCategory){
-            this.plot.dot.colorCategory = d3.scale[conf.dot.d3ColorCategory]();
-        }
-        var colorValue = conf.dot.color;
-        if(colorValue){
-            this.plot.dot.colorValue = colorValue;
-
-            if (typeof colorValue === 'string' || colorValue instanceof String){
-                this.plot.dot.color = colorValue;
-            }else if(this.plot.dot.colorCategory){
-                var domain = Object.getOwnPropertyNames(d3.map(this.data, d => self.plot.dot.colorValue.call(self,d))['_']);
-                self.plot.dot.colorCategory.domain(domain);
-                this.plot.dot.color = d =>  self.plot.dot.colorCategory(self.plot.dot.colorValue.call(self,d));
-            }
-        }
-    }
-
-    getDataToPlot(){
-        if(!this.enabledGroups){
-            return this.data;
-        }
-
-        var filter = this.data.filter(d => this.enabledGroups.indexOf(this.plot.groupValue(d))>-1);
-        console.log(filter.length);
-        return filter;
-    }
 
     setupVariables() {
         var variablesConf = this.config.variables;
@@ -280,10 +238,10 @@ export class ScatterPlotMatrix extends Chart {
 
                 dotsT.attr("cx", (d) => plot.x.map(d, subplot.x))
                     .attr("cy", (d) => plot.y.map(d, subplot.y))
-                    .attr("r", self.config.dot.radius);
+                    .attr("r", self.config.dotRadius);
 
-                if (plot.dot.color) {
-                    dotsT.style("fill", plot.dot.color)
+                if (plot.color) {
+                    dots.style("fill", plot.color)
                 }
 
                 if(plot.tooltip){
@@ -321,9 +279,6 @@ export class ScatterPlotMatrix extends Chart {
             p.update();
 
         }
-
-
-        this.updateLegend();
     };
 
     drawBrush(cell) {
@@ -335,18 +290,18 @@ export class ScatterPlotMatrix extends Chart {
             .on("brush", brushmove)
             .on("brushend", brushend);
 
-        cell.append("g").call(brush);
+        self.plot.brush = brush;
 
-
-        var brushCell;
+        cell.selectOrAppend("g.brush-container").call(brush);
+        self.clearBrush();
 
         // Clear the previously-active brush, if any.
         function brushstart(p) {
-            if (brushCell !== this) {
-                d3.select(brushCell).call(brush.clear());
+            if (self.plot.brushCell !== this) {
+                self.clearBrush();
                 self.plot.x.scale.domain(self.plot.domainByVariable[p.x]);
                 self.plot.y.scale.domain(self.plot.domainByVariable[p.y]);
-                brushCell = this;
+                self.plot.brushCell = this;
             }
         }
 
@@ -364,76 +319,13 @@ export class ScatterPlotMatrix extends Chart {
         }
     };
 
-    updateLegend() {
-
-        var self =this;
-        var plot = this.plot;
-
-        var scale = plot.dot.colorCategory;
-
-
-
-        if(!scale.domain() || scale.domain().length<2){
-            plot.showLegend = false;
-        }
-
-        if(!plot.showLegend){
-            if(plot.legend && plot.legend.container){
-                plot.legend.container.remove();
-            }
+    clearBrush(){
+        var self = this;
+        if(!self.plot.brushCell){
             return;
         }
-
-
-        var legendX = this.plot.width + this.config.legend.margin;
-        var legendY = this.config.legend.margin;
-
-        plot.legend = new Legend(this.svg, this.svgG, scale, legendX, legendY);
-
-        plot.legendColor = plot.legend.color()
-            .shapeWidth(this.config.legend.shapeWidth)
-            .orient('vertical')
-            .scale(scale);
-
-
-        plot.legendColor.on('cellclick', c=> self.onLegendCellClick(c));
-
-        plot.legend.container
-            .call(plot.legendColor);
-    }
-
-    onLegendCellClick(cellValue){
-        this.updateEnabledGroups(cellValue);
-
-        var isDisabled = this.enabledGroups.indexOf(cellValue)<0;
-        this.plot.legend.container.selectAll("g.cell").each(function(cell){
-            if(cell == cellValue){
-                d3.select(this).classed("odc-disabled", isDisabled);
-            }
-
-        });
-
-        this.init();
-    }
-
-    updateEnabledGroups(cellValue) {
-        if (!this.enabledGroups) {
-            this.enabledGroups = this.plot.dot.colorCategory.domain().slice();
-        }
-        var index = this.enabledGroups.indexOf(cellValue);
-
-        if (index < 0) {
-            this.enabledGroups.push(cellValue);
-        } else {
-            this.enabledGroups.splice(index, 1);
-        }
-    }
-
-
-
-    setData(data){
-        super.setData(data);
-        this.enabledGroups = null;
-        return this;
+        d3.select(self.plot.brushCell).call(self.plot.brush.clear());
+        self.svgG.selectAll(".hidden").classed("hidden", false);
+        self.plot.brushCell=null;
     }
 }

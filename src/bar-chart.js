@@ -1,17 +1,12 @@
-import {Chart, ChartConfig} from "./chart";
+import {ChartWithColorGroups, ChartWithColorGroupsConfig} from "./chart-with-color-groups";
 import {Utils} from './utils'
 import {Legend} from "./legend";
 
-export class BarChartConfig extends ChartConfig{
+export class BarChartConfig extends ChartWithColorGroupsConfig{
 
     svgClass= this.cssClassPrefix+'bar-chart';
     showLegend=true;
     showTooltip =true;
-    legend={
-        width: 80,
-        margin: 10,
-        shapeWidth: 20
-    };
     x={// X axis config
         label: '', // axis label
         key: 0,
@@ -26,13 +21,6 @@ export class BarChartConfig extends ChartConfig{
         orient: "left",
         scale: "linear"
     };
-    groups={
-        key: 1,
-        value: (d) => d[this.groups.key] , // grouping value accessor,
-        label: ""
-    };
-    color = undefined // string or function returning color's value for color scale
-    d3ColorCategory= 'category10';
     transition= true;
 
     constructor(custom){
@@ -46,7 +34,7 @@ export class BarChartConfig extends ChartConfig{
     }
 }
 
-export class BarChart extends Chart{
+export class BarChart extends ChartWithColorGroups{
     constructor(placeholderSelector, data, config) {
         super(placeholderSelector, data, new BarChartConfig(config));
     }
@@ -64,20 +52,26 @@ export class BarChart extends Chart{
         this.plot.x={};
         this.plot.y={};
 
-        this.plot.showLegend = conf.showLegend;
-        if(this.plot.showLegend){
-            this.plot.margin.right = conf.margin.right + conf.legend.width+conf.legend.margin*2;
-        }
-
-
         this.computePlotSize();
         this.setupY();
         this.setupX();
         this.setupGroupStacks();
-
-
         this.setupYDomain();
 
+        return this;
+    }
+
+    setupGroups() {
+        var self=this;
+        var conf = this.config;
+
+
+        this.plot.groupingEnabled = this.isGroupingEnabled();
+        if(this.plot.groupingEnabled){
+            this.plot.groupValue = d => d.key;
+        }else{
+            this.plot.groupValue = d => null;
+        }
 
         if(conf.d3ColorCategory){
             this.plot.colorCategory = d3.scale[conf.d3ColorCategory]();
@@ -86,12 +80,18 @@ export class BarChart extends Chart{
         if (colorValue && typeof colorValue === 'string' || colorValue instanceof String){
             this.plot.color = colorValue;
         }else if(this.plot.colorCategory){
+            if(this.plot.groupingEnabled){
+
+                var domain = Object.getOwnPropertyNames(d3.map(this.data, this.plot.groupValue)['_']);
+                self.plot.colorCategory.domain(domain);
+            }
             this.plot.color = d =>  self.plot.colorCategory(d.key);
         }
-
-        return this;
     }
 
+    isGroupingEnabled(){
+        return this.config.series;
+    }
 
 
     setupX(){
@@ -112,16 +112,17 @@ export class BarChart extends Chart{
 
         x.axis = d3.svg.axis().scale(x.scale).orient(conf.orient);
 
-        var data = this.data;
+        var data = this.plot.data;
         var domain;
-        if(!this.config.series){
+        if(!data || !data.length){
+            domain = [];
+        }else if(!this.config.series){
             domain = d3.map(data, x.value).keys();
         }else{
             domain = d3.map(data[0].values, x.value).keys();
         }
 
         plot.x.scale.domain(domain);
-        console.log(' plot.x.scale.domain', plot.x.scale.domain());
         
     };
 
@@ -142,7 +143,7 @@ export class BarChart extends Chart{
 
     setupYDomain() {
         var plot = this.plot;
-        var data = this.data;
+        var data = this.plot.data;
         var domain;
         var yStackMax = d3.max(plot.layers, layer => d3.max(layer.values, d => d.y0 + d.y));
         if(!this.config.series){
@@ -159,7 +160,7 @@ export class BarChart extends Chart{
     groupData(){
         var self=this;
         this.plot.groupingEnabled = this.config.series;
-        var data = this.data;
+        var data = this.plot.data;
         if(!this.plot.groupingEnabled ){
             this.plot.groupedData =  [{
                 key: 'root',
@@ -307,42 +308,8 @@ export class BarChart extends Chart{
         super.update(newData);
         this.drawAxisX();
         this.drawAxisY();
-
         this.drawBars();
-
-        this.updateLegend();
+        return this;
     };
-
-
-    updateLegend() {
-        var plot = this.plot;
-
-        var scale = plot.colorCategory;
-        if(!scale.domain() || scale.domain().length<2){
-            plot.showLegend = false;
-        }
-
-        if(!plot.showLegend){
-            if(plot.legend && plot.legend.container){
-                plot.legend.container.remove();
-            }
-            return;
-        }
-
-
-        var legendX = this.plot.width + this.config.legend.margin;
-        var legendY = this.config.legend.margin;
-
-        plot.legend = new Legend(this.svg, this.svgG, scale, legendX, legendY);
-
-        var legendLinear = plot.legend.color()
-            .shapeWidth(this.config.legend.shapeWidth)
-            .orient('vertical')
-            .scale(scale);
-
-        plot.legend.container
-            .call(legendLinear);
-    }
-
 
 }
