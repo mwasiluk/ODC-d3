@@ -99,18 +99,21 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
     setupVariables() {
         var variablesConf = this.config.variables;
 
-        var data = this.data;
+        var data = this.plot.groupedData;
         var plot = this.plot;
         plot.domainByVariable = {};
         plot.variables = variablesConf.keys;
         if(!plot.variables || !plot.variables.length){
-            plot.variables = Utils.inferVariables(data, this.config.groups.key, this.config.includeInPlot);
+
+            plot.variables = Utils.inferVariables(data[0].values, this.config.groups.key, this.config.includeInPlot);
         }
 
         plot.labels = [];
         plot.labelByVariable = {};
         plot.variables.forEach((variableKey, index) => {
-            plot.domainByVariable[variableKey] = d3.extent(data, function(d) { return variablesConf.value(d, variableKey) });
+            var min = d3.min(data, s=>d3.min(s.values, d=>variablesConf.value(d, variableKey)));
+            var max = d3.max(data, s=>d3.max(s.values, d=>variablesConf.value(d, variableKey)));
+            plot.domainByVariable[variableKey] = [min,max];
             var label = variableKey;
             if(variablesConf.labels && variablesConf.labels.length>index){
 
@@ -226,8 +229,15 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
             p.update = function() {
 
                 var subplot = this;
-                var dots = cell.selectAll("circle")
-                    .data(self.plot.data);
+                var layerClass = self.prefixClass('layer');
+
+
+                var layer = cell.selectAll("g."+layerClass).data(self.plot.groupedData);
+
+                layer.enter().appendSelector("g."+layerClass);
+
+                var dots = layer.selectAll("circle")
+                    .data(d=>d.values);
 
                 dots.enter().append("circle");
 
@@ -240,9 +250,13 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
                     .attr("cy", (d) => plot.y.map(d, subplot.y))
                     .attr("r", self.config.dotRadius);
 
-                if (plot.color) {
+
+                if (plot.seriesColor) {
+                    layer.style("fill", plot.seriesColor)
+                }else if(plot.color){
                     dots.style("fill", plot.color)
                 }
+
 
                 if(plot.tooltip){
                     dots.on("mouseover", (d) => {
@@ -254,7 +268,7 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
                             .style("left", (d3.event.pageX + 5) + "px")
                             .style("top", (d3.event.pageY - 28) + "px");
 
-                        var group = self.config.groups ? self.config.groups.value(d) : false;
+                        var group = self.config.groups ?  self.config.groups.value.call(self.config,d) : null;
                         if(group || group===0 ){
                             html+="<br/>";
                             var label = self.config.groups.label;
@@ -275,6 +289,7 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
                 }
 
                 dots.exit().remove();
+                layer.exit().remove();
             };
             p.update();
 

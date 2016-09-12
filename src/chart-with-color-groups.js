@@ -12,10 +12,11 @@ export class ChartWithColorGroupsConfig extends ChartConfig{
     };
     groups={
         key: 2,
-        value: (d) => d[this.groups.key]  , // grouping value accessor,
+        value: function(d) { return d[this.groups.key]}  , // grouping value accessor,
         label: ""
     };
-    color =  function(d) {return this.groups ? this.groups.value(d, this.groups.key) : ''};// string or function returning color's value for color scale
+    series = false;
+    color =  undefined;// string or function returning color's value for color scale
     d3ColorCategory= 'category10';
 
     constructor(custom){
@@ -41,18 +42,19 @@ export class ChartWithColorGroups extends Chart{
         var self=this;
 
         var conf = this.config;
-        console.log(conf);
+       
         this.plot.showLegend = conf.showLegend;
         if(this.plot.showLegend){
             this.plot.margin.right = conf.margin.right + conf.legend.width+conf.legend.margin*2;
         }
         this.setupGroups();
         this.plot.data = this.getDataToPlot();
+        this.groupData();
         return this;
     }
 
     isGroupingEnabled(){
-        return this.config.groups && this.config.groups.value;
+        return this.config.series || (this.config.groups && this.config.groups.value);
     }
 
     setupGroups() {
@@ -61,7 +63,12 @@ export class ChartWithColorGroups extends Chart{
 
         this.plot.groupingEnabled = this.isGroupingEnabled();
         if(this.plot.groupingEnabled){
-            this.plot.groupValue = d => conf.groups.value.call(conf, d);
+            if(this.config.series){
+                this.plot.groupValue = s => s.key;
+            }else{
+                this.plot.groupValue = d => conf.groups.value.call(conf, d);
+            }
+
         }else{
             this.plot.groupValue = d => null;
         }
@@ -72,15 +79,52 @@ export class ChartWithColorGroups extends Chart{
         var colorValue = conf.color;
         if (colorValue && typeof colorValue === 'string' || colorValue instanceof String){
             this.plot.color = colorValue;
+            this.plot.seriesColor = this.plot.color;
         }else if(this.plot.colorCategory){
             self.plot.colorValue=colorValue;
             if(this.plot.groupingEnabled){
 
                 var domain = Object.getOwnPropertyNames(d3.map(this.data, d => this.plot.groupValue(d))['_']);
+
                 self.plot.colorCategory.domain(domain);
             }
-            this.plot.color = d =>  self.plot.colorCategory(self.plot.colorValue.call(conf,d));
+
+            this.plot.seriesColor = s =>  self.plot.colorCategory(s.key);
+            this.plot.color = d =>  self.plot.colorCategory(this.plot.groupValue(d));
+            
         }
+    }
+
+    groupData(){
+        var self=this;
+        var data = this.plot.data;
+        if(!this.plot.groupingEnabled ){
+            this.plot.groupedData =  [{
+                key: null,
+                label: '',
+                values: data
+            }];
+            this.plot.dataLength = data.length;
+        }else{
+
+            if(this.config.series){
+                this.plot.groupedData =  data.map(s=>{
+                    return{
+                        key: s.key,
+                        label: s.label,
+                        values: s.values
+                    }
+                });
+            }else{
+                this.plot.groupedData = d3.nest().key(this.plot.groupValue).entries(data);
+            }
+
+            console.log(this.plot.groupingEnabled,this.plot.groupedData);
+
+            this.plot.dataLength = d3.sum(this.plot.groupedData, s=>s.values.length);
+        }
+
+
     }
 
     getDataToPlot(){

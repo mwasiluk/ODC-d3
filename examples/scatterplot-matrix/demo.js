@@ -12,6 +12,7 @@ var config = {
     groups:{
         key: 'species'
     },
+    // series: true,
     x:{
     },
     dot:{}
@@ -50,6 +51,8 @@ var plot;
 plot.init();*/
 d3.csv("../data/flowers.csv", function(error, data) {
     console.log(data);
+
+    // data = d3.nest().key(function(d){return d.species}).entries(data);
     plot = new ODCD3.ScatterPlotMatrix("#scatterplot", data, config);
 
 });

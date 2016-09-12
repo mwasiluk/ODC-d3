@@ -9,7 +9,7 @@ export class HistogramConfig extends ChartWithColorGroupsConfig{
     x={// X axis config
         label: '', // axis label
         key: 0,
-        value: (d, key) => Utils.isNumber(d) ? d : d[key], // x value accessor
+        value: (d, key) => Utils.isNumber(d) ? d : parseFloat(d[key]), // x value accessor
         scale: "linear",
         ticks: undefined,
     };
@@ -61,7 +61,6 @@ export class Histogram extends ChartWithColorGroups{
         this.setupHistogram();
         this.setupGroupStacks();
         this.setupY();
-
         return this;
     }
 
@@ -85,8 +84,8 @@ export class Histogram extends ChartWithColorGroups{
         if(conf.ticks){
             x.axis.ticks(conf.ticks);
         }
-        var data = this.plot.data;
-        plot.x.scale.domain([d3.min(data, plot.x.value), d3.max(data, plot.x.value)]);
+        var data = this.plot.groupedData;
+        plot.x.scale.domain([d3.min(data, s=>d3.min(s.values, plot.x.value)), d3.max(data, s=>d3.max(s.values, plot.x.value))]);
         
     };
 
@@ -98,10 +97,12 @@ export class Histogram extends ChartWithColorGroups{
         y.scale = d3.scale[conf.scale]().range([plot.height, 0]);
 
         y.axis = d3.svg.axis().scale(y.scale).orient(conf.orient);
-
         var data = this.plot.data;
-        plot.y.scale.domain([0, d3.max(plot.histogramBins, d=>d.y)]);
+        var yStackMax = d3.max(plot.stackedHistograms, layer => d3.max(layer.histogramBins, d => d.y0 + d.y));
+        plot.y.scale.domain([0, yStackMax]);
+
     };
+
 
     setupHistogram() {
         var plot = this.plot;
@@ -112,27 +113,23 @@ export class Histogram extends ChartWithColorGroups{
         plot.histogram = d3.layout.histogram().frequency(this.config.frequency)
             .value(x.value)
             .bins(ticks);
-        plot.histogramBins = plot.histogram(this.plot.data);
-
     }
 
     setupGroupStacks() {
         var self=this;
-        this.plot.groupingEnabled = this.config.groups && this.config.groups.value;
-        
+        console.log(this.plot.groupedData);
         this.plot.stack = d3.layout.stack().values(d=>d.histogramBins);
-        this.plot.groupedData =  d3.nest().key(d => this.plot.groupingEnabled ? this.plot.groupValue(d) : 'root' ).entries(this.plot.data);
         this.plot.groupedData.forEach(d=>{
             d.histogramBins = this.plot.histogram.frequency(this.config.frequency || this.plot.groupingEnabled)(d.values);
+            console.log(d.histogramBins);
             if(!this.config.frequency && this.plot.groupingEnabled){
                 d.histogramBins.forEach(b => {
-                    b.dy = b.dy/this.plot.data.length
-                    b.y = b.y/this.plot.data.length
+                    b.dy = b.dy/this.plot.dataLength
+                    b.y = b.y/this.plot.dataLength
                 });
             }
         });
         this.plot.stackedHistograms = this.plot.stack(this.plot.groupedData);
-        this.plot.layerColor = d =>  self.plot.colorCategory(d.key);
     }
 
     drawAxisX(){
@@ -212,14 +209,14 @@ export class Histogram extends ChartWithColorGroups{
 
         barT.attr("transform", function(d) { return "translate(" + plot.x.scale(d.x) + "," + (plot.y.scale(d.y0 +d.y)) + ")"; });
 
-        var dx = plot.histogramBins.length ?  plot.x.scale(plot.histogramBins[0].dx) : 0;
+        var dx = plot.stackedHistograms.length ? (plot.stackedHistograms[0].histogramBins.length ?  plot.x.scale(plot.stackedHistograms[0].histogramBins[0].dx) : 0) : 0;
         barRectT
             .attr("width",  dx - plot.x.scale(0)- 1)
             .attr("height", d =>   plot.height - plot.y.scale(d.y));
 
         if(this.plot.color){
             layerT
-                .attr("fill", this.plot.layerColor);
+                .attr("fill", this.plot.seriesColor);
         }
 
         if (plot.tooltip) {

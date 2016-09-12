@@ -2,55 +2,55 @@ import {ChartWithColorGroups, ChartWithColorGroupsConfig} from "./chart-with-col
 import {Utils} from './utils'
 import {Legend} from "./legend";
 
-export class BarChartConfig extends ChartWithColorGroupsConfig{
+export class BarChartConfig extends ChartWithColorGroupsConfig {
 
-    svgClass= this.cssClassPrefix+'bar-chart';
-    showLegend=true;
-    showTooltip =true;
-    x={// X axis config
+    svgClass = this.cssClassPrefix + 'bar-chart';
+    showLegend = true;
+    showTooltip = true;
+    x = {// X axis config
         label: '', // axis label
         key: 0,
         value: (d, key) => Utils.isNumber(d) ? d : d[key], // x value accessor
         scale: "ordinal",
         ticks: undefined,
     };
-    y={// Y axis config
+    y = {// Y axis config
         key: 1,
         value: (d, key) => Utils.isNumber(d) ? d : d[key], // x value accessor
         label: '', // axis label,
         orient: "left",
         scale: "linear"
     };
-    transition= true;
+    transition = true;
 
-    constructor(custom){
+    constructor(custom) {
         super();
         var config = this;
 
-        if(custom){
+        if (custom) {
             Utils.deepExtend(this, custom);
         }
 
     }
 }
 
-export class BarChart extends ChartWithColorGroups{
+export class BarChart extends ChartWithColorGroups {
     constructor(placeholderSelector, data, config) {
         super(placeholderSelector, data, new BarChartConfig(config));
     }
 
-    setConfig(config){
+    setConfig(config) {
         return super.setConfig(new BarChartConfig(config));
     }
 
-    initPlot(){
+    initPlot() {
         super.initPlot();
-        var self=this;
+        var self = this;
 
         var conf = this.config;
 
-        this.plot.x={};
-        this.plot.y={};
+        this.plot.x = {};
+        this.plot.y = {};
 
         this.computePlotSize();
         this.setupY();
@@ -61,40 +61,8 @@ export class BarChart extends ChartWithColorGroups{
         return this;
     }
 
-    setupGroups() {
-        var self=this;
-        var conf = this.config;
 
-
-        this.plot.groupingEnabled = this.isGroupingEnabled();
-        if(this.plot.groupingEnabled){
-            this.plot.groupValue = d => d.key;
-        }else{
-            this.plot.groupValue = d => null;
-        }
-
-        if(conf.d3ColorCategory){
-            this.plot.colorCategory = d3.scale[conf.d3ColorCategory]();
-        }
-        var colorValue = conf.color;
-        if (colorValue && typeof colorValue === 'string' || colorValue instanceof String){
-            this.plot.color = colorValue;
-        }else if(this.plot.colorCategory){
-            if(this.plot.groupingEnabled){
-
-                var domain = Object.getOwnPropertyNames(d3.map(this.data, this.plot.groupValue)['_']);
-                self.plot.colorCategory.domain(domain);
-            }
-            this.plot.color = d =>  self.plot.colorCategory(d.key);
-        }
-    }
-
-    isGroupingEnabled(){
-        return this.config.series;
-    }
-
-
-    setupX(){
+    setupX() {
 
         var plot = this.plot;
         var x = plot.x;
@@ -114,19 +82,19 @@ export class BarChart extends ChartWithColorGroups{
 
         var data = this.plot.data;
         var domain;
-        if(!data || !data.length){
+        if (!data || !data.length) {
             domain = [];
-        }else if(!this.config.series){
+        } else if (!this.config.series) {
             domain = d3.map(data, x.value).keys();
-        }else{
+        } else {
             domain = d3.map(data[0].values, x.value).keys();
         }
 
         plot.x.scale.domain(domain);
-        
+
     };
 
-    setupY (){
+    setupY() {
 
         var plot = this.plot;
         var y = plot.y;
@@ -136,7 +104,7 @@ export class BarChart extends ChartWithColorGroups{
         y.map = d => y.scale(y.value(d));
 
         y.axis = d3.svg.axis().scale(y.scale).orient(conf.orient);
-        if(conf.ticks){
+        if (conf.ticks) {
             y.axis.ticks(conf.ticks);
         }
     };
@@ -145,62 +113,43 @@ export class BarChart extends ChartWithColorGroups{
         var plot = this.plot;
         var data = this.plot.data;
         var domain;
-        var yStackMax = d3.max(plot.layers, layer => d3.max(layer.values, d => d.y0 + d.y));
-        if(!this.config.series){
-            domain = [d3.min(data, plot.y.value), d3.max(data, plot.y.value)];
-        }else{
+        var yStackMax = d3.max(plot.layers, layer => d3.max(layer.points, d => d.y0 + d.y));
 
-            // var min = d3.min(data, s=>d3.min(s.values, plot.y.value));
-            var max = yStackMax;
-            domain = [0, max];
-        }
+
+        // var min = d3.min(data, s=>d3.min(s.values, plot.y.value));
+        var max = yStackMax;
+        domain = [0, max];
+
         plot.y.scale.domain(domain);
         console.log(' plot.y.scale.domain', plot.y.scale.domain());
     }
-    groupData(){
-        var self=this;
-        this.plot.groupingEnabled = this.config.series;
-        var data = this.plot.data;
-        if(!this.plot.groupingEnabled ){
-            this.plot.groupedData =  [{
-                key: 'root',
-                values: self.mapToPoints(data)
-            }];
-        }else{
 
-            this.plot.groupedData =  data.map(s=>{
-                return{
-                    key: s.key,
-                    values: self.mapToPoints(s.values)
-                }
-            });
-
-        }
-    }
     setupGroupStacks() {
-        var self=this;
+        var self = this;
         this.groupData();
 
-        this.plot.stack = d3.layout.stack().values(d=>d.values);
+        this.plot.stack = d3.layout.stack().values(d=>d.points);
+        this.plot.groupedData.forEach(s=> {
+            s.points = s.values.map(v=>self.mapToPoint(v));
+        });
         this.plot.layers = this.plot.stack(this.plot.groupedData);
 
     }
 
-    mapToPoints(values){
+    mapToPoint(value) {
         var plot = this.plot;
-        return values.map(v=>{
-            return {
-                x: plot.x.value(v),
-                y: plot.y.value(v),
-            }
-        })
+        return {
+            x: plot.x.value(value),
+            y: parseFloat(plot.y.value(value))
+        }
     }
 
-    drawAxisX(){
+
+    drawAxisX() {
         var self = this;
         var plot = self.plot;
         var axisConf = this.config.x;
-        var axis = self.svgG.selectOrAppend("g."+self.prefixClass('axis-x')+"."+self.prefixClass('axis')+(self.config.guides ? '' : '.'+self.prefixClass('no-guides')))
+        var axis = self.svgG.selectOrAppend("g." + self.prefixClass('axis-x') + "." + self.prefixClass('axis') + (self.config.guides ? '' : '.' + self.prefixClass('no-guides')))
             .attr("transform", "translate(0," + plot.height + ")");
 
         var axisT = axis;
@@ -210,18 +159,18 @@ export class BarChart extends ChartWithColorGroups{
 
         axisT.call(plot.x.axis);
 
-        axis.selectOrAppend("text."+self.prefixClass('label'))
-            .attr("transform", "translate("+ (plot.width/2) +","+ (plot.margin.bottom) +")")  // text is drawn off the screen top left, move down and out and rotate
+        axis.selectOrAppend("text." + self.prefixClass('label'))
+            .attr("transform", "translate(" + (plot.width / 2) + "," + (plot.margin.bottom) + ")")  // text is drawn off the screen top left, move down and out and rotate
             .attr("dy", "-1em")
             .style("text-anchor", "middle")
             .text(axisConf.label);
     };
 
-    drawAxisY(){
+    drawAxisY() {
         var self = this;
         var plot = self.plot;
         var axisConf = this.config.y;
-        var axis = self.svgG.selectOrAppend("g."+self.prefixClass('axis-y')+"."+self.prefixClass('axis')+(self.config.guides ? '' : '.'+self.prefixClass('no-guides')));
+        var axis = self.svgG.selectOrAppend("g." + self.prefixClass('axis-y') + "." + self.prefixClass('axis') + (self.config.guides ? '' : '.' + self.prefixClass('no-guides')));
 
         var axisT = axis;
         if (self.config.transition) {
@@ -230,8 +179,8 @@ export class BarChart extends ChartWithColorGroups{
 
         axisT.call(plot.y.axis);
 
-        axis.selectOrAppend("text."+self.prefixClass('label'))
-            .attr("transform", "translate("+ -plot.margin.left +","+(plot.height/2)+")rotate(-90)")  // text is drawn off the screen top left, move down and out and rotate
+        axis.selectOrAppend("text." + self.prefixClass('label'))
+            .attr("transform", "translate(" + -plot.margin.left + "," + (plot.height / 2) + ")rotate(-90)")  // text is drawn off the screen top left, move down and out and rotate
             .attr("dy", "1em")
             .style("text-anchor", "middle")
             .text(axisConf.label);
@@ -242,19 +191,19 @@ export class BarChart extends ChartWithColorGroups{
         var self = this;
         var plot = self.plot;
 
-        console.log(plot.layers);
+        console.log('layers', plot.layers);
 
         var layerClass = this.prefixClass("layer");
 
         var barClass = this.prefixClass("bar");
-        var layer = self.svgG.selectAll("."+layerClass)
+        var layer = self.svgG.selectAll("." + layerClass)
             .data(plot.layers);
 
         layer.enter().append("g")
             .attr("class", layerClass);
 
-        var bar = layer.selectAll("."+barClass)
-            .data(d => d.values);
+        var bar = layer.selectAll("." + barClass)
+            .data(d => d.points);
 
         bar.enter().append("g")
             .attr("class", barClass)
@@ -270,20 +219,22 @@ export class BarChart extends ChartWithColorGroups{
         if (this.transitionEnabled()) {
             barRectT = barRect.transition();
             barT = bar.transition();
-            layerT= layer.transition();
+            layerT = layer.transition();
         }
 
         var yDomain = plot.y.scale.domain();
-        barT.attr("transform", function(d) { return "translate(" + plot.x.scale(d.x) + "," + (plot.y.scale(d.y0+d.y )) + ")"; });
+        barT.attr("transform", function (d) {
+            return "translate(" + plot.x.scale(d.x) + "," + (plot.y.scale(d.y0 + d.y)) + ")";
+        });
 
         barRectT
-            .attr("width",  plot.x.scale.rangeBand())
-            .attr("height", d =>   plot.y.scale(d.y0 ) - plot.y.scale(d.y0 + d.y - yDomain[0]));
+            .attr("width", plot.x.scale.rangeBand())
+            .attr("height", d => plot.y.scale(d.y0) - plot.y.scale(d.y0 + d.y - yDomain[0]));
 
 
-        if(this.plot.color){
+        if (this.plot.seriesColor) {
             layerT
-                .attr("fill", this.plot.color);
+                .attr("fill", this.plot.seriesColor);
         }
 
         if (plot.tooltip) {
@@ -304,7 +255,7 @@ export class BarChart extends ChartWithColorGroups{
         bar.exit().remove();
     }
 
-    update(newData){
+    update(newData) {
         super.update(newData);
         this.drawAxisX();
         this.drawAxisY();

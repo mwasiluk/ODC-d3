@@ -17,6 +17,7 @@ var confFlowers = {
         key: 'species',
         label: "species"
     }
+    // series: true
 
 };
 // conf = new  ODCD3.ScatterPlotConfig();
@@ -42,6 +43,7 @@ var conf = confFlowers;
 
 d3.csv("../data/flowers.csv", function(error, data) {
     console.log(data);
+    // data = d3.nest().key(function(d){return d.species}).entries(data);
     plot = new ODCD3.ScatterPlot("#scatterplot", data, conf);
 
 });

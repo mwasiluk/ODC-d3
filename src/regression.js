@@ -41,7 +41,7 @@ export class Regression extends ScatterPlot{
     initRegressionLines(){
 
         var self = this;
-        var groupsAvailable = self.config.groups && self.config.groups.value;
+        var groupsAvailable = self.plot.groupingEnabled;
 
         self.plot.regressions= [];
 
@@ -59,28 +59,11 @@ export class Regression extends ScatterPlot{
 
     initGroupRegression() {
         var self = this;
-        var dataByGroup = {};
-        this.plot.data.forEach (d=>{
-            var groupVal = self.config.groups.value(d, self.config.groups.key);
 
-            if(!groupVal && groupVal!==0){
-                return;
-            }
-
-            if(!dataByGroup[groupVal]){
-                dataByGroup[groupVal] = [];
-            }
-            dataByGroup[groupVal].push(d);
-        });
-
-        for(var key in dataByGroup){
-            if (!dataByGroup.hasOwnProperty(key)) {
-                continue;
-            }
-
-            var regression = this.initRegression(dataByGroup[key], key);
+        self.plot.groupedData.forEach(group=>{
+            var regression = this.initRegression(group.values, group.key);
             self.plot.regressions.push(regression);
-        }
+        });
     }
 
     initRegression(values, groupVal){
@@ -114,14 +97,18 @@ export class Regression extends ScatterPlot{
             .interpolate("basis")
             .x(d => self.plot.x.scale(d.x))
             .y(d => self.plot.y.scale(d.y));
-        
 
-        var color = self.plot.dot.color;
+        var color = self.plot.color;
 
         var defaultColor = "black";
         if(Utils.isFunction(color)){
             if(values.length && groupVal!==false){
-                color = color(values[0]);
+                if(self.config.series){
+                    color =self.plot.colorCategory(groupVal);
+                }else{
+                    color = color(values[0]);
+                }
+
             }else{
                 color = defaultColor;
             }

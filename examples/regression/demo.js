@@ -13,10 +13,11 @@ var confFlowers = {
         key: 'petal width',
         label: 'petal width'
     },
-    groups:{
+    /*groups:{
         key: 'species',
         label: "species"
-    },
+    },*/
+    series:true,
     mainRegression: false,
     groupRegression: true,
     confidence:{
@@ -47,6 +48,7 @@ var conf = confFlowers;
 
 d3.csv("../data/flowers.csv", function(error, data) {
     console.log(data);
+    data = d3.nest().key(function(d){return d.species}).entries(data);
     plot = new ODCD3.Regression("#plot", data, conf);
     setTimeout(function(){
         conf.confidence.level = 0.99999;

@@ -13,14 +13,16 @@ export class ScatterPlotConfig extends ChartWithColorGroupsConfig{
         key: 0,
         value: (d, key) => d[key], // x value accessor
         orient: "bottom",
-        scale: "linear"
+        scale: "linear",
+        domainMargin: 0.05
     };
     y={// Y axis config
         label: 'Y', // axis label,
         key: 1,
         value: (d, key) => d[key], // y value accessor
         orient: "left",
-        scale: "linear"
+        scale: "linear",
+        domainMargin: 0.05
     };
     groups={
         key: 2
@@ -81,8 +83,14 @@ export class ScatterPlot extends ChartWithColorGroups{
         x.scale = d3.scale[conf.scale]().range([0, plot.width]);
         x.map = d => x.scale(x.value(d));
         x.axis = d3.svg.axis().scale(x.scale).orient(conf.orient);
-        var data = this.plot.data;
-        plot.x.scale.domain([d3.min(data, plot.x.value)-1, d3.max(data, plot.x.value)+1]);
+        var data = this.plot.groupedData;
+
+
+        var domain = [parseFloat(d3.min(data, s=>d3.min(s.values, plot.x.value))), parseFloat(d3.max(data, s=>d3.max(s.values, plot.x.value)))];
+        var margin = (domain[1]-domain[0])* conf.domainMargin;
+        domain[0]-=margin;
+        domain[1]+=margin;
+        plot.x.scale.domain(domain);
         if(this.config.guides) {
             x.axis.tickSize(-plot.height);
         }
@@ -111,8 +119,14 @@ export class ScatterPlot extends ChartWithColorGroups{
         }
 
 
-        var data = this.plot.data;
-        plot.y.scale.domain([d3.min(data, plot.y.value)-1, d3.max(data, plot.y.value)+1]);
+        var data = this.plot.groupedData;
+
+        var domain = [parseFloat(d3.min(data, s=>d3.min(s.values, plot.y.value))), parseFloat(d3.max(data, s=>d3.max(s.values, plot.y.value)))];
+        var margin = (domain[1]-domain[0])* conf.domainMargin;
+        domain[0]-=margin;
+        domain[1]+=margin;
+        plot.y.scale.domain(domain);
+        // plot.y.scale.domain([d3.min(data, plot.y.value)-1, d3.max(data, plot.y.value)+1]);
     };
 
     drawAxisX(){
@@ -168,13 +182,18 @@ export class ScatterPlot extends ChartWithColorGroups{
         var self = this;
         var plot = self.plot;
         var data = plot.data;
+        var layerClass = self.prefixClass('layer');
         var dotClass = self.prefixClass('dot');
         self.dotsContainerClass = self.prefixClass('dots-container');
 
         var dotsContainer = self.svgG.selectOrAppend("g." + self.dotsContainerClass);
 
-        var dots = dotsContainer.selectAll('.' + dotClass)
-            .data(data);
+        var layer = dotsContainer.selectAll("g."+layerClass).data(plot.groupedData);
+
+        layer.enter().appendSelector("g."+layerClass);
+
+        var dots = layer.selectAll('.' + dotClass)
+            .data(d=>d.values);
 
         dots.enter().append("circle")
             .attr("class", dotClass);
@@ -194,7 +213,7 @@ export class ScatterPlot extends ChartWithColorGroups{
                     .duration(200)
                     .style("opacity", .9);
                 var html = "(" + plot.x.value(d) + ", " + plot.y.value(d) + ")";
-                var group = self.config.groups ?  self.config.groups.value(d, self.config.groups.key) : null;
+                var group = self.config.groups ?  self.config.groups.value.call(self.config,d) : null;
                 if (group || group === 0) {
                     html += "<br/>";
                     var label = self.config.groups.label;
@@ -214,10 +233,13 @@ export class ScatterPlot extends ChartWithColorGroups{
                 });
         }
 
-        if (plot.color) {
+        if (plot.seriesColor) {
+            layer.style("fill", plot.seriesColor)
+        }else if(plot.color){
             dots.style("fill", plot.color)
         }
 
         dots.exit().remove();
+        layer.exit().remove();
     }
 }

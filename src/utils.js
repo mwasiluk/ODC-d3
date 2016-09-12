@@ -61,6 +61,10 @@ export class Utils {
 
     static inferVariables(data, groupKey, includeGroup) {
         var res = [];
+        if(!data){
+            return res;
+        }
+
         if (data.length) {
             var d = data[0];
             if (d instanceof Array) {
@@ -76,7 +80,7 @@ export class Utils {
                 }
             }
         }
-        if (!includeGroup) {
+        if (groupKey !== null && groupKey !== undefined && !includeGroup) {
             var index = res.indexOf(groupKey);
             if (index > -1) {
                 res.splice(index, 1);
