@@ -119,8 +119,6 @@ export class ChartWithColorGroups extends Chart{
                 this.plot.groupedData = d3.nest().key(this.plot.groupValue).entries(data);
             }
 
-            console.log(this.plot.groupingEnabled,this.plot.groupedData);
-
             this.plot.dataLength = d3.sum(this.plot.groupedData, s=>s.values.length);
         }
 
@@ -206,6 +204,11 @@ export class ChartWithColorGroups extends Chart{
         } else {
             this.enabledGroups.splice(index, 1);
         }
+
+        if (!this.enabledGroups.length) {
+            this.enabledGroups = this.plot.colorCategory.domain().slice();
+        }
+
     }
 
     setData(data){

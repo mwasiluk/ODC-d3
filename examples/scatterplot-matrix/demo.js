@@ -1,7 +1,7 @@
 
 var labels = ['a', 'b', 'c', 'd'];
 var config = {
-    size: 200,
+    // size: 200,
     guides: true,
     brush: true,
     tooltip: true,

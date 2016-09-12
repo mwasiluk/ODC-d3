@@ -77,7 +77,9 @@ export class Chart {
         self.initPlot();
         self.initSvg();
 
-        self.initTooltip();
+        if(!this._isInitialized){
+            self.initTooltip();
+        }
         self.draw();
         this._isInitialized=true;
         return this;
@@ -119,7 +121,10 @@ export class Chart {
         if (!config.width || config.height) {
             d3.select(window)
                 .on("resize", function () {
-                    //TODO add responsiveness if width/height not specified
+                    var transition = self.config.transition;
+                    self.config.transition=false;
+                    self.init();
+                    self.config.transition = transition;
                 });
         }
     }

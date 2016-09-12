@@ -6,7 +6,9 @@ import {Legend} from "./legend";
 export class ScatterPlotMatrixConfig extends ScatterPlotConfig{
 
     svgClass= this.cssClassPrefix+'scatterplot-matrix';
-    size= 200; //scatter plot cell size
+    size= undefined; //scatter plot cell size
+    minCellSize = 50;
+    maxCellSize = 1000;
     padding= 20; //scatter plot cell padding
     brush= true;
     guides= true; //show axis guides
@@ -66,28 +68,32 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
 
 
         var width = conf.width;
-        var boundingClientRect = this.getBaseContainerNode().getBoundingClientRect();
+        var availableWidth = Utils.availableWidth(this.config.width, this.getBaseContainer(), margin);
+        var availableHeight = Utils.availableHeight(this.config.height, this.getBaseContainer(), margin);
         if (!width) {
-            var maxWidth = margin.left + margin.right + this.plot.variables.length*this.plot.size;
-            width = Math.min(boundingClientRect.width, maxWidth);
-
+            if(!this.plot.size){
+                this.plot.size =  Math.min(conf.maxCellSize, Math.max(conf.minCellSize, availableWidth/this.plot.variables.length));
+            }
+            width = margin.left + margin.right + this.plot.variables.length*this.plot.size;
         }
+        if(!this.plot.size){
+            this.plot.size = (width - (margin.left + margin.right)) / this.plot.variables.length;
+        }
+
         var height = width;
         if (!height) {
-            height = boundingClientRect.height;
+            height = availableHeight;
         }
 
         this.plot.width = width - margin.left - margin.right;
         this.plot.height = height - margin.top - margin.bottom;
 
 
+        this.plot.ticks = conf.ticks;
 
-
-        if(conf.ticks===undefined){
-            conf.ticks = this.plot.size / 40;
+        if(this.plot.ticks===undefined){
+            this.plot.ticks = this.plot.size / 40;
         }
-
-
 
         this.setupX();
         this.setupY();
@@ -105,7 +111,7 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
         plot.variables = variablesConf.keys;
         if(!plot.variables || !plot.variables.length){
 
-            plot.variables = Utils.inferVariables(data[0].values, this.config.groups.key, this.config.includeInPlot);
+            plot.variables = data.length ? Utils.inferVariables(data[0].values, this.config.groups.key, this.config.includeInPlot) : [];
         }
 
         plot.labels = [];
@@ -123,8 +129,6 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
             plot.labelByVariable[variableKey] = label;
         });
 
-        console.log(plot.labelByVariable);
-
         plot.subplots = [];
     };
 
@@ -137,7 +141,7 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
         x.value = conf.variables.value;
         x.scale = d3.scale[conf.x.scale]().range([conf.padding / 2, plot.size - conf.padding / 2]);
         x.map = (d, variable) => x.scale(x.value(d, variable));
-        x.axis = d3.svg.axis().scale(x.scale).orient(conf.x.orient).ticks(conf.ticks);
+        x.axis = d3.svg.axis().scale(x.scale).orient(conf.x.orient).ticks(plot.ticks);
         x.axis.tickSize(plot.size * plot.variables.length);
 
     };
@@ -151,7 +155,7 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
         y.value = conf.variables.value;
         y.scale = d3.scale[conf.y.scale]().range([ plot.size - conf.padding / 2, conf.padding / 2]);
         y.map = (d, variable) => y.scale(y.value(d, variable));
-        y.axis= d3.svg.axis().scale(y.scale).orient(conf.y.orient).ticks(conf.ticks);
+        y.axis= d3.svg.axis().scale(y.scale).orient(conf.y.orient).ticks(plot.ticks);
         y.axis.tickSize(-plot.size * plot.variables.length);
     };
 
@@ -170,19 +174,41 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
         var yAxisSelector = "g."+axisYClass+"."+axisClass;
 
         var noGuidesClass = self.prefixClass("no-guides");
-        self.svgG.selectAll(xAxisSelector)
-            .data(self.plot.variables)
-            .enter().appendSelector(xAxisSelector)
-            .classed(noGuidesClass, !conf.guides)
-            .attr("transform", (d, i) => "translate(" + (n - i - 1) * self.plot.size + ",0)")
-            .each(function(d) { self.plot.x.scale.domain(self.plot.domainByVariable[d]); d3.select(this).call(self.plot.x.axis); });
+        var xAxis = self.svgG.selectAll(xAxisSelector)
+            .data(self.plot.variables);
 
-        self.svgG.selectAll(yAxisSelector)
-            .data(self.plot.variables)
-            .enter().appendSelector(yAxisSelector)
-            .classed(noGuidesClass, !conf.guides)
-            .attr("transform", (d, i) => "translate(0," + i * self.plot.size + ")")
-            .each(function(d) { self.plot.y.scale.domain(self.plot.domainByVariable[d]); d3.select(this).call(self.plot.y.axis); });
+        xAxis.enter().appendSelector(xAxisSelector)
+            .classed(noGuidesClass, !conf.guides);
+
+        xAxis.attr("transform", (d, i) => "translate(" + (n - i - 1) * self.plot.size + ",0)")
+            .each(function(d) {
+                self.plot.x.scale.domain(self.plot.domainByVariable[d]);
+                var axis = d3.select(this);
+                if (self.transitionEnabled()) {
+                    axis = axis.transition();
+                }
+                axis.call(self.plot.x.axis);
+
+            });
+
+        xAxis.exit().remove();
+
+        var yAxis = self.svgG.selectAll(yAxisSelector)
+            .data(self.plot.variables);
+        yAxis.enter().appendSelector(yAxisSelector);
+        yAxis.classed(noGuidesClass, !conf.guides)
+            .attr("transform", (d, i) => "translate(0," + i * self.plot.size + ")");
+        yAxis.each(function(d) {
+            self.plot.y.scale.domain(self.plot.domainByVariable[d]);
+            var axis = d3.select(this);
+            if (self.transitionEnabled()) {
+                axis = axis.transition();
+            }
+            axis.call(self.plot.y.axis);
+
+        });
+
+        yAxis.exit().remove();
 
         var cellClass =  self.prefixClass("cell");
         var cell = self.svgG.selectAll("."+cellClass)
@@ -206,8 +232,7 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
             .attr("dy", ".71em")
             .text( d => self.plot.labelByVariable[d.x]);
 
-
-
+        cell.exit().remove();
 
         function plotSubplot(p) {
             var plot = self.plot;
@@ -222,10 +247,9 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
                 .attr("class", frameClass)
                 .attr("x", conf.padding / 2)
                 .attr("y", conf.padding / 2)
-                .attr("width", conf.size - conf.padding)
-                .attr("height", conf.size - conf.padding);
-
-
+                .attr("width", plot.size - conf.padding)
+                .attr("height", plot.size - conf.padding);
+            
             p.update = function() {
 
                 var subplot = this;
