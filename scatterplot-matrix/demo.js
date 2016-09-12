@@ -1,7 +1,9 @@
 
 var labels = ['a', 'b', 'c', 'd'];
 var config = {
-    size: 200,
+    // size: 200,
+    minCellSize: 70,
+    maxCellSize: 200,
     // width: 900,
     guides: true,
     brush: true,
