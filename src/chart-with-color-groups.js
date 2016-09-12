@@ -54,7 +54,7 @@ export class ChartWithColorGroups extends Chart{
     }
 
     isGroupingEnabled(){
-        return this.config.series || (this.config.groups && this.config.groups.value);
+        return this.config.series || !!(this.config.groups && this.config.groups.value);
     }
 
     setupGroups() {
@@ -128,7 +128,7 @@ export class ChartWithColorGroups extends Chart{
     }
 
     getDataToPlot(){
-        if(!this.enabledGroups){
+        if(!this.plot.groupingEnabled || !this.enabledGroups){
             return this.data;
         }
         return this.data.filter(d => this.enabledGroups.indexOf(this.plot.groupValue(d))>-1);
@@ -179,19 +179,20 @@ export class ChartWithColorGroups extends Chart{
         
         plot.legend.container
             .call(plot.legendColor);
+
+        this.updateLegendCellStatuses();
     }
 
     onLegendCellClick(cellValue){
         this.updateEnabledGroups(cellValue);
-
-        var isDisabled = this.enabledGroups.indexOf(cellValue)<0;
-        this.plot.legend.container.selectAll("g.cell").each(function(cell){
-            if(cell == cellValue){
-                d3.select(this).classed("odc-disabled", isDisabled);
-            }
-        });
-
         this.init();
+    }
+    updateLegendCellStatuses() {
+        var self = this;
+        this.plot.legend.container.selectAll("g.cell").each(function(cell){
+            var isDisabled = self.enabledGroups && self.enabledGroups.indexOf(cell)<0;
+            d3.select(this).classed("odc-disabled", isDisabled);
+        });
     }
 
     updateEnabledGroups(cellValue) {
