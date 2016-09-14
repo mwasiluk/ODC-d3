@@ -15,7 +15,8 @@ var confFlowers = {
     },
     groups:{
         key: 'species',
-        label: "species"
+        label: "species",
+        displayValue: {'setosa': 'Setosa'}
     }
     // series: true
 

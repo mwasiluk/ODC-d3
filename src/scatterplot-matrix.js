@@ -294,6 +294,7 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
 
                         var group = self.config.groups ?  self.config.groups.value.call(self.config,d) : null;
                         if(group || group===0 ){
+                            group = plot.groupToLabel[group];
                             html+="<br/>";
                             var label = self.config.groups.label;
                             if(label){

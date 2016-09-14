@@ -13,7 +13,8 @@ export class ChartWithColorGroupsConfig extends ChartConfig{
     groups={
         key: 2,
         value: function(d) { return d[this.groups.key]}  , // grouping value accessor,
-        label: ""
+        label: "",
+        displayValue: undefined // optional function returning display value (series label) for given group value, or object/array mapping value to display value
     };
     series = false;
     color =  undefined;// string or function returning color's value for color scale
@@ -57,16 +58,39 @@ export class ChartWithColorGroups extends Chart{
         return this.config.series || !!(this.config.groups && this.config.groups.value);
     }
 
+    computeGroupColorDomain(){
+        return Object.getOwnPropertyNames(d3.map(this.data, d => this.plot.groupValue(d))['_']);
+    }
+
     setupGroups() {
         var self=this;
         var conf = this.config;
 
         this.plot.groupingEnabled = this.isGroupingEnabled();
+        var domain = [];
         if(this.plot.groupingEnabled){
+            self.plot.groupToLabel = {};
             if(this.config.series){
                 this.plot.groupValue = s => s.key;
+                domain = this.computeGroupColorDomain();
+
+                this.data.forEach(s=>{
+                    self.plot.groupToLabel[s.key] = s.label||s.key;
+                })
             }else{
                 this.plot.groupValue = d => conf.groups.value.call(conf, d);
+                domain = this.computeGroupColorDomain();
+                var getLabel= k => k;
+                if(self.config.groups.displayValue){
+                    if(Utils.isFunction(self.config.groups.displayValue)){
+                        getLabel = k=>self.config.groups.displayValue(k) || k;
+                    }else if(Utils.isObject(self.config.groups.displayValue)){
+                        getLabel = k => self.config.groups.displayValue[k] || k;
+                    }
+                }
+                domain.forEach(k=>{
+                    self.plot.groupToLabel[k] = getLabel(k);
+                })
             }
 
         }else{
@@ -82,33 +106,31 @@ export class ChartWithColorGroups extends Chart{
             this.plot.seriesColor = this.plot.color;
         }else if(this.plot.colorCategory){
             self.plot.colorValue=colorValue;
-            if(this.plot.groupingEnabled){
-
-                var domain = Object.getOwnPropertyNames(d3.map(this.data, d => this.plot.groupValue(d))['_']);
-
-                self.plot.colorCategory.domain(domain);
-            }
+            self.plot.colorCategory.domain(domain);
 
             this.plot.seriesColor = s =>  self.plot.colorCategory(s.key);
             this.plot.color = d =>  self.plot.colorCategory(this.plot.groupValue(d));
             
+        }else{
+            this.plot.color = this.plot.seriesColor = s=> 'black'
         }
+
     }
 
     groupData(){
         var self=this;
         var data = this.plot.data;
-        if(!this.plot.groupingEnabled ){
-            this.plot.groupedData =  [{
+        if(!self.plot.groupingEnabled ){
+            self.plot.groupedData =  [{
                 key: null,
                 label: '',
                 values: data
             }];
-            this.plot.dataLength = data.length;
+            self.plot.dataLength = data.length;
         }else{
 
-            if(this.config.series){
-                this.plot.groupedData =  data.map(s=>{
+            if(self.config.series){
+                self.plot.groupedData =  data.map(s=>{
                     return{
                         key: s.key,
                         label: s.label,
@@ -116,12 +138,16 @@ export class ChartWithColorGroups extends Chart{
                     }
                 });
             }else{
-                this.plot.groupedData = d3.nest().key(this.plot.groupValue).entries(data);
+                self.plot.groupedData = d3.nest().key(this.plot.groupValue).entries(data);
+                self.plot.groupedData.forEach(g => {
+                    g.label = self.plot.groupToLabel[g.key];
+                });
             }
 
-            this.plot.dataLength = d3.sum(this.plot.groupedData, s=>s.values.length);
+            self.plot.dataLength = d3.sum(this.plot.groupedData, s=>s.values.length);
         }
 
+        // this.plot.seriesColor
 
     }
 
@@ -170,7 +196,8 @@ export class ChartWithColorGroups extends Chart{
         plot.legendColor = plot.legend.color()
             .shapeWidth(this.config.legend.shapeWidth)
             .orient('vertical')
-            .scale(scale);
+            .scale(scale)
+            .labels(scale.domain().map(v=>plot.groupToLabel[v]));
 
 
         plot.legendColor.on('cellclick', c=> self.onLegendCellClick(c));
