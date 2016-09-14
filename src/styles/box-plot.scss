@@ -1,0 +1,53 @@
+.odc-box-plot{
+  background-color: white;
+  font-size: 11px;
+  .odc-axis{
+
+    path{
+      fill: none;
+      stroke: none;
+      shape-rendering: crispEdges;
+    }
+    line {
+      shape-rendering: crispEdges;
+      stroke: #eaeaea;
+      fill: none;
+    }
+    &.odc-no-guides{
+      line{
+        //display: none;
+        stroke: #a1a1a1;
+      }
+    }
+  }
+
+  .odc-axis-y {
+
+    path.domain {
+      //stroke: #eaeaea;
+    }
+  }
+
+  circle {
+    fill-opacity: 0.5;
+    &:hover{
+      fill-opacity: 1;
+    }
+  }
+
+  rect:hover {
+    fill-opacity: 1;
+  }
+
+  line.odc-median {
+    stroke: black;
+  }
+
+  .odc-boxplot-tick{
+    stroke-width: 2px;
+    &:hover {
+      stroke-width: 3px;
+    }
+  }
+
+}

@@ -9,7 +9,7 @@ export class ScatterPlotConfig extends ChartWithColorGroupsConfig{
     showTooltip= true; //show tooltip on dot hover
 
     x={// X axis config
-        label: 'X', // axis label
+        label: '', // axis label
         key: 0,
         value: (d, key) => d[key], // x value accessor
         orient: "bottom",
@@ -17,7 +17,7 @@ export class ScatterPlotConfig extends ChartWithColorGroupsConfig{
         domainMargin: 0.05
     };
     y={// Y axis config
-        label: 'Y', // axis label,
+        label: '', // axis label,
         key: 1,
         value: (d, key) => d[key], // y value accessor
         orient: "left",

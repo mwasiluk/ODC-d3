@@ -1,3 +1,29 @@
+.odc-box-plot {
+  background-color: white;
+  font-size: 11px; }
+  .odc-box-plot .odc-axis path {
+    fill: none;
+    stroke: none;
+    shape-rendering: crispEdges; }
+  .odc-box-plot .odc-axis line {
+    shape-rendering: crispEdges;
+    stroke: #eaeaea;
+    fill: none; }
+  .odc-box-plot .odc-axis.odc-no-guides line {
+    stroke: #a1a1a1; }
+  .odc-box-plot circle {
+    fill-opacity: 0.5; }
+    .odc-box-plot circle:hover {
+      fill-opacity: 1; }
+  .odc-box-plot rect:hover {
+    fill-opacity: 1; }
+  .odc-box-plot line.odc-median {
+    stroke: black; }
+  .odc-box-plot .odc-boxplot-tick {
+    stroke-width: 2px; }
+    .odc-box-plot .odc-boxplot-tick:hover {
+      stroke-width: 3px; }
+
 .odc-scatterplot-matrix {
   background-color: white;
   font-size: 11px;

@@ -139,6 +139,8 @@ export class Chart {
                 self.plot.tooltip= self.baseContainer.plot.tooltip;
             }
 
+        }else{
+            self.plot.tooltip = null;
         }
     }
 
@@ -360,5 +362,26 @@ export class Chart {
 
     transitionEnabled(){
         return this._isInitialized && this.config.transition;
+    }
+
+    showTooltip(html){
+        if(!this.plot.tooltip){
+            return;
+        }
+        this.plot.tooltip.transition()
+            .duration(200)
+            .style("opacity", .9);
+        this.plot.tooltip.html(html)
+            .style("left", (d3.event.pageX + 5) + "px")
+            .style("top", (d3.event.pageY - 28) + "px");
+    }
+
+    hideTooltip(){
+        if(!this.plot.tooltip){
+            return;
+        }
+        this.plot.tooltip.transition()
+            .duration(500)
+            .style("opacity", 0);
     }
 }
