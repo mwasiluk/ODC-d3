@@ -256,7 +256,11 @@ export class BoxPlotBase extends Chart{
         var medianClass = self.prefixClass('median');
         boxplotEnter.append('line').attr('class', medianClass);
 
-        boxplots.select('line.'+medianClass)
+        var medianLine = boxplots.select('line.'+medianClass);
+        if (self.config.transition) {
+            medianLine = medianLine.transition();
+        }
+        medianLine
             .attr('x1', boxLeft)
             .attr('y1', (d,i) => plot.y.scale(config.Q2(d)))
             .attr('x2', boxRight)
@@ -288,12 +292,19 @@ export class BoxPlotBase extends Chart{
         whiskers.forEach(f => {
             var endpoint = (f.key === 'low') ? config.Q1 : config.Q3;
 
-            boxplots.select('.'+whiskerClass+'.'+boxplotClass+'-'+f.key)
+            var whisker = boxplots.select('.'+whiskerClass+'.'+boxplotClass+'-'+f.key);
+            var tick = boxplots.select('.'+tickClass+'.'+boxplotClass+'-'+f.key);
+            if (self.config.transition) {
+                whisker = whisker.transition();
+                tick=tick.transition();
+            }
+            whisker
                 .attr('x1', plot.x.scale.rangeBand() * 0.45 )
                 .attr('y1', (d,i) => plot.y.scale(f.value(d)))
                 .attr('x2', plot.x.scale.rangeBand() * 0.45 )
                 .attr('y2', (d,i) => plot.y.scale(endpoint(d)));
-            boxplots.select('.'+tickClass+'.'+boxplotClass+'-'+f.key)
+
+            tick
                 .attr('x1', boxLeft )
                 .attr('y1', (d,i) => plot.y.scale(f.value(d)))
                 .attr('x2', boxRight )

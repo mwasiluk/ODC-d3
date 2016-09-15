@@ -6,8 +6,8 @@ var confFlowers = {
         // color: function(d) { return d[0]*d[1] }
     },
     y:{
-        title: 'petal length',
-        key: 'petal length'
+        title: 'sepal width',
+        key: 'sepal width'
         // value: function(d){return d['petal width']}
     },
     groups:{
@@ -86,3 +86,8 @@ function exampleData3() {
 }
 
 
+$("#plot2-y-key").change(function(){
+
+    confFlowers.y.title = confFlowers.y.key =  $(this).val();
+    plot2.setConfig(confFlowers).init();
+});
