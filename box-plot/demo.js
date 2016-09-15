@@ -8,17 +8,20 @@ var confFlowers = {
     groups:{
         key: 'species'
     }
+
     // series: true
 
 };
 
 var plot;
 var conf = {
-    series: true
+    series: true,
+    maxBoxWidth: 70
+
 };
 
 data = exampleData();
-plot = new ODCD3.BoxPlot("#plot", data, {series: true});
+plot = new ODCD3.BoxPlot("#plot", data, conf);
 
 
 var plot2;
@@ -78,3 +81,8 @@ function exampleData3() {
     }]
 }
 
+$("#plot2-y-key").change(function(){
+
+    confFlowers.y.title = confFlowers.y.key =  $(this).val();
+    plot2.setConfig(confFlowers).init();
+});
