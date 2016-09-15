@@ -209,9 +209,6 @@ export class ScatterPlot extends ChartWithColorGroups{
 
         if (plot.tooltip) {
             dots.on("mouseover", d => {
-                plot.tooltip.transition()
-                    .duration(200)
-                    .style("opacity", .9);
                 var html = "(" + plot.x.value(d) + ", " + plot.y.value(d) + ")";
                 var group = self.config.groups ?  self.config.groups.value.call(self.config,d) : null;
                 if (group || group === 0) {
@@ -223,14 +220,10 @@ export class ScatterPlot extends ChartWithColorGroups{
                     }
                     html += group
                 }
-                plot.tooltip.html(html)
-                    .style("left", (d3.event.pageX + 5) + "px")
-                    .style("top", (d3.event.pageY - 28) + "px");
+                self.showTooltip(html);
             })
                 .on("mouseout", d => {
-                    plot.tooltip.transition()
-                        .duration(500)
-                        .style("opacity", 0);
+                    self.hideTooltip();
                 });
         }
 

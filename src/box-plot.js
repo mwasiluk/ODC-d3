@@ -71,10 +71,7 @@ export class BoxPlot extends BoxPlotBase{
             self.plot.dataLength = d3.sum(this.plot.groupedData, s=>s.values.length);
         }
 
-
-
-
-
+        
         self.plot.groupedData.forEach(s=>{
             if(!Array.isArray(s.values)){
                 return;

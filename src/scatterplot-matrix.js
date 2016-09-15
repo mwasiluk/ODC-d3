@@ -282,34 +282,24 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
                 }
 
 
-                if(plot.tooltip){
+                if (plot.tooltip) {
                     dots.on("mouseover", (d) => {
-                        plot.tooltip.transition()
-                            .duration(200)
-                            .style("opacity", .9);
-                        var html = "(" + plot.x.value(d, subplot.x) + ", " +plot.y.value(d, subplot.y) + ")";
-                        plot.tooltip.html(html)
-                            .style("left", (d3.event.pageX + 5) + "px")
-                            .style("top", (d3.event.pageY - 28) + "px");
 
-                        var group = self.config.groups ?  self.config.groups.value.call(self.config,d) : null;
-                        if(group || group===0 ){
+                        var html = "(" + plot.x.value(d, subplot.x) + ", " + plot.y.value(d, subplot.y) + ")";
+                        var group = self.config.groups ? self.config.groups.value.call(self.config, d) : null;
+                        if (group || group === 0) {
                             group = plot.groupToLabel[group];
-                            html+="<br/>";
+                            html += "<br/>";
                             var label = self.config.groups.label;
-                            if(label){
-                                html+=label+": ";
+                            if (label) {
+                                html += label + ": ";
                             }
-                            html+=group
+                            html += group
                         }
-                        plot.tooltip.html(html)
-                            .style("left", (d3.event.pageX + 5) + "px")
-                            .style("top", (d3.event.pageY - 28) + "px");
+                        self.showTooltip(html);
                     })
                         .on("mouseout", (d)=> {
-                            plot.tooltip.transition()
-                                .duration(500)
-                                .style("opacity", 0);
+                            self.hideTooltip();
                         });
                 }
 

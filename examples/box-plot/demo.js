@@ -19,12 +19,12 @@ var confFlowers = {
 
 var plot;
 var conf = {
-
+    series: true
 };
 
 
-// data = exampleData2();
-// plot = new ODCD3.BoxPlot("#plot", data, conf);
+data = exampleData2();
+plot = new ODCD3.BoxPlot("#plot", data, conf);
 
 
 var plot2;

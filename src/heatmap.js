@@ -939,20 +939,12 @@ export class Heatmap extends Chart {
         if (plot.tooltip) {
 
             mouseoverCallbacks.push(d=> {
-                plot.tooltip.transition()
-                    .duration(200)
-                    .style("opacity", .9);
                 var html = parentGroup.label + ": " + d.groupingValue;
-
-                plot.tooltip.html(html)
-                    .style("left", (d3.event.pageX + 5) + "px")
-                    .style("top", (d3.event.pageY - 28) + "px");
+                self.showTooltip(html);
             });
 
             mouseoutCallbacks.push(d=> {
-                plot.tooltip.transition()
-                    .duration(500)
-                    .style("opacity", 0);
+                self.hideTooltip();
             });
 
 
@@ -1009,23 +1001,14 @@ export class Heatmap extends Chart {
         if (plot.tooltip) {
 
             mouseoverCallbacks.push(c=> {
-                plot.tooltip.transition()
-                    .duration(200)
-                    .style("opacity", .9);
                 var html = c.value === undefined ? self.config.tooltip.noDataText : self.formatValueZ(c.value);
+                self.showTooltip(html);
 
-                plot.tooltip.html(html)
-                    .style("left", (d3.event.pageX + 5) + "px")
-                    .style("top", (d3.event.pageY - 28) + "px");
             });
 
             mouseoutCallbacks.push(c=> {
-                plot.tooltip.transition()
-                    .duration(500)
-                    .style("opacity", 0);
+                self.hideTooltip();
             });
-
-
         }
 
         if (self.config.highlightLabels) {

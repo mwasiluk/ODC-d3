@@ -221,16 +221,9 @@ export class Histogram extends ChartWithColorGroups{
 
         if (plot.tooltip) {
             bar.on("mouseover", d => {
-                plot.tooltip.transition()
-                    .duration(200)
-                    .style("opacity", .9);
-                plot.tooltip.html(d.y)
-                    .style("left", (d3.event.pageX + 5) + "px")
-                    .style("top", (d3.event.pageY - 28) + "px");
+                self.showTooltip(d.y);
             }).on("mouseout", d => {
-                plot.tooltip.transition()
-                    .duration(500)
-                    .style("opacity", 0);
+                self.hideTooltip();
             });
         }
         layer.exit().remove();

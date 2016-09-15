@@ -65,7 +65,6 @@ export class HeatmapTimeSeriesConfig extends HeatmapConfig {
         if (custom) {
             Utils.deepExtend(this, custom);
         }
-
     }
 }
 
