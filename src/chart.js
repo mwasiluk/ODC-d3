@@ -40,7 +40,7 @@ export class Chart {
 
 
     constructor(base, data, config) {
-        
+        this._id = Utils.guid();
         this._isAttached = base instanceof Chart;
 
         this.baseContainer = base;
@@ -120,7 +120,8 @@ export class Chart {
 
         if (!config.width || config.height) {
             d3.select(window)
-                .on("resize", function () {
+                .on("resize."+self._id, function () {
+                    console.log("resize", self);
                     var transition = self.config.transition;
                     self.config.transition=false;
                     self.init();

@@ -19,7 +19,7 @@ var confFlowers = {
 
 var plot;
 var conf = {
-    series: true
+    // series: true
 };
 
 
@@ -76,9 +76,13 @@ function exampleData() {
 }
 
 function exampleData2() {
+    return d3.range(1000).map(d3.random.irwinHall(20));
+}
+function exampleData3() {
     return [{
         key: 'Random bates',
         values: d3.range(1000).map(d3.random.bates(10))
     }]
 }
+
 

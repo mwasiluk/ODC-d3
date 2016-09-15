@@ -19,7 +19,7 @@ export class BoxPlotConfig extends BoxPlotBaseConfig{
     series = false;
     groups={
         key: undefined,
-        value: function(d) { return this.groups.key===undefined ? null : d[this.groups.key]}  , // grouping value accessor,
+        value: function(d) { return this.groups.key===undefined ? '' : d[this.groups.key]}  , // grouping value accessor,
         label: "",
         displayValue: undefined // optional function returning display value (series label) for given group value, or object/array mapping value to display value
     };
@@ -49,8 +49,7 @@ export class BoxPlot extends BoxPlotBase{
         var data = this.data;
         if(!self.plot.groupingEnabled ){
             self.plot.groupedData =  [{
-                key: null,
-                label: '',
+                key: '',
                 values: data
             }];
             self.plot.dataLength = data.length;
@@ -58,20 +57,31 @@ export class BoxPlot extends BoxPlotBase{
             if(self.config.series){
                 self.plot.groupedData =  data.map(s=>{
                     return{
-                        key: s.key,
-                        label: s.label,
+                        key: s.label || s.key || '',
                         values: s.values
                     }
                 });
             }else{
                 self.plot.groupValue = d => conf.groups.value.call(conf, d);
                 self.plot.groupedData = d3.nest().key(this.plot.groupValue).entries(data);
+
+                var getDisplayValue= k => k;
+                if(self.config.groups.displayValue){
+                    if(Utils.isFunction(self.config.groups.displayValue)){
+                        getDisplayValue = k=>self.config.groups.displayValue(k) || k;
+                    }else if(Utils.isObject(self.config.groups.displayValue)){
+                        getDisplayValue = k => self.config.groups.displayValue[k] || k;
+                    }
+                }
+                self.plot.groupedData.forEach(g => {
+                    g.key = getDisplayValue(g.key);
+                });
             }
 
             self.plot.dataLength = d3.sum(this.plot.groupedData, s=>s.values.length);
         }
 
-        
+
         self.plot.groupedData.forEach(s=>{
             if(!Array.isArray(s.values)){
                 return;
