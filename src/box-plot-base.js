@@ -8,13 +8,14 @@ export class BoxPlotBaseConfig extends ChartConfig{
     showTooltip = true;
     x = {// X axis config
         title: '', // axis label
-        value: d => d.key, // x value accessor
+        value: s => s.key, // x value accessor
         guides: false, //show axis guides
         scale: "ordinal"
 
     };
     y = {// Y axis config
         title: '',
+        value: d => d, // y value accessor
         scale: "linear",
         orient: 'left',
         domainMargin: 0.1,
@@ -58,12 +59,17 @@ export class BoxPlotBase extends Chart{
         super.computePlotSize();
         this.plot.x = {};
         this.plot.y = {};
-        this.plot.data = this.data;
+
+        this.plot.data = this.getDataToPlot();
         this.setupY();
         this.setupX();
 
         this.setupColor();
 
+    }
+
+    getDataToPlot() {
+        return this.data;
     }
 
     setupX() {
@@ -98,7 +104,7 @@ export class BoxPlotBase extends Chart{
         var plot = this.plot;
         var y = plot.y;
         var conf = this.config.y;
-        y.value = d => conf.value(d, conf.key);
+        y.value = d => conf.value.call(this.config, d);
         y.scale = d3.scale[conf.scale]().range([plot.height, 0]);
         y.map = d => y.scale(y.value(d));
 

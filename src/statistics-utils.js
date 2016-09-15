@@ -11,7 +11,7 @@ su.variance = require('../bower_components/simple-statistics/src/variance');
 su.mean = require('../bower_components/simple-statistics/src/mean');
 su.zScore = require('../bower_components/simple-statistics/src/z_score');
 su.standardError= arr => Math.sqrt(su.variance(arr)/(arr.length-1));
-
+su.quantile = require('../bower_components/simple-statistics/src/quantile');
 
 su.tValue= (degreesOfFreedom, criticalProbability) => { //as in http://stattrek.com/online-calculator/t-distribution.aspx
     return tdistr(degreesOfFreedom, criticalProbability);
