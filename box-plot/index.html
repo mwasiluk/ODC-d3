@@ -1,0 +1,72 @@
+<html>
+<head>
+    <!-- Material Design Lite -->
+    <title>ODC-D3 - Open Data Charts for D3</title>
+    <link rel="stylesheet" href="../bower_components/material-design-lite/material.min.css">
+    <!-- Material Design icon font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="../bower_components/odc-d3/dist/odc-d3.min.css">
+    <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<!-- The drawer is always open in large screens. The header is always shown,
+  even in small screens. -->
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-drawer
+                mdl-layout--fixed-header">
+    <header class="mdl-layout__header">
+        <div class="mdl-layout__header-row">
+            <span class="mdl-layout-title"><a href="../">ODC-D3 - Open Data Charts for D3.js</a></span>
+            <div class="mdl-layout-spacer"></div>
+            <a href="https://github.com/mwasiluk/ODC-d3" class="mdl-navigation__link mdl-navigation__link--icon github" title="Source"><i class="fa fa-github" aria-hidden="true"></i><span>GitHub</span></a>
+            <a href="https://github.com/mwasiluk/ODC-d3/archive/master.zip" title="Download ODC-D3" class="mdl-navigation__link mdl-navigation__link--icon"><i class="fa fa-download" aria-hidden="true"></i> ZIP</a>
+        </div>
+    </header>
+    <div class="mdl-layout__drawer">
+        <span class="mdl-layout-title">Examples</span>
+        <nav class="mdl-navigation">
+            <a class="mdl-navigation__link" href="../scatterplot">Scatterplot</a>
+            <a class="mdl-navigation__link" href="../scatterplot-matrix">Scatterplot Matrix</a>
+            <a class="mdl-navigation__link" href="../correlation-matrix">Correlation Matrix</a>
+            <a class="mdl-navigation__link" href="../regression">Regression</a>
+            <a class="mdl-navigation__link" href="../heatmap">Heat map</a>
+            <a class="mdl-navigation__link" href="../heatmap-timeseries">Heatmap for time series</a>
+            <a class="mdl-navigation__link" href="../histogram">Histogram</a>
+            <a class="mdl-navigation__link" href="../bar-chart">Bar Chart</a>
+            <a class="mdl-navigation__link" href="../box-plot">Box Plot</a>
+        </nav>
+    </div>
+    <main class="mdl-layout__content">
+        <div class="page-content">
+            <div class="mdl-grid">
+                <div class="mdl-cell mdl-cell--12-col">
+
+                    <h1>Boxplot demo</h1>
+
+                    <p>
+                        <a href="https://github.com/mwasiluk/ODC-d3/wiki/Box-Plot"><i class="fa fa-book" aria-hidden="true"></i> Wiki page</a> <br/>
+                    </p>
+
+                    <div id="plot" style=" max-width: 800px; max-height: 600px;"></div>
+
+                    <p>
+                        <a href="../data/flowers.csv"><i class="fa fa-download" aria-hidden="true"></i>CSV data</a>
+                    </p>
+
+                    <div id="plot2" style=" max-width: 800px; max-height: 600px;"></div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<script src="../bower_components/d3/d3.min.js" charset="utf-8"></script>
+<script src="../bower_components/odc-d3/dist/odc-d3.min.js" charset="utf-8"></script>
+<script src="demo.js"></script>
+<script src="../google-analytics.js"></script>
+<script src="../bower_components/material-design-lite/material.min.js"></script>
+<script src="../google-analytics.js"></script>
+</body>
+</html>
+
+
