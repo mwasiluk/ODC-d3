@@ -154,7 +154,7 @@ export class BarChart extends ChartWithColorGroups {
 
         var axisT = axis;
         if (self.config.transition) {
-            axisT = axis.transition().ease("sin-in-out");
+            axisT = axis.transition().ease(d3.easeSinInOut);
         }
 
         axisT.call(plot.x.axis);
@@ -174,7 +174,7 @@ export class BarChart extends ChartWithColorGroups {
 
         var axisT = axis;
         if (self.config.transition) {
-            axisT = axis.transition().ease("sin-in-out");
+            axisT = axis.transition().ease(d3.easeSinInOut);
         }
 
         axisT.call(plot.y.axis);

@@ -80,11 +80,23 @@ export class ScatterPlot extends ChartWithColorGroups{
          * axis - sets up axis
          **/
         x.value = d => conf.value(d, conf.key);
-        x.scale = d3.scale[conf.scale]().range([0, plot.width]);
-        x.map = d => x.scale(x.value(d));
-        x.axis = d3.svg.axis().scale(x.scale).orient(conf.orient);
-        var data = this.plot.groupedData;
 
+        if(conf.scale == 'linear'){
+            x.scale = d3.scaleLinear()
+        }else{
+            throw 'ODC-D3 - scale not supported: '+conf.scale;
+        }
+
+        x.scale.range([0, plot.width]);
+        x.map = d => x.scale(x.value(d));
+
+        if(conf.orient == 'bottom'){
+            x.axis = d3.axisBottom(x.scale)
+        }else{
+            throw 'ODC-D3 - axis orient not supported: '+conf.orient;
+        }
+
+        var data = this.plot.groupedData;
 
         var domain = [parseFloat(d3.min(data, s=>d3.min(s.values, plot.x.value))), parseFloat(d3.max(data, s=>d3.max(s.values, plot.x.value)))];
         var margin = (domain[1]-domain[0])* conf.domainMargin;
@@ -110,9 +122,21 @@ export class ScatterPlot extends ChartWithColorGroups{
          * axis - sets up axis
          */
         y.value = d => conf.value(d, conf.key);
-        y.scale = d3.scale[conf.scale]().range([plot.height, 0]);
+
+        if(conf.scale == 'linear'){
+            y.scale = d3.scaleLinear()
+        }else{
+            throw 'ODC-D3 - scale not supported: '+conf.scale;
+        }
+
+        y.scale.range([plot.height, 0]);
         y.map = d => y.scale(y.value(d));
-        y.axis = d3.svg.axis().scale(y.scale).orient(conf.orient);
+
+        if(conf.orient == 'left'){
+            y.axis = d3.axisLeft(y.scale)
+        }else{
+            throw 'ODC-D3 - axis orient not supported: '+conf.orient;
+        }
 
         if(this.config.guides){
             y.axis.tickSize(-plot.width);
@@ -138,7 +162,7 @@ export class ScatterPlot extends ChartWithColorGroups{
         
         var axisT = axis;
         if (self.transitionEnabled()) {
-            axisT = axis.transition().ease("sin-in-out");
+            axisT = axis.transition().ease(d3.easeSinInOut);
         }
 
         axisT.call(plot.x.axis);
@@ -158,7 +182,7 @@ export class ScatterPlot extends ChartWithColorGroups{
 
         var axisT = axis;
         if (self.transitionEnabled()) {
-            axisT = axis.transition().ease("sin-in-out");
+            axisT = axis.transition().ease(d3.easeSinInOut);
         }
 
         axisT.call(plot.y.axis);
@@ -190,17 +214,21 @@ export class ScatterPlot extends ChartWithColorGroups{
 
         var layer = dotsContainer.selectAll("g."+layerClass).data(plot.groupedData);
 
-        layer.enter().appendSelector("g."+layerClass);
+        var layerEnter = layer.enter().appendSelector("g."+layerClass);
 
-        var dots = layer.selectAll('.' + dotClass)
-            .data(d=>d.values);
+        var layerMerge = layerEnter.merge(layer);
 
-        dots.enter().append("circle")
+        var dots = layerMerge.selectAll('.' + dotClass)
+            .data(d=>d.values)
+
+        var dotsEnter = dots.enter().append("circle")
             .attr("class", dotClass);
 
-        var dotsT = dots;
+        var dotsMerge = dotsEnter.merge(dots);
+
+        var dotsT = dotsMerge;
         if (self.transitionEnabled()) {
-            dotsT = dots.transition();
+            dotsT = dotsMerge.transition();
         }
 
         dotsT.attr("r", self.config.dotRadius)
@@ -208,7 +236,7 @@ export class ScatterPlot extends ChartWithColorGroups{
             .attr("cy", plot.y.map);
 
         if (plot.tooltip) {
-            dots.on("mouseover", d => {
+            dotsMerge.on("mouseover", d => {
                 var html = "(" + plot.x.value(d) + ", " + plot.y.value(d) + ")";
                 var group = self.config.groups ?  self.config.groups.value.call(self.config,d) : null;
                 if (group || group === 0) {
@@ -228,9 +256,9 @@ export class ScatterPlot extends ChartWithColorGroups{
         }
 
         if (plot.seriesColor) {
-            layer.style("fill", plot.seriesColor)
+            layerMerge.style("fill", plot.seriesColor)
         }else if(plot.color){
-            dots.style("fill", plot.color)
+            dotsMerge.style("fill", plot.color)
         }
 
         dots.exit().remove();

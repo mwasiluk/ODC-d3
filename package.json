@@ -20,6 +20,13 @@
     "url": "https://github.com/mwasiluk/ODC-d3/issues"
   },
   "homepage": "https://github.com/mwasiluk/ODC-d3#readme",
+  "dependencies": {
+    "d3-array": "1.0.1",
+    "d3-dispatch": "1.0.1",
+    "d3-format": "1.0.2",
+    "d3-scale": "1.0.3",
+    "d3-selection": "1.0.2"
+  },
   "devDependencies": {
     "browser-sync": "^2.13.0",
     "del": "^2.2.0",

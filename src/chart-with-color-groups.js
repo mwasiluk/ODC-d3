@@ -59,7 +59,8 @@ export class ChartWithColorGroups extends Chart{
     }
 
     computeGroupColorDomain(){
-        return Object.getOwnPropertyNames(d3.map(this.data, d => this.plot.groupValue(d))['_']);
+        var map = d3.set(this.data, d => this.plot.groupValue(d));
+        return Object.getOwnPropertyNames(map).map(d=>map[d]);
     }
 
     setupGroups() {
@@ -96,9 +97,9 @@ export class ChartWithColorGroups extends Chart{
         }else{
             this.plot.groupValue = d => null;
         }
-
         if(conf.d3ColorCategory){
-            this.plot.colorCategory = d3.scale[conf.d3ColorCategory]();
+            var colorSchemeCategory = 'scheme'+Utils.capitalizeFirstLetter(conf.d3ColorCategory);
+            this.plot.colorCategory = d3.scaleOrdinal(d3[colorSchemeCategory]);
         }
         var colorValue = conf.color;
         if (colorValue && typeof colorValue === 'string' || colorValue instanceof String){

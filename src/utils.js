@@ -114,8 +114,10 @@ export class Utils {
     }
 
     static insertOrAppendSelector(parent, selector, operation, before) {
+
         var selectorParts = selector.split(/([\.\#])/);
         var element = parent[operation](selectorParts.shift(), before);//":first-child"
+        
         while (selectorParts.length > 1) {
             var selectorModifier = selectorParts.shift();
             var selectorItem = selectorParts.shift();
@@ -250,5 +252,9 @@ export class Utils {
 
     static getFontSize(element){
         return window.getComputedStyle(element, null).getPropertyValue("font-size");
+    }
+
+    static capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
     }
 }

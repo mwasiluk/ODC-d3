@@ -91,3 +91,10 @@ $("#plot2-y-key").change(function(){
     confFlowers.y.title = confFlowers.y.key =  $(this).val();
     plot2.setConfig(confFlowers).init();
 });
+
+$("#transition").change(function(){
+    console.log('transition '+this.checked);
+    conf.transition = confFlowers.transition = this.checked;
+    plot.setConfig(conf).init();
+    plot2.setConfig(confFlowers).init();
+});

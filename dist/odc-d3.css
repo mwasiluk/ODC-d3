@@ -139,3 +139,6 @@
   cursor: pointer; }
   .odc-legend .legendCells .cell.odc-disabled {
     opacity: 0.4 !important; }
+
+.odc-axis .odc-label {
+  fill: black; }
