@@ -6,7 +6,7 @@ var flowerGroups = {
 var confFlowers = {
     x:{
         key: 'sepal width',
-        label: 'sepal width'
+        title: 'sepal width'
     },
     frequency: true,
     groups:flowerGroups
@@ -64,6 +64,6 @@ $("#plot2-frequency").change(function(){
 
 $("#plot2-x-key").change(function(){
 
-    confFlowers.x.label = confFlowers.x.key =  $(this).val();
+    confFlowers.x.title = confFlowers.x.key =  $(this).val();
     plot2.setConfig(confFlowers).init();
 });

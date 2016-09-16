@@ -6,10 +6,10 @@ var confFlowers = {
         // color: function(d) { return d[0]*d[1] }
     },
     x:{
-        label: 'petal length'
+        title: 'petal length'
     },
     y:{
-        label: 'petal width'
+        title: 'petal width'
     },
     groups:{
         key: 'species',

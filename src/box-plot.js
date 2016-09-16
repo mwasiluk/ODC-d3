@@ -8,7 +8,6 @@ export class BoxPlotConfig extends BoxPlotBaseConfig{
     showLegend = true;
     showTooltip = true;
     y = {// Y axis config
-        title: '',
         key: undefined,
         value: function(d) { return this.y.key===undefined ? d : d[this.y.key]} , // y value accessor
         scale: "linear",

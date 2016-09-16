@@ -9,7 +9,7 @@ export class ScatterPlotConfig extends ChartWithColorGroupsConfig{
     showTooltip= true; //show tooltip on dot hover
 
     x={// X axis config
-        label: '', // axis label
+        title: '', // axis label
         key: 0,
         value: (d, key) => d[key], // x value accessor
         orient: "bottom",
@@ -17,7 +17,7 @@ export class ScatterPlotConfig extends ChartWithColorGroupsConfig{
         domainMargin: 0.05
     };
     y={// Y axis config
-        label: '', // axis label,
+        title: '', // axis label,
         key: 1,
         value: (d, key) => d[key], // y value accessor
         orient: "left",
@@ -147,7 +147,7 @@ export class ScatterPlot extends ChartWithColorGroups{
             .attr("transform", "translate("+ (plot.width/2) +","+ (plot.margin.bottom) +")")  // text is drawn off the screen top left, move down and out and rotate
             .attr("dy", "-1em")
             .style("text-anchor", "middle")
-            .text(axisConf.label);
+            .text(axisConf.title);
     };
 
     drawAxisY(){
@@ -167,7 +167,7 @@ export class ScatterPlot extends ChartWithColorGroups{
             .attr("transform", "translate("+ -plot.margin.left +","+(plot.height/2)+")rotate(-90)")  // text is drawn off the screen top left, move down and out and rotate
             .attr("dy", "1em")
             .style("text-anchor", "middle")
-            .text(axisConf.label);
+            .text(axisConf.title);
     };
 
     update(newData){
