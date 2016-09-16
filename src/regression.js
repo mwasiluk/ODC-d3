@@ -93,8 +93,8 @@ export class Regression extends ScatterPlot{
             }
         ];
 
-        var line = d3.svg.line()
-            .interpolate("basis")
+        var line = d3.line()
+            .curve(d3.curveBasis)
             .x(d => self.plot.x.scale(d.x))
             .y(d => self.plot.y.scale(d.y));
 
@@ -189,8 +189,8 @@ export class Regression extends ScatterPlot{
 
         var fitInPlot = y => y;
 
-        var confidenceArea =  d3.svg.area()
-        .interpolate("monotone")
+        var confidenceArea =  d3.area()
+        .curve(d3.curveMonotoneX)
             .x(d => self.plot.x.scale(d.x))
             .y0(d => fitInPlot(self.plot.y.scale(d.y0)))
             .y1(d => fitInPlot(self.plot.y.scale(d.y1)));
@@ -233,25 +233,18 @@ export class Regression extends ScatterPlot{
         var regression = regressionContainer.selectAll(regressionSelector)
             .data(self.plot.regressions, (d,i)=> d.group);
 
-        var regressionEnterG = regression.enter().insertSelector(regressionSelector);
-        var lineClass = self.prefixClass("line");
-        regressionEnterG
 
+        var regressionEnter = regression.enter().appendSelector(regressionSelector);
+        var regressionMerge = regressionEnter.merge(regression);
+        var lineClass = self.prefixClass("line");
+        regressionEnter
             .append("path")
             .attr("class", lineClass)
             .attr("shape-rendering", "optimizeQuality");
-            // .append("line")
-            // .attr("class", "line")
-            // .attr("shape-rendering", "optimizeQuality");
 
-        var line = regression.select("path."+lineClass)
+        var line = regressionMerge.select("path."+lineClass)
             .style("stroke", r => r.color);
-        // .attr("x1", r=> self.plot.x.scale(r.linePoints[0].x))
-            // .attr("y1", r=> self.plot.y.scale(r.linePoints[0].y))
-            // .attr("x2", r=> self.plot.x.scale(r.linePoints[1].x))
-            // .attr("y2", r=> self.plot.y.scale(r.linePoints[1].y))
-
-
+        
         var lineT = line;
         if (self.transitionEnabled()) {
             lineT = line.transition();
@@ -260,7 +253,7 @@ export class Regression extends ScatterPlot{
         lineT.attr("d", r => r.line(r.linePoints))
 
 
-        regressionEnterG
+        regressionEnter
             .append("path")
             .attr("class", confidenceAreaClass)
             .attr("shape-rendering", "optimizeQuality")
@@ -268,7 +261,7 @@ export class Regression extends ScatterPlot{
 
 
 
-        var area = regression.select("path."+confidenceAreaClass);
+        var area = regressionMerge.select("path."+confidenceAreaClass);
 
         var areaT = area;
         if (self.transitionEnabled()) {

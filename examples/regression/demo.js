@@ -51,7 +51,7 @@ d3.csv("../data/flowers.csv", function(error, data) {
     data = d3.nest().key(function(d){return d.species}).entries(data);
     plot = new ODCD3.Regression("#plot", data, conf);
     setTimeout(function(){
-        conf.confidence.level = 0.99999;
+        conf.confidence.level = 0.9999;
         // plot = new ODCD3.Regression("#plot", data, conf);
         plot.setConfig(conf).init();
     }, 1000);
