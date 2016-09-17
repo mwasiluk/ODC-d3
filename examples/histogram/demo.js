@@ -8,6 +8,7 @@ var confFlowers = {
         key: 'sepal width',
         title: 'sepal width'
     },
+    title: "Anderson's Iris data set",
     frequency: true,
     groups:flowerGroups
 };
@@ -38,6 +39,7 @@ var conf = confFlowers;
 
 var values = d3.range(1000).map(d3.random.bates(20));
 plot = new ODCD3.Histogram("#plot", values, {
+    title: "Random numbers with a Bates distribution",
     x:{
         ticks: 14
     }

@@ -45,12 +45,18 @@ export class ChartWithColorGroups extends Chart{
         var conf = this.config;
        
         this.plot.showLegend = conf.showLegend;
-        if(this.plot.showLegend){
-            this.plot.margin.right = conf.margin.right + conf.legend.width+conf.legend.margin*2;
-        }
         this.setupGroups();
         this.plot.data = this.getDataToPlot();
         this.groupData();
+
+        if(this.plot.showLegend){
+            var scale = this.plot.colorCategory;
+            if(!scale.domain() || scale.domain().length<2){
+                this.plot.showLegend = false;
+            }else{
+                this.plot.margin.right = conf.margin.right + conf.legend.width+conf.legend.margin*2;
+            }
+        }
         return this;
     }
 

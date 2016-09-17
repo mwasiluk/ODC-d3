@@ -17,7 +17,9 @@ var confFlowers = {
         key: 'species',
         label: "species",
         displayValue: {'setosa': 'Setosa'}
-    }
+    },
+    title: "Anderson's Iris data set",
+    subtitle: "en.wikipedia.org/wiki/Iris_flower_data_set"
     // series: true
 
 };
