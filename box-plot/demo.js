@@ -2,8 +2,8 @@ var confFlowers = {
     // width: 500,
     // height: 500,
     y:{
-        title: 'petal length',
-        key: 'petal length'
+        title: 'sepal width',
+        key: 'sepal width'
     },
     groups:{
         key: 'species'
