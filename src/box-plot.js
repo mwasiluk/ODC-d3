@@ -90,8 +90,16 @@ export class BoxPlot extends BoxPlotBase{
             s.values.Q1 = StatisticsUtils.quantile(values, 0.25);
             s.values.Q2 = StatisticsUtils.quantile(values, 0.5);
             s.values.Q3 = StatisticsUtils.quantile(values, 0.75);
-            s.values.whiskerLow = d3.min(values);
-            s.values.whiskerHigh = d3.max(values);
+            var IQR =  s.values.Q3 - s.values.Q1;
+
+            if(!self.config.tukey){
+                s.values.whiskerLow = d3.min(values);
+                s.values.whiskerHigh = d3.max(values);
+            }else{
+                s.values.whiskerLow = s.values.Q1 - 1.5*IQR;
+                s.values.whiskerHigh = s.values.Q3 + 1.5*IQR;
+                s.values.outliers = values.filter(d=> d<s.values.whiskerLow || d>s.values.whiskerHigh);
+            }
         });
 
         return self.plot.groupedData;

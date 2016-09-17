@@ -13,6 +13,7 @@ var confFlowers = {
     groups:{
         key: 'species'
     },
+    tukey: true
     // series: true
 
 };
@@ -89,5 +90,11 @@ function exampleData3() {
 $("#plot2-y-key").change(function(){
 
     confFlowers.y.title = confFlowers.y.key =  $(this).val();
+    plot2.setConfig(confFlowers).init();
+});
+
+$("#plot2-tukey").change(function(){
+
+    confFlowers.tukey =this.checked;
     plot2.setConfig(confFlowers).init();
 });
