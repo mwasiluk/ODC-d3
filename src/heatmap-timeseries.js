@@ -135,12 +135,12 @@ export class HeatmapTimeSeries extends Heatmap {
 
     parseTime(x) {
         var parser = this.getTimeParser();
-        return parser.parse(x);
+        return parser(x);
     }
 
     formatTime(date){
-        var parser = this.getTimeParser();
-        return parser(date);
+        var formatter = this.getTimeFormatter();
+        return formatter(date);
     }
 
     formatValueX(value) { //used only for display
@@ -148,7 +148,7 @@ export class HeatmapTimeSeries extends Heatmap {
 
         if(this.config.x.displayFormat){
             var date = this.parseTime(value);
-            return d3.time.format(this.config.x.displayFormat)(date);
+            return d3.timeFormat(this.config.x.displayFormat)(date);
         }
 
         if(!this.plot.x.timeFormat) return value;
@@ -170,8 +170,9 @@ export class HeatmapTimeSeries extends Heatmap {
     }
 
     nextTimeTickValue(t) {
-        var interval = this.plot.x.interval;
-        return d3.time[interval].offset(t, this.plot.x.intervalStep);
+        var interval = 'time'+Utils.capitalizeFirstLetter(this.plot.x.interval);
+
+        return d3[interval].offset(t, this.plot.x.intervalStep);
     }
 
     initPlot() {
@@ -219,9 +220,9 @@ export class HeatmapTimeSeries extends Heatmap {
             var format = null;
             var formatMatch = intervalFormat.formats.some(f=>{
                 format = f;
-                var parser = d3.time.format(f);
+                var parser = d3.timeParse(f);
                 return self.plot.x.uniqueValues.every(x=>{
-                    return parser.parse(x) !== null
+                    return parser(x) !== null
                 });
             });
             if(formatMatch){
@@ -251,10 +252,15 @@ export class HeatmapTimeSeries extends Heatmap {
 
     }
 
-
+    getTimeFormatter() {
+        if(!this.plot.x.timeFormatter){
+            this.plot.x.timeFormatter = d3.timeFormat(this.plot.x.timeFormat);
+        }
+        return this.plot.x.timeFormatter;
+    }
     getTimeParser() {
         if(!this.plot.x.timeParser){
-            this.plot.x.timeParser = d3.time.format(this.plot.x.timeFormat);
+            this.plot.x.timeParser = d3.timeParse(this.plot.x.timeFormat);
         }
         return this.plot.x.timeParser;
     }
