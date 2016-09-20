@@ -8,7 +8,7 @@ export class BarChartConfig extends ChartWithColorGroupsConfig {
     showLegend = true;
     showTooltip = true;
     x = {// X axis config
-        label: '', // axis label
+        title: '', // axis label
         key: 0,
         value: (d, key) => Utils.isNumber(d) ? d : d[key], // x value accessor
         scale: "ordinal",
@@ -17,7 +17,7 @@ export class BarChartConfig extends ChartWithColorGroupsConfig {
     y = {// Y axis config
         key: 1,
         value: (d, key) => Utils.isNumber(d) ? d : d[key], // x value accessor
-        label: '', // axis label,
+        title: '', // axis label,
         orient: "left",
         scale: "linear"
     };
@@ -163,7 +163,7 @@ export class BarChart extends ChartWithColorGroups {
             .attr("transform", "translate(" + (plot.width / 2) + "," + (plot.margin.bottom) + ")")  // text is drawn off the screen top left, move down and out and rotate
             .attr("dy", "-1em")
             .style("text-anchor", "middle")
-            .text(axisConf.label);
+            .text(axisConf.title);
     };
 
     drawAxisY() {
@@ -183,7 +183,7 @@ export class BarChart extends ChartWithColorGroups {
             .attr("transform", "translate(" + -plot.margin.left + "," + (plot.height / 2) + ")rotate(-90)")  // text is drawn off the screen top left, move down and out and rotate
             .attr("dy", "1em")
             .style("text-anchor", "middle")
-            .text(axisConf.label);
+            .text(axisConf.title);
     };
 
 

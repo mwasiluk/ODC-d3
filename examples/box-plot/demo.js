@@ -13,6 +13,7 @@ var confFlowers = {
     groups:{
         key: 'species'
     },
+    tukey: true
     // series: true
 
 };
@@ -96,5 +97,11 @@ $("#transition").change(function(){
     console.log('transition '+this.checked);
     conf.transition = confFlowers.transition = this.checked;
     plot.setConfig(conf).init();
+    plot2.setConfig(confFlowers).init();
+});
+
+$("#plot2-tukey").change(function(){
+
+    confFlowers.tukey =this.checked;
     plot2.setConfig(confFlowers).init();
 });

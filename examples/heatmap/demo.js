@@ -1,6 +1,8 @@
 
 confFlowers = new ODCD3.HeatmapConfig();
 confFlowers.legend.decimalPlaces=3;
+confFlowers.title = 'Heatmap of petal length';
+confFlowers.titleSize = 16;
 confFlowers.x.key='species';
 confFlowers.y.key='petal width';
 confFlowers.y.sortLabels=true;
@@ -93,6 +95,7 @@ var confFlowers3 = {
 };
 
 var confFlowers4 = {
+    title: 'Heatmap of petal length',
     width: 600,
     // height: 200,
     x:{

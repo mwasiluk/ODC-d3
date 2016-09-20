@@ -15,6 +15,24 @@ export class ChartConfig {
     showTooltip = false;
     transition = true;
 
+    title = undefined;
+    titleSize=20;
+    titleMargin={
+        left: 0,
+        right: 0,
+        top: 15,
+        bottom: 20
+    };
+
+    subtitle = undefined;
+    subtitleSize=14;
+    subtitleMargin={
+        left: 0,
+        right: 0,
+        top: 10,
+        bottom: 20
+    };
+
     constructor(custom) {
         if (custom) {
             Utils.deepExtend(this, custom);
@@ -94,8 +112,8 @@ export class Chart {
         var config = this.config;
 
         var margin = self.plot.margin;
-        var width = self.plot.width + margin.left + margin.right;
-        var height = self.plot.height + margin.top + margin.bottom;
+        var width = self.svgWidth = self.plot.width + margin.left + margin.right;
+        var height = self.svgHeight =  self.plot.height + margin.top + margin.bottom;
         var aspect = width / height;
         if(!self._isAttached){
             if(!this._isInitialized){
@@ -154,12 +172,32 @@ export class Chart {
             left: margin.left,
             right: margin.right
         };
+
+
+        var titleMarginSize = 0;
+        if(this.config.title){
+            titleMarginSize= this.config.titleSize+this.config.titleMargin.top;
+            if(!this.config.subtitle){
+                titleMarginSize += this.config.titleMargin.bottom;
+            }
+
+            this.plot.margin.top=Math.max(this.plot.margin.top,titleMarginSize);
+        }
+
+        if(this.config.subtitle){
+
+            this.plot.margin.top=Math.max(this.plot.margin.top, titleMarginSize+this.config.subtitleMargin.top+this.config.subtitleSize+this.config.subtitleMargin.bottom);
+        }
+
     }
 
     update(data) {
         if (data) {
             this.setData(data);
         }
+        this.updateTitle();
+        this.updateSubtitle();
+
         var layerName, attachmentData;
         for (var attachmentName in this._attached) {
 
@@ -168,6 +206,43 @@ export class Chart {
             this._attached[attachmentName].update(attachmentData);
         }
         return this;
+    }
+
+    updateTitle() {
+        var titleClass = this.prefixClass('plot-title');
+        if(!this.config.title){
+            this.svg.select("text."+titleClass).remove();
+            return;
+        }
+
+        this.svg.selectOrAppend("text."+titleClass)
+            .attr("transform", "translate("+ (this.svgWidth/2) +","+ (this.config.titleMargin.top) +")")  // text is drawn off the screen top left, move down and out and rotate
+            .attr("dy", "0.5em")
+            .style("text-anchor", "middle")
+            .style("dominant-baseline", "central")
+            .style("font-size", this.config.titleSize+"px")
+            .text(this.config.title);
+    }
+
+    updateSubtitle() {
+        var subtitleClass = this.prefixClass('plot-subtitle');
+        if(!this.config.subtitle){
+            this.svg.select("text."+subtitleClass).remove();
+            return;
+        }
+
+        var y = this.config.subtitleMargin.top;
+        if(this.config.title){
+            y+=this.config.titleMargin.top+this.config.titleSize;
+        }
+
+        this.svg.selectOrAppend("text."+subtitleClass)
+            .attr("transform", "translate("+ (this.svgWidth/2) +","+ (y) +")")  // text is drawn off the screen top left, move down and out and rotate
+            .attr("dy", "0.5em")
+            .style("text-anchor", "middle")
+            .style("dominant-baseline", "central")
+            .style("font-size", this.config.subtitleSize+"px")
+            .text(this.config.subtitle);
     }
 
     draw(data) {

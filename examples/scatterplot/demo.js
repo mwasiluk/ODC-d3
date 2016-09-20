@@ -7,17 +7,19 @@ var confFlowers = {
     },
     x:{
         key: 'petal length',
-        label: 'petal length'
+        title: 'petal length'
     },
     y:{
         key: 'petal width',
-        label: 'petal width'
+        title: 'petal width'
     },
     groups:{
         key: 'species',
         label: "species",
         displayValue: {'setosa': 'Setosa'}
-    }
+    },
+    title: "Anderson's Iris data set",
+    subtitle: "en.wikipedia.org/wiki/Iris_flower_data_set"
     // series: true
 
 };

@@ -6,8 +6,9 @@ var flowerGroups = {
 var confFlowers = {
     x:{
         key: 'sepal width',
-        label: 'sepal width'
+        title: 'sepal width'
     },
+    title: "Anderson's Iris data set",
     frequency: true,
     groups:flowerGroups
 };
@@ -38,6 +39,7 @@ var conf = confFlowers;
 
 var values = d3.range(1000).map(d3.random.bates(20));
 plot = new ODCD3.Histogram("#plot", values, {
+    title: "Random numbers with a Bates distribution",
     x:{
         ticks: 14
     }
@@ -64,6 +66,6 @@ $("#plot2-frequency").change(function(){
 
 $("#plot2-x-key").change(function(){
 
-    confFlowers.x.label = confFlowers.x.key =  $(this).val();
+    confFlowers.x.title = confFlowers.x.key =  $(this).val();
     plot2.setConfig(confFlowers).init();
 });
