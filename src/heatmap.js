@@ -537,7 +537,7 @@ export class Heatmap extends Chart {
                 var v = z.max - (extent / Math.pow(10, i));
                 z.domain.push(v)
             });
-            scale = d3.scale.pow().exponent(exponent);
+            scale = d3.scalePow().exponent(exponent);
         } else if (config.color.scale == "log") {
 
             range.forEach((c, i)=> {
@@ -546,13 +546,14 @@ export class Heatmap extends Chart {
 
             });
 
-            scale = d3.scale.log()
+            scale = d3.scaleLog()
         } else {
             range.forEach((c, i)=> {
                 var v = z.min + (extent * (i / (range.length - 1)));
                 z.domain.push(v)
             });
-            scale = d3.scale[config.color.scale]();
+            scale = Utils.createScale(config.color.scale);
+
         }
 
 
@@ -567,6 +568,7 @@ export class Heatmap extends Chart {
         var plot = this.plot;
 
         console.log(range);
+
         plot.z.color.scale = scale.domain(z.domain).range(range);
         var shape = plot.z.shape = {};
 
@@ -635,9 +637,9 @@ export class Heatmap extends Chart {
         var labels = self.svgG.selectAll("text." + labelXClass)
             .data(plot.x.allValuesList, (d, i)=>i);
 
-        labels.enter().append("text").attr("class", (d, i) => labelClass + " " + labelXClass + " " + labelXClass + "-" + i);
+        var labelsMerge = labels.enter().append("text").attr("class", (d, i) => labelClass + " " + labelXClass + " " + labelXClass + "-" + i).merge(labels);
 
-        labels
+        labelsMerge
             .attr("x", (d, i) => (i * plot.cellWidth + plot.cellWidth / 2) + (d.group.gapsSize) + offsetX.x)
             .attr("y", plot.height + offsetX.y)
             .attr("dy", 10)
@@ -649,14 +651,14 @@ export class Heatmap extends Chart {
 
         var maxWidth = self.computeXAxisLabelsWidth(offsetX);
 
-        labels.each(function (label) {
+        labelsMerge.each(function (label) {
             var elem = d3.select(this),
                 text = self.formatValueX(label.val);
             Utils.placeTextWithEllipsisAndTooltip(elem, text, maxWidth, self.config.showTooltip ? self.plot.tooltip : false);
         });
 
         if (self.config.x.rotateLabels) {
-            labels.attr("transform", (d, i) => "rotate(-45, " + ((i * plot.cellWidth + plot.cellWidth / 2) + d.group.gapsSize + offsetX.x ) + ", " + ( plot.height + offsetX.y) + ")")
+            labelsMerge.attr("transform", (d, i) => "rotate(-45, " + ((i * plot.cellWidth + plot.cellWidth / 2) + d.group.gapsSize + offsetX.x ) + ", " + ( plot.height + offsetX.y) + ")")
                 .attr("dx", -2)
                 .attr("dy", 8)
                 .attr("text-anchor", "end");
@@ -686,7 +688,8 @@ export class Heatmap extends Chart {
         var labels = self.svgG.selectAll("text." + labelYClass)
             .data(plot.y.allValuesList);
 
-        labels.enter().append("text");
+        var labelsEnter = labels.enter().append("text");
+        var labelsMerge = labelsEnter.merge(labels);
 
         var offsetY = {
             x: 0,
@@ -699,7 +702,7 @@ export class Heatmap extends Chart {
 
             offsetY.y = gapSize / 2;
         }
-        labels
+        labelsMerge
             .attr("x", offsetY.x)
             .attr("y", (d, i) => (i * plot.cellHeight + plot.cellHeight / 2) + d.group.gapsSize + offsetY.y)
             .attr("dx", -2)
@@ -713,19 +716,19 @@ export class Heatmap extends Chart {
 
         var maxWidth = self.computeYAxisLabelsWidth(offsetY);
 
-        labels.each(function (label) {
+        labelsMerge.each(function (label) {
             var elem = d3.select(this),
                 text = self.formatValueY(label.val);
             Utils.placeTextWithEllipsisAndTooltip(elem, text, maxWidth, self.config.showTooltip ? self.plot.tooltip : false);
         });
 
         if (self.config.y.rotateLabels) {
-            labels
+            labelsMerge
                 .attr("transform", (d, i) => "rotate(-45, " + (offsetY.x  ) + ", " + (d.group.gapsSize + (i * plot.cellHeight + plot.cellHeight / 2) + offsetY.y) + ")")
                 .attr("text-anchor", "end");
             // .attr("dx", -7);
         } else {
-            labels.attr("dominant-baseline", "middle")
+            labelsMerge.attr("dominant-baseline", "middle")
         }
 
 
@@ -755,13 +758,13 @@ export class Heatmap extends Chart {
         var valuesBeforeCount = 0;
         var gapsBeforeSize = 0;
 
-        var groupsEnterG = groups.enter().append("g");
-        groupsEnterG
+        var groupsEnter = groups.enter().append("g");
+        groupsEnter
             .classed(groupClass, true)
             .classed(groupYClass, true)
             .append("rect").classed("group-rect", true);
 
-        var titleGroupEnter = groupsEnterG.appendSelector("g.title");
+        var titleGroupEnter = groupsEnter.appendSelector("g.title");
         titleGroupEnter.append("rect");
         titleGroupEnter.append("text");
 
@@ -782,7 +785,9 @@ export class Heatmap extends Chart {
         }
 
 
-        groups
+        var groupsMerge = groupsEnter.merge(groups);
+
+        groupsMerge
             .attr("transform", (d, i) => {
                 var translate = "translate(" + (padding - overlap.left) + "," + ((plot.cellHeight * valuesBeforeCount) + i * gapSize + gapsBeforeSize + padding) + ")";
                 gapsBeforeSize += (d.gapsInsideSize || 0);
@@ -793,7 +798,7 @@ export class Heatmap extends Chart {
 
         var groupWidth = availableWidth - padding * 2;
 
-        var titleGroups = groups.selectAll("g.title")
+        var titleGroups = groupsMerge.selectAll("g.title")
             .attr("transform", (d, i) => "translate(" + (groupWidth - titleRectWidth) + ", 0)");
 
         var tileRects = titleGroups.selectAll("rect")
@@ -809,7 +814,7 @@ export class Heatmap extends Chart {
         this.setGroupMouseCallbacks(parentGroup, tileRects);
 
 
-        groups.selectAll("rect.group-rect")
+        groupsMerge.selectAll("rect.group-rect")
             .attr("class", d=> "group-rect group-rect-" + d.index)
             .attr("width", groupWidth)
             .attr("height", d=> {
@@ -823,11 +828,12 @@ export class Heatmap extends Chart {
             .attr("stroke", "black")
 
 
-        groups.each(function (group) {
+        groupsMerge.each(function (group) {
 
             self.drawGroupsY.call(self, group, d3.select(this), groupWidth - titleRectWidth);
         });
 
+        groups.exit().remove();
     }
 
     drawGroupsX(parentGroup, container, availableHeight) {
@@ -843,13 +849,13 @@ export class Heatmap extends Chart {
         var valuesBeforeCount = 0;
         var gapsBeforeSize = 0;
 
-        var groupsEnterG = groups.enter().append("g");
-        groupsEnterG
+        var groupsEnter = groups.enter().append("g");
+        groupsEnter
             .classed(groupClass, true)
             .classed(groupXClass, true)
             .append("rect").classed("group-rect", true);
 
-        var titleGroupEnter = groupsEnterG.appendSelector("g.title");
+        var titleGroupEnter = groupsEnter.appendSelector("g.title");
         titleGroupEnter.append("rect");
         titleGroupEnter.append("text");
 
@@ -874,7 +880,9 @@ export class Heatmap extends Chart {
         }
         // console.log('parentGroup',parentGroup, 'gapSize', gapSize, plot.x.overlap);
 
-        groups
+        var groupsMerge = groupsEnter.merge(groups);
+
+        groupsMerge
             .attr("transform", (d, i) => {
                 var translate = "translate(" + ((plot.cellWidth * valuesBeforeCount) + i * gapSize + gapsBeforeSize + padding) + ", " + (padding - overlap.top) + ")";
                 gapsBeforeSize += (d.gapsInsideSize || 0);
@@ -884,7 +892,7 @@ export class Heatmap extends Chart {
 
         var groupHeight = availableHeight - padding * 2;
 
-        var titleGroups = groups.selectAll("g.title")
+        var titleGroups = groupsMerge.selectAll("g.title")
             .attr("transform", (d, i) => "translate(0, " + (0) + ")");
 
 
@@ -901,7 +909,7 @@ export class Heatmap extends Chart {
         this.setGroupMouseCallbacks(parentGroup, tileRects);
 
 
-        groups.selectAll("rect.group-rect")
+        groupsMerge.selectAll("rect.group-rect")
             .attr("class", d=> "group-rect group-rect-" + d.index)
             .attr("height", groupHeight)
             .attr("width", d=> {
@@ -914,7 +922,7 @@ export class Heatmap extends Chart {
             .attr("stroke-width", 0.5)
             .attr("stroke", "black");
 
-        groups.each(function (group) {
+        groupsMerge.each(function (group) {
             self.drawGroupsX.call(self, group, d3.select(this), groupHeight - titleRectHeight);
         });
 
@@ -980,11 +988,13 @@ export class Heatmap extends Chart {
         var cells = cellContainer.selectAll("g." + cellClass)
             .data(self.plot.cells);
 
-        var cellEnterG = cells.enter().append("g")
+        var cellEnter = cells.enter().append("g")
             .classed(cellClass, true);
-        cells.attr("transform", c=> "translate(" + ((plot.cellWidth * c.col + plot.cellWidth / 2) + c.colVar.group.gapsSize) + "," + ((plot.cellHeight * c.row + plot.cellHeight / 2) + c.rowVar.group.gapsSize) + ")");
 
-        var shapes = cells.selectOrAppend(cellShape + ".cell-shape-" + cellShape);
+        var cellsMerge = cellEnter.merge(cells);
+        cellsMerge.attr("transform", c=> "translate(" + ((plot.cellWidth * c.col + plot.cellWidth / 2) + c.colVar.group.gapsSize) + "," + ((plot.cellHeight * c.row + plot.cellHeight / 2) + c.rowVar.group.gapsSize) + ")");
+
+        var shapes = cellsMerge.selectOrAppend(cellShape + ".cell-shape-" + cellShape);
 
         shapes
             .attr("width", plot.z.shape.width)
@@ -1029,14 +1039,14 @@ export class Heatmap extends Chart {
         }
 
 
-        cells.on("mouseover", c => {
+        cellsMerge.on("mouseover", c => {
             mouseoverCallbacks.forEach(callback=>callback(c));
         })
             .on("mouseout", c => {
                 mouseoutCallbacks.forEach(callback=>callback(c));
             });
 
-        cells.on("click", c=> {
+        cellsMerge.on("click", c=> {
             self.trigger("cell-selected", c);
         });
 
