@@ -125,7 +125,7 @@ export class CorrelationMatrix extends Chart {
          * axis - sets up axis
          **/
         x.value = conf.value;
-        x.scale = d3.scale[conf.scale]().rangeBands([plot.width, 0]);
+        x.scale = d3.scaleBand().range([plot.width, 0]);
         x.map = d => x.scale(x.value(d));
 
     };
@@ -134,7 +134,7 @@ export class CorrelationMatrix extends Chart {
         var plot = this.plot;
         var corrConf = this.config.correlation;
 
-        plot.correlation.color.scale = d3.scale[corrConf.scale]().domain(corrConf.domain).range(corrConf.range);
+        plot.correlation.color.scale = Utils.createScale(corrConf.scale).domain(corrConf.domain).range(corrConf.range);
         var shape = plot.correlation.shape = {};
 
         var cellConf = this.config.cell;
@@ -143,11 +143,11 @@ export class CorrelationMatrix extends Chart {
         var shapeSize = plot.cellSize - cellConf.padding * 2;
         if (shape.type == 'circle') {
             var radiusMax = shapeSize / 2;
-            shape.radiusScale = d3.scale.linear().domain([0, 1]).range([2, radiusMax]);
+            shape.radiusScale = d3.scaleLinear().domain([0, 1]).range([2, radiusMax]);
             shape.radius = c=> shape.radiusScale(Math.abs(c.value));
         } else if (shape.type == 'ellipse') {
             var radiusMax = shapeSize / 2;
-            shape.radiusScale = d3.scale.linear().domain([0, 1]).range([radiusMax, 2]);
+            shape.radiusScale = d3.scaleLinear().domain([0, 1]).range([radiusMax, 2]);
             shape.radiusX = c=> shape.radiusScale(Math.abs(c.value));
             shape.radiusY = radiusMax;
 
@@ -258,9 +258,9 @@ export class CorrelationMatrix extends Chart {
         var labels = self.svgG.selectAll("text." + labelXClass)
             .data(plot.variables, (d, i)=>i);
 
-        labels.enter().append("text").attr("class", (d, i) => labelClass + " " + labelXClass + " " + labelXClass + "-" + i);
+        var labelsMerge = labels.enter().append("text").attr("class", (d, i) => labelClass + " " + labelXClass + " " + labelXClass + "-" + i).merge(labels);
 
-        labels
+        labelsMerge
             .attr("x", (d, i) => i * plot.cellSize + plot.cellSize / 2)
             .attr("y", plot.height)
             .attr("dx", -2)
@@ -271,11 +271,11 @@ export class CorrelationMatrix extends Chart {
             .text(v=>plot.labelByVariable[v]);
 
         if (this.config.rotateLabelsX) {
-            labels.attr("transform", (d, i) => "rotate(-45, " + (i * plot.cellSize + plot.cellSize / 2  ) + ", " + plot.height + ")")
+            labelsMerge.attr("transform", (d, i) => "rotate(-45, " + (i * plot.cellSize + plot.cellSize / 2  ) + ", " + plot.height + ")")
         }
 
         var maxWidth = self.computeXAxisLabelsWidth();
-        labels.each(function (label) {
+        labelsMerge.each(function (label) {
             Utils.placeTextWithEllipsisAndTooltip(d3.select(this), label, maxWidth, self.config.showTooltip ? self.plot.tooltip : false);
         });
 
@@ -290,9 +290,9 @@ export class CorrelationMatrix extends Chart {
         var labels = self.svgG.selectAll("text." + labelYClass)
             .data(plot.variables);
 
-        labels.enter().append("text");
+        var labelsMerge = labels.enter().append("text").merge(labels);
 
-        labels
+        labelsMerge
             .attr("x", 0)
             .attr("y", (d, i) => i * plot.cellSize + plot.cellSize / 2)
             .attr("dx", -2)
@@ -302,13 +302,13 @@ export class CorrelationMatrix extends Chart {
             .text(v=>plot.labelByVariable[v]);
 
         if (this.config.rotateLabelsY) {
-            labels
+            labelsMerge
                 .attr("transform", (d, i) => "rotate(-45, " + 0 + ", " + (i * plot.cellSize + plot.cellSize / 2) + ")")
                 .attr("text-anchor", "end");
         }
 
         var maxWidth = self.computeYAxisLabelsWidth();
-        labels.each(function (label) {
+        labelsMerge.each(function (label) {
             Utils.placeTextWithEllipsisAndTooltip(d3.select(this), label, maxWidth, self.config.showTooltip ? self.plot.tooltip : false);
         });
 
@@ -349,18 +349,19 @@ export class CorrelationMatrix extends Chart {
         var cells = self.svgG.selectAll("g." + cellClass)
             .data(plot.correlation.matrix.cells);
 
-        var cellEnterG = cells.enter().append("g")
+        var cellsEnter = cells.enter().append("g")
             .classed(cellClass, true);
-        cells.attr("transform", c=> "translate(" + (plot.cellSize * c.col + plot.cellSize / 2) + "," + (plot.cellSize * c.row + plot.cellSize / 2) + ")");
+        var cellsMerge = cellsEnter.merge(cells);
+        cellsMerge.attr("transform", c=> "translate(" + (plot.cellSize * c.col + plot.cellSize / 2) + "," + (plot.cellSize * c.row + plot.cellSize / 2) + ")");
 
-        cells.classed(self.config.cssClassPrefix + "selectable", !!self.scatterPlot);
+        cellsMerge.classed(self.config.cssClassPrefix + "selectable", !!self.scatterPlot);
 
         var selector = "*:not(.cell-shape-" + cellShape + ")";
 
         var wrongShapes = cells.selectAll(selector);
         wrongShapes.remove();
 
-        var shapes = cells.selectOrAppend(cellShape + ".cell-shape-" + cellShape);
+        var shapes = cellsMerge.selectOrAppend(cellShape + ".cell-shape-" + cellShape);
 
         if (plot.correlation.shape.type == 'circle') {
 
@@ -426,14 +427,14 @@ export class CorrelationMatrix extends Chart {
         }
 
 
-        cells.on("mouseover", c => {
+        cellsMerge.on("mouseover", c => {
             mouseoverCallbacks.forEach(callback=>callback(c));
         })
             .on("mouseout", c => {
                 mouseoutCallbacks.forEach(callback=>callback(c));
             });
 
-        cells.on("click", c=> {
+        cellsMerge.on("click", c=> {
             self.trigger("cell-selected", c);
         });
 
@@ -452,8 +453,7 @@ export class CorrelationMatrix extends Chart {
         var scale = plot.correlation.color.scale;
 
         plot.legend = new Legend(this.svg, this.svgG, scale, legendX, legendY).linearGradientBar(barWidth, barHeight);
-
-
+        
     }
 
     attachScatterPlot(containerSelector, config) {

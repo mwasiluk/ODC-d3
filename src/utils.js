@@ -173,9 +173,9 @@ export class Utils {
         var stops = linearGradient.selectAll("stop")
             .data(range);
 
-        stops.enter().append("stop");
+        var stopsMerge = stops.enter().append("stop").merge(stops);
 
-        stops.attr("offset", (d, i) => i / (range.length - 1))
+        stopsMerge.attr("offset", (d, i) => i / (range.length - 1))
             .attr("stop-color", d => d);
 
         stops.exit().remove();
