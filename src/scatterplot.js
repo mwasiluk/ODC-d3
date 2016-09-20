@@ -80,21 +80,11 @@ export class ScatterPlot extends ChartWithColorGroups{
          * axis - sets up axis
          **/
         x.value = d => conf.value(d, conf.key);
-
-        if(conf.scale == 'linear'){
-            x.scale = d3.scaleLinear()
-        }else{
-            throw 'ODC-D3 - scale not supported: '+conf.scale;
-        }
-
-        x.scale.range([0, plot.width]);
+        
+        x.scale = Utils.createScale(conf.scale).range([0, plot.width]);
         x.map = d => x.scale(x.value(d));
-
-        if(conf.orient == 'bottom'){
-            x.axis = d3.axisBottom(x.scale)
-        }else{
-            throw 'ODC-D3 - axis orient not supported: '+conf.orient;
-        }
+        
+        x.axis = Utils.createAxis(conf.orient, x.scale);
 
         var data = this.plot.groupedData;
 
@@ -123,20 +113,11 @@ export class ScatterPlot extends ChartWithColorGroups{
          */
         y.value = d => conf.value(d, conf.key);
 
-        if(conf.scale == 'linear'){
-            y.scale = d3.scaleLinear()
-        }else{
-            throw 'ODC-D3 - scale not supported: '+conf.scale;
-        }
+        y.scale = Utils.createScale(conf.scale).range([plot.height, 0]);
 
-        y.scale.range([plot.height, 0]);
         y.map = d => y.scale(y.value(d));
 
-        if(conf.orient == 'left'){
-            y.axis = d3.axisLeft(y.scale)
-        }else{
-            throw 'ODC-D3 - axis orient not supported: '+conf.orient;
-        }
+        y.axis = Utils.createAxis(conf.orient, y.scale);
 
         if(this.config.guides){
             y.axis.tickSize(-plot.width);

@@ -257,4 +257,22 @@ export class Utils {
     static capitalizeFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
+
+    static createScale(scaleName) {
+        var scaleFunctionName = 'scale'+Utils.capitalizeFirstLetter(scaleName);
+        try{
+            return d3[scaleFunctionName]();
+        }catch (e){
+            throw 'ODC-D3 - scale not supported: '+scaleName+ ' ('+scaleFunctionName+')';
+        }
+    }
+
+    static createAxis(orient, scale){
+        var axisFnName = 'axis'+Utils.capitalizeFirstLetter(orient);
+        try{
+            return d3[axisFnName](scale)
+        }catch (e){
+            throw 'ODC-D3 - axis orient not supported: '+orient;
+        }
+    }
 }
