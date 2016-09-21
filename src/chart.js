@@ -68,7 +68,6 @@ export class Chart {
         if (data) {
             this.setData(data);
         }
-
         this.init();
         this.postInit();
     }
@@ -79,7 +78,7 @@ export class Chart {
         } else {
             this.config = config;
         }
-
+        this.initConfigAccessors();
         return this;
     }
 
@@ -90,8 +89,6 @@ export class Chart {
 
     init() {
         var self = this;
-
-
         self.initPlot();
         self.initSvg();
 
@@ -101,6 +98,10 @@ export class Chart {
         self.draw();
         this._isInitialized=true;
         return this;
+    }
+
+    redraw(){
+        return this.init();
     }
 
     postInit(){
@@ -459,5 +460,34 @@ export class Chart {
         this.plot.tooltip.transition()
             .duration(500)
             .style("opacity", 0);
+    }
+
+    initConfigAccessors() {
+        this.initPropertyAccessors(this,this, this.config, "$", true);
+    }
+
+    initPropertyAccessors(bindTo,returnObj, source, prefix, recursive) {
+        var self  = this;
+        for (var i in source) {
+            if(!source.hasOwnProperty(i)){
+                continue;
+            }
+
+            var accessor = self.initPropertyAccessor(bindTo,returnObj, source, i, prefix);
+
+            if(recursive && Utils.isObjectNotArray(source[i])){
+                self.initPropertyAccessors(accessor, bindTo, source[i], prefix, recursive)
+            }
+        }
+    }
+
+    initPropertyAccessor(bindTo, returnObj, source, propertyKey, prefix) {
+        return bindTo[prefix + propertyKey] = function (_) {
+            if (!arguments.length) {
+                return source[propertyKey];
+            }
+            source[propertyKey] = _;
+            return returnObj;
+        };
     }
 }
