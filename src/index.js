@@ -2,10 +2,9 @@ import {D3Extensions} from './d3-extensions'
 D3Extensions.extend();
 
 export {ScatterPlot, ScatterPlotConfig} from "./scatterplot";
-export {Regression, RegressionConfig} from './regression'
 export {ScatterPlotMatrix, ScatterPlotMatrixConfig} from "./scatterplot-matrix";
+export {Regression, RegressionConfig} from './regression'
 export {CorrelationMatrix, CorrelationMatrixConfig} from './correlation-matrix'
-
 export {Heatmap, HeatmapConfig} from './heatmap'
 export {HeatmapTimeSeries, HeatmapTimeSeriesConfig} from './heatmap-timeseries'
 export {Histogram, HistogramConfig} from './histogram'

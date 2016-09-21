@@ -225,7 +225,7 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
         cellMerge.attr("transform", d => "translate(" + (n - d.i - 1) * self.plot.size + "," + d.j * self.plot.size + ")");
 
         if(conf.brush){
-            // this.drawBrush(cellMerge);
+            this.drawBrush(cellMerge);
         }
 
 
@@ -326,10 +326,9 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
             .on("brush", brushmove)
             .on("end", brushend);
 
-        self.plot.brush = brush;
-
+        brush.extent([[0, 0], [self.plot.size, self.plot.size]]);
         cell.selectOrAppend("g.brush-container").call(brush);
-        // brush.extent([[0, 0], [100, 100]]);
+
         self.clearBrush();
 
         // Clear the previously-active brush, if any.
@@ -339,17 +338,22 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
                 self.plot.x.scale.domain(self.plot.domainByVariable[p.x]);
                 self.plot.y.scale.domain(self.plot.domainByVariable[p.y]);
                 self.plot.brushCell = this;
+                self.plot.brush = brush;
             }
         }
 
         // Highlight the selected circles.
         function brushmove(p) {
             var s = d3.event.selection;
+            if(!s)return;
             var e = s.map(_=> [self.plot.x.scale.invert(_[0]), self.plot.y.scale.invert(_[1])]);
             // console.log(e);
             self.svgG.selectAll("circle").classed("hidden", function (d) {
-                return e[0][0] > d[p.x] || d[p.x] > e[1][0]
-                    || e[0][1] > d[p.y] || d[p.y] > e[1][1];
+                var x = parseFloat(d[p.x]),
+                    y = parseFloat(d[p.y]);
+
+                return e[0][0] > x || x > e[1][0]
+                    || e[1][1] > y || y > e[0][1];
             });
         }
         // If the brush is empty, select all circles.
@@ -363,8 +367,10 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
         if(!self.plot.brushCell){
             return;
         }
-        // d3.select(self.plot.brushCell).call(self.plot.brush.clear());
+        
+        self.plot.brush.move(d3.select(self.plot.brushCell), null);
         self.svgG.selectAll(".hidden").classed("hidden", false);
         self.plot.brushCell=null;
+
     }
 }
