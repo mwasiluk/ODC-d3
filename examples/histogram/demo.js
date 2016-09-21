@@ -37,7 +37,7 @@ var conf = confFlowers;
 
 
 
-var values = d3.range(1000).map(d3.random.bates(20));
+var values = d3.range(1000).map(d3.randomBates(20));
 plot = new ODCD3.Histogram("#plot", values, {
     title: "Random numbers with a Bates distribution",
     x:{

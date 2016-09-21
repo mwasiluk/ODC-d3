@@ -11,6 +11,7 @@ export class HistogramConfig extends ChartWithColorGroupsConfig{
         key: 0,
         value: (d, key) => Utils.isNumber(d) ? d : parseFloat(d[key]), // x value accessor
         scale: "linear",
+        orient: "bottom",
         ticks: undefined,
     };
     y={// Y axis config
@@ -77,10 +78,11 @@ export class Histogram extends ChartWithColorGroups{
          * axis - sets up axis
          **/
         x.value = d => conf.value(d, conf.key);
-        x.scale = d3.scale[conf.scale]().range([0, plot.width]);
+        x.scale = Utils.createScale(conf.scale).range([0, plot.width]);
         x.map = d => x.scale(x.value(d));
 
-        x.axis = d3.svg.axis().scale(x.scale).orient(conf.orient);
+        x.axis = Utils.createAxis(conf.orient, x.scale);
+
         if(conf.ticks){
             x.axis.ticks(conf.ticks);
         }
@@ -94,9 +96,9 @@ export class Histogram extends ChartWithColorGroups{
         var plot = this.plot;
         var y = plot.y;
         var conf = this.config.y;
-        y.scale = d3.scale[conf.scale]().range([plot.height, 0]);
+        y.scale = Utils.createScale(conf.scale).range([plot.height, 0]);
 
-        y.axis = d3.svg.axis().scale(y.scale).orient(conf.orient);
+        y.axis = Utils.createAxis(conf.orient, y.scale);
         var data = this.plot.data;
         var yStackMax = d3.max(plot.stackedHistograms, layer => d3.max(layer.histogramBins, d => d.y0 + d.y));
         plot.y.scale.domain([0, yStackMax]);
@@ -110,26 +112,39 @@ export class Histogram extends ChartWithColorGroups{
         var y = plot.y;
         var ticks = this.config.x.ticks ? x.scale.ticks(this.config.x.ticks) : x.scale.ticks();
 
-        plot.histogram = d3.layout.histogram().frequency(this.config.frequency)
+        plot.histogram = d3.histogram()
+            .domain(x.scale.domain())
             .value(x.value)
-            .bins(ticks);
+            .thresholds(ticks);
     }
 
     setupGroupStacks() {
         var self=this;
-        console.log(this.plot.groupedData);
-        this.plot.stack = d3.layout.stack().values(d=>d.histogramBins);
+        var y0s = [];
         this.plot.groupedData.forEach(d=>{
-            d.histogramBins = this.plot.histogram.frequency(this.config.frequency || this.plot.groupingEnabled)(d.values);
-            console.log(d.histogramBins);
-            if(!this.config.frequency && this.plot.groupingEnabled){
-                d.histogramBins.forEach(b => {
-                    b.dy = b.dy/this.plot.dataLength
-                    b.y = b.y/this.plot.dataLength
+            d.histogramBins = this.plot.histogram(d.values);
+
+                d.histogramBins.forEach((b,i) => {
+                    b.x =b.x0;
+                    b.dx = b.x1-b.x0;
+                    b.y = b.length;
+                    var prevY0 = y0s[i];
+                    if(!prevY0) prevY0 = 0;
+                    b.y0 = prevY0;
+
+                    if(!this.config.frequency){
+                        b.y/=this.plot.dataLength
+                    }
+                    y0s[i] = b.y+prevY0;
                 });
-            }
+
+
         });
-        this.plot.stackedHistograms = this.plot.stack(this.plot.groupedData);
+        var keys = this.plot.groupedData.map(d=>d.key);
+        // console.log(this.plot.groupedData);
+
+        this.plot.stack = d3.stack().keys(keys).value(d=>d.histogramBins);
+        this.plot.stackedHistograms = this.plot.groupedData;
     }
 
     drawAxisX(){
@@ -184,34 +199,37 @@ export class Histogram extends ChartWithColorGroups{
         var layer = self.svgG.selectAll("."+layerClass)
             .data(plot.stackedHistograms);
 
-        layer.enter().append("g")
-            .attr("class", layerClass);
+        var layerMerge = layer.enter().append("g")
+            .attr("class", layerClass).merge(layer);
 
-        var bar = layer.selectAll("."+barClass)
+
+        var bar = layerMerge.selectAll("."+barClass)
             .data(d => d.histogramBins);
 
-        bar.enter().append("g")
+        var barEnter = bar.enter().append("g");
+        barEnter
             .attr("class", barClass)
             .append("rect")
             .attr("x", 1);
 
-
-        var barRect = bar.select("rect");
+        var barMerge = barEnter.merge(bar);
+        var barRect = barMerge.select("rect");
 
         var barRectT = barRect;
-        var barT = bar;
-        var layerT = layer;
+        var barT = barMerge;
+        var layerT = layerMerge;
         if (this.transitionEnabled()) {
             barRectT = barRect.transition();
-            barT = bar.transition();
-            layerT= layer.transition();
+            barT = barMerge.transition();
+            layerT= layerMerge.transition();
         }
 
         barT.attr("transform", function(d) { return "translate(" + plot.x.scale(d.x) + "," + (plot.y.scale(d.y0 +d.y)) + ")"; });
+        var rectWidth = plot.stackedHistograms.length ? (plot.stackedHistograms[0].histogramBins.length ?  plot.x.scale(plot.stackedHistograms[0].histogramBins[0].x1)-plot.x.scale(plot.stackedHistograms[0].histogramBins[0].x0)-1 : 0) : 0;
 
-        var dx = plot.stackedHistograms.length ? (plot.stackedHistograms[0].histogramBins.length ?  plot.x.scale(plot.stackedHistograms[0].histogramBins[0].dx) : 0) : 0;
+
         barRectT
-            .attr("width",  dx - plot.x.scale(0)- 1)
+            .attr("width",  d=>  plot.x.scale(d.x1)-plot.x.scale(d.x0)-1 )
             .attr("height", d =>   plot.height - plot.y.scale(d.y));
 
         if(this.plot.color){
@@ -220,7 +238,7 @@ export class Histogram extends ChartWithColorGroups{
         }
 
         if (plot.tooltip) {
-            bar.on("mouseover", d => {
+            barMerge.on("mouseover", d => {
                 self.showTooltip(d.y);
             }).on("mouseout", d => {
                 self.hideTooltip();
