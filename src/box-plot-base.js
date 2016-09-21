@@ -10,7 +10,7 @@ export class BoxPlotBaseConfig extends ChartConfig{
         title: '', // axis label
         value: s => s.key, // x value accessor
         guides: false, //show axis guides
-        scale: "ordinal"
+        orient: 'bottom',
 
     };
     y = {// Y axis config
@@ -79,10 +79,10 @@ export class BoxPlotBase extends Chart{
         var conf = this.config.x;
 
         x.value = conf.value;
-        x.scale = d3.scale.ordinal().rangeRoundBands([0, plot.width], .08);
+        x.scale = d3.scaleBand().range([0, plot.width]);
         x.map = d => x.scale(x.value(d));
 
-        x.axis = d3.svg.axis().scale(x.scale).orient(conf.orient);
+        x.axis = Utils.createAxis(conf.orient, x.scale);
         if(conf.guides){
             x.axis.tickSize(-plot.height);
         }
@@ -105,10 +105,10 @@ export class BoxPlotBase extends Chart{
         var y = plot.y;
         var conf = this.config.y;
         y.value = d => conf.value.call(this.config, d);
-        y.scale = d3.scale[conf.scale]().range([plot.height, 0]);
+        y.scale = Utils.createScale(conf.scale).range([plot.height, 0]);
         y.map = d => y.scale(y.value(d));
 
-        y.axis = d3.svg.axis().scale(y.scale).orient(conf.orient);
+        y.axis = Utils.createAxis(conf.orient, y.scale);
         if (conf.ticks) {
             y.axis.ticks(conf.ticks);
         }
@@ -205,10 +205,11 @@ export class BoxPlotBase extends Chart{
             .style('stroke-opacity', 1e-6)
             .style('fill-opacity', 1e-6);
 
+        var boxplotsMerge = boxplotEnter.merge(boxplots);
         var duration = 1000;
-        var boxplotsT = boxplots;
+        var boxplotsT = boxplotsMerge;
         if (self.transitionEnabled()) {
-            boxplotsT = boxplots.transition();
+            boxplotsT = boxplotsMerge.transition();
             boxplotsT.delay(function(d,i) { return i * duration / plot.data.length })
         }
 
@@ -216,13 +217,12 @@ export class BoxPlotBase extends Chart{
             .style('fill', plot.color)
             .style('stroke-opacity', 1)
             .style('fill-opacity', 0.75)
-            .attr('transform', (d,i) =>'translate(' + (plot.x.map(d,i) + plot.x.scale.rangeBand() * 0.05) + ', 0)')
+            .attr('transform', (d,i) =>'translate(' + (plot.x.map(d,i) + plot.x.scale.bandwidth() * 0.05) + ', 0)')
         boxplots.exit().remove();
 
-
-        var boxWidth = !config.maxBoxWidth ? plot.x.scale.rangeBand() * 0.9 : Math.min(config.maxBoxWidth, Math.max(config.minBoxWidth, plot.x.scale.rangeBand() * 0.9));
-        var boxLeft  = plot.x.scale.rangeBand() * 0.45 - boxWidth/2;
-        var boxRight = plot.x.scale.rangeBand() * 0.45 + boxWidth/2;
+        var boxWidth = !config.maxBoxWidth ? plot.x.scale.bandwidth() * 0.9 : Math.min(config.maxBoxWidth, Math.max(config.minBoxWidth, plot.x.scale.bandwidth() * 0.9));
+        var boxLeft  = plot.x.scale.bandwidth() * 0.45 - boxWidth/2;
+        var boxRight = plot.x.scale.bandwidth() * 0.45 + boxWidth/2;
 
         var boxClass = self.prefixClass("box");
 
@@ -239,7 +239,7 @@ export class BoxPlotBase extends Chart{
                 self.hideTooltip();
             });
 
-        var boxRects = boxplots.select('rect.'+boxClass);
+        var boxRects = boxplotsMerge.select('rect.'+boxClass);
 
         var boxRectsT = boxRects;
         if (self.config.transition) {
@@ -256,7 +256,7 @@ export class BoxPlotBase extends Chart{
         var medianClass = self.prefixClass('median');
         boxplotEnter.append('line').attr('class', medianClass);
 
-        var medianLine = boxplots.select('line.'+medianClass);
+        var medianLine = boxplotsMerge.select('line.'+medianClass);
         if (self.config.transition) {
             medianLine = medianLine.transition();
         }
@@ -292,16 +292,16 @@ export class BoxPlotBase extends Chart{
         whiskers.forEach(f => {
             var endpoint = (f.key === 'low') ? config.Q1 : config.Q3;
 
-            var whisker = boxplots.select('.'+whiskerClass+'.'+boxplotClass+'-'+f.key);
-            var tick = boxplots.select('.'+tickClass+'.'+boxplotClass+'-'+f.key);
+            var whisker = boxplotsMerge.select('.'+whiskerClass+'.'+boxplotClass+'-'+f.key);
+            var tick = boxplotsMerge.select('.'+tickClass+'.'+boxplotClass+'-'+f.key);
             if (self.config.transition) {
                 whisker = whisker.transition();
                 tick=tick.transition();
             }
             whisker
-                .attr('x1', plot.x.scale.rangeBand() * 0.45 )
+                .attr('x1', plot.x.scale.bandwidth() * 0.45 )
                 .attr('y1', (d,i) => plot.y.scale(f.value(d)))
-                .attr('x2', plot.x.scale.rangeBand() * 0.45 )
+                .attr('x2', plot.x.scale.bandwidth() * 0.45 )
                 .attr('y2', (d,i) => plot.y.scale(endpoint(d)));
 
             tick
@@ -324,7 +324,7 @@ export class BoxPlotBase extends Chart{
 
         // outliers
         var outlierClass = self.prefixClass("outlier");
-        var outliers = boxplots.selectAll('.'+outlierClass).data((d,i) => config.outliers(d,i) || []);
+        var outliers = boxplotsMerge.selectAll('.'+outlierClass).data((d,i) => config.outliers(d,i) || []);
 
         var outlierEnterCircle = outliers.enter().append('circle')
             .attr('class', outlierClass)
@@ -340,16 +340,16 @@ export class BoxPlotBase extends Chart{
                 self.hideTooltip();
             });
 
-        var outliersT = outliers;
+        var outliersMerge = outlierEnterCircle.merge(outliers);
+        var outliersT = outliersMerge;
         if (self.config.transition) {
-            outliersT = outliers.transition();
+            outliersT = outliersMerge.transition();
         }
         outliersT
-            .attr('cx', plot.x.scale.rangeBand() * 0.45)
+            .attr('cx', plot.x.scale.bandwidth() * 0.45)
             .attr('cy', (d,i) => plot.y.scale(config.outlierValue(d,i)))
             .attr('r', '3');
         outliers.exit().remove();
-
 
     }
 
@@ -366,7 +366,8 @@ export class BoxPlotBase extends Chart{
         var conf = this.config;
 
         if(conf.d3ColorCategory){
-            this.plot.colorCategory = d3.scale[conf.d3ColorCategory]();
+            var colorSchemeCategory = 'scheme'+Utils.capitalizeFirstLetter(conf.d3ColorCategory);
+            this.plot.colorCategory = d3.scaleOrdinal(d3[colorSchemeCategory]);
         }
         var colorValue = conf.color;
         if (colorValue && typeof colorValue === 'string' || colorValue instanceof String){
