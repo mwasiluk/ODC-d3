@@ -6,7 +6,7 @@ var flowerGroups = {
 var confFlowers = {
     x:{
         key: 'sepal width',
-        label: 'sepal width'
+        title: 'sepal width'
     },
     groups:flowerGroups
 };
@@ -31,7 +31,7 @@ var conf = confFlowers;
 
 
 function generateRandomData() {
-    return d3.range(1000).map(d3.random.irwinHall(20));
+    return d3.range(1000).map(d3.randomIrwinHall(20));
 }
 var values = generateRandomData();
 var irwinHallConfig = {
@@ -49,30 +49,30 @@ d3.csv("../data/flowers.csv", function(error, data) {
 
 $("#generateNewButton").click(function(){
     values = generateRandomData();
-    plot.setData(values).init();
+    plot.setData(values).redraw();
 });
 
 $("#plot2-stacked").change(function(){
 
     confFlowers.groups = this.checked ?  flowerGroups : false;
-    plot2.setConfig(confFlowers).init();
+    plot2.setConfig(confFlowers).redraw();
 });
 $("#plot2-x-key").change(function(){
 
-    confFlowers.x.label = confFlowers.x.key =  $(this).val();
-    plot2.setConfig(confFlowers).init();
+    confFlowers.x.title = confFlowers.x.key =  $(this).val();
+    plot2.setConfig(confFlowers).redraw();
 });
 
 $("#plot2-frequency").change(function(){
 
     confFlowers.frequency = this.checked;
 
-    plot2.setConfig(confFlowers).init();
+    plot2.setConfig(confFlowers).redraw();
 });
 
 $("#plot1-frequency").change(function(){
 
     irwinHallConfig.frequency = this.checked;
 
-    plot.setConfig(irwinHallConfig).init();
+    plot.setConfig(irwinHallConfig).redraw();
 });
