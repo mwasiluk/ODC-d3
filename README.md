@@ -12,6 +12,9 @@ Include odc-d3.min.js and odc-d3.min.css from 'dist' folder in your HTML.
 
 odc-d3.min.js must be included after [d3.js](https://d3js.org/).
 
+- od3-d3 `1.x` version (master branch) requires d3.js `4.x` 
+- od3-d3 `0.x` version (d3v3 branch)   requires d3.js `3.x` (`^3.5`)
+
 ### Bower
 You can install this package through `Bower` :
 
