@@ -190,7 +190,7 @@ export class Regression extends ScatterPlot{
         var fitInPlot = y => y;
 
         var confidenceArea =  d3.area()
-        .curve(d3.curveMonotoneX)
+        .curve(d3.curveNatural)
             .x(d => self.plot.x.scale(d.x))
             .y0(d => fitInPlot(self.plot.y.scale(d.y0)))
             .y1(d => fitInPlot(self.plot.y.scale(d.y1)));
