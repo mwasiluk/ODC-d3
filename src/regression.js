@@ -11,7 +11,8 @@ export class RegressionConfig extends ScatterPlotConfig{
     confidence={
         level: 0.95,
         criticalValue: (degreesOfFreedom, criticalProbability) => StatisticsUtils.tValue(degreesOfFreedom, criticalProbability),
-        marginOfError: undefined //custom  margin Of Error function (x, points)
+        marginOfError: undefined, //custom  margin Of Error function (x, points)
+        areaCurve: d3.curveNatural
     };
 
     constructor(custom){
@@ -190,7 +191,7 @@ export class Regression extends ScatterPlot{
         var fitInPlot = y => y;
 
         var confidenceArea =  d3.area()
-        .curve(d3.curveNatural)
+        .curve(self.config.confidence.areaCurve)
             .x(d => self.plot.x.scale(d.x))
             .y0(d => fitInPlot(self.plot.y.scale(d.y0)))
             .y1(d => fitInPlot(self.plot.y.scale(d.y1)));
