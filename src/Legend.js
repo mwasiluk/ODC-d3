@@ -44,7 +44,7 @@ export class Legend {
 
         this.linearGradient = Utils.linearGradient(this.svg, gradientId, this.scale.range(), 0, 100, 0, 0);
 
-        this.container.append("rect")
+        this.container.selectOrAppend("rect")
             .attr("width", barWidth)
             .attr("height", barHeight)
             .attr("x", 0)
@@ -55,17 +55,17 @@ export class Legend {
         var ticks = this.container.selectAll("text")
             .data( scale.domain() );
         var ticksNumber =scale.domain().length-1;
-        ticks.enter().append("text");
+        var ticksMerge = ticks.enter().append("text").merge(ticks);
 
-        ticks.attr("x", barWidth)
+        ticksMerge.attr("x", barWidth)
             .attr("y",  (d, i) =>  barHeight -(i*barHeight/ticksNumber))
             .attr("dx", 3)
             // .attr("dy", 1)
             .attr("alignment-baseline", "middle")
             .text(d=> self.labelFormat ? self.labelFormat(d) : d);
-        ticks.attr("dominant-baseline", "middle")
+        ticksMerge.attr("dominant-baseline", "middle")
         if(this.rotateLabels){
-            ticks
+            ticksMerge
                 .attr("transform", (d, i) => "rotate(-45, " + barWidth + ", " + (barHeight -(i*barHeight/ticksNumber)) + ")")
                 .attr("text-anchor", "start")
                 .attr("dx", 5)
