@@ -45,7 +45,7 @@
     text-transform: capitalize; }
   .odc-scatterplot-matrix circle {
     fill-opacity: .7; }
-    .odc-scatterplot-matrix circle.hidden {
+    .odc-scatterplot-matrix circle.odc-hidden {
       fill: #ccc !important; }
   .odc-scatterplot-matrix .extent {
     fill: #000;

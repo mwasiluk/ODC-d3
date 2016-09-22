@@ -319,6 +319,7 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
 
     drawBrush(cell) {
         var self = this;
+        var hiddenClass = self.plot.hiddenClass =  self.prefixClass("hidden");
         var brush = d3.brush()
             // .x(self.plot.x.scale)
             // .y(self.plot.y.scale)
@@ -348,7 +349,8 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
             if(!s)return;
             var e = s.map(_=> [self.plot.x.scale.invert(_[0]), self.plot.y.scale.invert(_[1])]);
             // console.log(e);
-            self.svgG.selectAll("circle").classed("hidden", function (d) {
+
+            self.svgG.selectAll("circle").classed(hiddenClass, function (d) {
                 var x = parseFloat(d[p.x]),
                     y = parseFloat(d[p.y]);
 
@@ -358,7 +360,7 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
         }
         // If the brush is empty, select all circles.
         function brushend() {
-            if (!d3.event.selection) self.svgG.selectAll(".hidden").classed("hidden", false);
+            if (!d3.event.selection) self.svgG.selectAll("."+hiddenClass).classed(hiddenClass, false);
         }
     };
 
@@ -369,7 +371,7 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
         }
         
         self.plot.brush.move(d3.select(self.plot.brushCell), null);
-        self.svgG.selectAll(".hidden").classed("hidden", false);
+        self.svgG.selectAll("."+self.plot.hiddenClass).classed(self.plot.hiddenClass, false);
         self.plot.brushCell=null;
 
     }
