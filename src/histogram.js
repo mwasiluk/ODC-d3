@@ -229,7 +229,7 @@ export class Histogram extends ChartWithColorGroups{
 
 
         barRectT
-            .attr("width",  d=>  plot.x.scale(d.x1)-plot.x.scale(d.x0)-1 )
+            .attr("width",  d=>  Math.max(0, plot.x.scale(d.x1)-plot.x.scale(d.x0)-1) )
             .attr("height", d =>   plot.height - plot.y.scale(d.y));
 
         if(this.plot.color){

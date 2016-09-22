@@ -101,6 +101,7 @@ export class Chart {
     }
 
     redraw(){
+        this.initConfigAccessors(true);
         return this.init();
     }
 
@@ -462,8 +463,22 @@ export class Chart {
             .style("opacity", 0);
     }
 
-    initConfigAccessors() {
+    initConfigAccessors(clean) {
+        if(clean){
+            this.removePropertyAccessors(this,this, this.config, "$");
+        }
         this.initPropertyAccessors(this,this, this.config, "$", true);
+    }
+
+    removePropertyAccessors(bindTo,returnObj, source, prefix) {
+        var self  = this;
+        for (var i in source) {
+            if(!source.hasOwnProperty(i)){
+                continue;
+            }
+
+            delete bindTo[prefix + i];
+        }
     }
 
     initPropertyAccessors(bindTo,returnObj, source, prefix, recursive) {
@@ -490,4 +505,6 @@ export class Chart {
             return returnObj;
         };
     }
+
+
 }
