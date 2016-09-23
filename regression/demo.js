@@ -1,15 +1,15 @@
 var confFlowers = {
-    width: 800,
+
     height: 500,
     guides: true,
 
     x:{
         key: 'petal length',
-        label: 'petal length'
+        title: 'petal length'
     },
     y:{
         key: 'petal width',
-        label: 'petal width'
+        title: 'petal width'
     },
     groups:{
         key: 'species',
@@ -20,9 +20,8 @@ var confFlowers = {
     confidence:{
         level: 0.95
     },
-    showLegend:true
-
-
+    title: "Anderson's Iris data set",
+    subtitle: "en.wikipedia.org/wiki/Iris_flower_data_set"
 };
 
 var confArray={

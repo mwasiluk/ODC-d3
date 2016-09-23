@@ -1,5 +1,6 @@
 <html>
 <head>
+    <meta charset="utf-8" />
     <!-- Material Design Lite -->
     <title>ODC-D3 - Open Data Charts for D3</title>
     <link rel="stylesheet" href="../bower_components/material-design-lite/material.min.css">
@@ -7,9 +8,13 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="../bower_components/odc-d3/dist/odc-d3.min.css">
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="../bower_components/dialog-polyfill/dialog-polyfill.css" />
+    <link rel="stylesheet" type="text/css" href="../bower_components/code-prettify/src/prettify.css" />
+
     <link rel="stylesheet" href="../style.css">
 </head>
 <body>
+
 <!-- The drawer is always open in large screens. The header is always shown,
   even in small screens. -->
 <div class="mdl-layout mdl-js-layout mdl-layout--fixed-drawer
@@ -46,12 +51,14 @@
                     <p>
                         <a href="https://github.com/mwasiluk/ODC-d3/wiki/Box-Plot"><i class="fa fa-book" aria-hidden="true"></i> Wiki page</a> <br/>
                     </p>
+                    <button type="button" data-configuration="conf" data-data="data" class="show-config-dialog mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">Show Configuration</button>
 
                     <div id="plot" style=" max-width: 800px; max-height: 600px;"></div>
 
                     <p>
                         <a href="../data/flowers.csv"><i class="fa fa-download" aria-hidden="true"></i>CSV data</a>
                     </p>
+                    <button type="button" data-configuration="confFlowers" class="show-config-dialog mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">Show Configuration</button>
                     <select id="plot2-y-key">
                         <option value="sepal width">sepal width</option>
                         <option value="sepal length">sepal length</option>
@@ -70,13 +77,21 @@
         </div>
     </main>
 </div>
+
+<script src="../bower_components/dialog-polyfill/dialog-polyfill.js"></script>
+
+
 <script src="../bower_components/d3/d3.min.js" charset="utf-8"></script>
 <script src="../bower_components/odc-d3/dist/odc-d3.min.js" charset="utf-8"></script>
 <script src="../bower_components/jquery/dist/jquery.min.js" charset="utf-8"></script>
+<script src="../bower_components/lodash/dist/lodash.min.js" charset="utf-8"></script>
 <script src="demo.js"></script>
 <script src="../google-analytics.js"></script>
 <script src="../bower_components/material-design-lite/material.min.js"></script>
+<script type="text/javascript" src="../bower_components/code-prettify/src/prettify.js"></script>
+<script src="../config-dialog.js"></script>
 <script src="../google-analytics.js"></script>
+
 </body>
 </html>
 

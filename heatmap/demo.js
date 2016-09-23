@@ -1,5 +1,7 @@
 
-confFlowers = new ODCD3.HeatmapConfig();
+confFlowers = {
+    x:{}, y:{}, z:{}, cell:{}, legend:{}
+};
 confFlowers.legend.decimalPlaces=3;
 confFlowers.x.key='species';
 confFlowers.y.key='petal width';
@@ -8,6 +10,8 @@ confFlowers.y.title= 'petal width';
 confFlowers.y.rotateLabels=false;
 confFlowers.z.key='petal length';
 confFlowers.cell.sizeMax=35;
+confFlowers.title =  "Anderson's Iris data set";
+confFlowers.subtitle = 'Heatmap of petal length'
 
 var confFlowers2 = {
     width: 600,
@@ -47,21 +51,23 @@ var confFlowers2 = {
         key: 'petal length'
     },
 
-    color : {
+    /*color : {
         // scale: "log",
         // range: ["green", "orange", "darkred"]
-    },
+    },*/
     legend:{
         decimalPlaces: 3
-    }
+    },
 
-
+    title: "Anderson's Iris data set",
+    subtitle: "petal length - Y axis grouped by species and sepal width"
 
 };
 
 var confFlowers3 = {
-    width: 600,
-    // height: 200,
+    cell:{
+        sizeMax: 15
+    },
     x:{
         key: 'sepal width',
         title: 'sepal width',
@@ -88,12 +94,16 @@ var confFlowers3 = {
     color : {
         scale: "log",
         range: ["green", "orange", "darkred"]
-    }
+    },
+    title: "Anderson's Iris data set",
+    subtitle: "petal length - X axis grouped by species and sepal width"
 
 };
 
 var confFlowers4 = {
-    width: 600,
+    cell:{
+      sizeMax: 15
+    },
     // height: 200,
     x:{
         key: 'sepal width',
@@ -122,7 +132,6 @@ var confFlowers4 = {
                 if(!val || val < 1.5){
                     return  ' < 1.5'
                 }
-
                 return ' >= 1.5'
             }
         }
@@ -130,12 +139,12 @@ var confFlowers4 = {
     z:{
         key: 'petal length'
     },
-
     color : {
         scale: "log",
         range: ["green", "orange", "darkred"]
     },
-
+    title: "Anderson's Iris data set",
+    subtitle: "petal length - X axis grouped by species and sepal width and Y axis grouped by petal width "
 
 
 

@@ -1,22 +1,20 @@
 var confFlowers = {
-    // width: 500,
-    // height: 500,
-    guides: true,
-    dot:{
-        // color: function(d) { return d[0]*d[1] }
-    },
+    title: "Anderson's Iris data set",
+    subtitle: "en.wikipedia.org/wiki/Iris_flower_data_set",
     x:{
         key: 'petal length',
-        label: 'petal length'
+        title: 'Petal length'
     },
     y:{
         key: 'petal width',
-        label: 'petal width'
+        title: 'Petal width'
     },
     groups:{
         key: 'species',
-        label: "species"
-    }
+        label: "Species"
+    },
+    guides: true
+
 
 };
 // conf = new  ODCD3.ScatterPlotConfig();

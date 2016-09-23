@@ -7,14 +7,16 @@ function generateRandomData() {
 }
 generateRandomData();
 
-plot = new ODCD3.BarChart("#plot", data, {
+var config = {
     series: false
-});
+};
+plot = new ODCD3.BarChart("#plot", data, config);
 
 console.log(seriesData);
-plot2 = new ODCD3.BarChart("#plot2", seriesData, {
+var config2 = {
     series: true
-});
+};
+plot2 = new ODCD3.BarChart("#plot2", seriesData, config2);
 
 function exampleData(g) {
     var layers =  stream_layers(g,10+Math.random()*10,.1);

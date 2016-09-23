@@ -17,3 +17,17 @@ pre{
     font-size: 0.8rem;
     color: #6eb0d6;
 }
+
+.mdl-dialog{
+     width:auto;
+     max-width: 80vw;
+
+    min-width: 300px;
+ }
+
+.mdl-dialog__content{
+    /*max-height: 90vh;*/
+}
+button.show-config-dialog{
+    float: right;
+}

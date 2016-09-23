@@ -8,7 +8,9 @@ var confFlowers = {
         key: 'sepal width',
         title: 'sepal width'
     },
-    groups:flowerGroups
+    groups:flowerGroups,
+    title: "Anderson's Iris data set",
+    subtitle: "en.wikipedia.org/wiki/Iris_flower_data_set"
 };
 
 var confArray={

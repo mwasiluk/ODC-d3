@@ -1,16 +1,14 @@
 var confFlowers = {
-    // width: 500,
-    // height: 500,
+    title: "Anderson's Iris data set",
+    subtitle: "en.wikipedia.org/wiki/Iris_flower_data_set",
     y:{
         title: 'sepal width',
         key: 'sepal width'
     },
     groups:{
         key: 'species'
-    }
-
-    // series: true
-
+    },
+    tukey: true
 };
 
 var plot;

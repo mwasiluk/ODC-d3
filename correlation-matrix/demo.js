@@ -1,20 +1,19 @@
 
 var labels = ['a', 'b', 'c', 'd'];
 var config = {
-    tooltip: true,
-    variables: {
+/*    variables: {
         // keys: ['petal length', 'petal width'],
         // labels: ['a', 'b', 'c', 'd', 'e']
-    },
+    },*/
     cell:{
         shape:"ellipse",
         // size: 200
 
     },
-    margin:{
+/*    margin:{
         left: 60,
         bottom: 60
-    },
+    },*/
     groups:{
         key: 'species'
     },

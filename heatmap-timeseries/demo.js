@@ -10,7 +10,7 @@ var configEurostat = {
         groups:{
             keys: ['geo'],
             labels:['Name'],
-            value: function(d,k) { return d[k]<='Poland' ? '<=Poland' : '>Poland'}
+            value: function(d,k) { return d[k]<='Poland' ? '<=Poland' : '>Poland' }
         }
     },
     x:{
@@ -24,16 +24,11 @@ var configEurostat = {
         decimalPlaces: 2,
         key: 'value',
         fillMissing: false,
-        formatter: function(v){
-
-            var nf = Intl.NumberFormat();
-            return nf.format(v);
-            // return  (Number(v)/1000000).toFixed(this.z.decimalPlaces) + " m"
-        }
+        formatter: function(v){ return Intl.NumberFormat().format(v) }
     },
     color:{
         scale: "linear",
-        reverseScale: false,
+        // reverseScale: false,
         // range: ["darkblue", "orange", "darkred"]
     },
     cell:{
@@ -42,17 +37,6 @@ var configEurostat = {
     legend:{
         width: 35,
         rotateLabels: true,
-        formatter: function(v){
-            var suffix ="";
-            if(v/1000000>=1){
-                suffix=" M";
-                v=Number(v/1000000).toFixed(3);
-            }
-
-            var nf = Intl.NumberFormat();
-            return nf.format(v)+suffix;
-
-        }
     }
 };
 
@@ -61,6 +45,7 @@ var plot;
 var plot2;
 var plot3;
 var plot4;
+var conf2, conf3, conf4, configEurostat2;
 
 d3.json("../data/eurostat3.json", function(error, data) {
 
@@ -72,19 +57,20 @@ d3.json("../data/eurostat3.json", function(error, data) {
 
     plot =new ODCD3.HeatmapTimeSeries("#plot", filtered, configEurostat);
 
-    var conf2 = _.cloneDeep(configEurostat);
+    conf2 = _.cloneDeep(configEurostat);
     // conf2.color.scale = "log";
     conf2.x.fillMissing = true;
     // plot2 =new ODCD3.HeatmapTimeSeries("#plot2", filtered, conf2);
 
-    var conf3 = _.cloneDeep(configEurostat);
+    conf3 = _.cloneDeep(configEurostat);
     conf3.z.fillMissing = true;
     conf3.x.fillMissing = true;
     // conf2.x.displayFormat='%a - %d';
     // conf3.color.range = ["darkblue", "orange", "darkred"]
+    configEurostat2 = conf3;
     plot3 =new ODCD3.HeatmapTimeSeries("#plot2", filtered, conf3);
 
-    var conf4 = _.cloneDeep(conf3);
+    conf4 = _.cloneDeep(conf3);
     conf4.color.scale = "log";
     conf4.color.reverseScale = false;
     // conf4.color.range = ["darkblue", "yellow", "darkred"];
@@ -95,10 +81,11 @@ d3.json("../data/eurostat3.json", function(error, data) {
     // plot4 =new ODCD3.HeatmapTimeSeries("#plot2", filtered, conf4);
 
 });
-
+var config,config2,simpleData;
 d3.csv("../data/test.csv", function(error, data) {
     console.log(data);
-    var config = {
+    simpleData = data;
+    config = {
         x:{
             key: 'time',
             sortLabels: true,
@@ -118,12 +105,12 @@ d3.csv("../data/test.csv", function(error, data) {
             sizeMax: 30
         },
     };
-    var conf2 = _.cloneDeep(config);
-    conf2.x.fillMissing=true;
-    conf2.x.displayFormat='%a - %d';
-    conf2.z.fillMissing=true;
+    config2 = _.cloneDeep(config);
+    config2.x.fillMissing=true;
+    config2.x.displayFormat='%a - %d';
+    config2.z.fillMissing=true;
 
     plot3 = new ODCD3.HeatmapTimeSeries("#plot3", data, config);
-    plot4 = new ODCD3.HeatmapTimeSeries("#plot4", data, conf2);
+    plot4 = new ODCD3.HeatmapTimeSeries("#plot4", data, config2);
 
 });

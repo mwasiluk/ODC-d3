@@ -1,23 +1,22 @@
 
 var labels = ['a', 'b', 'c', 'd'];
 var config = {
+    title: "Anderson's Iris data set",
+    subtitle: "en.wikipedia.org/wiki/Iris_flower_data_set",
+
     // size: 200,
     minCellSize: 70,
     maxCellSize: 200,
     // width: 900,
     guides: true,
     brush: true,
-    tooltip: true,
     variables: {
         keys: ['petal length', 'petal width', 'sepal length']
         // labels: ['a', 'b', 'c', 'd', 'e']
     },
     groups:{
         key: 'species'
-    },
-    x:{
-    },
-    dot:{}
+    }
 
 };
 var data2 = [
