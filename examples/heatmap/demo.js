@@ -90,7 +90,9 @@ var confFlowers3 = {
     color : {
         scale: "log",
         range: ["green", "orange", "darkred"]
-    }
+    },
+    title: "Anderson's Iris data set",
+    subtitle: "grouped in X axis by species and sepal width < 3 "
 
 };
 
@@ -138,7 +140,8 @@ var confFlowers4 = {
         // scale: "log",
         range: ["green", "orange", "darkred"]
     },
-
+    title: "Anderson's Iris data set",
+    subtitle: "grouped by species and sepal width in X axis and petal width in Y axis"
 
 
 

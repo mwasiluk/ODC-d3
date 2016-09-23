@@ -137,8 +137,8 @@ export class Heatmap extends Chart {
 
             this.plot.x.overlap.bottom = self.config.x.groups.overlap.bottom;
             this.plot.x.overlap.top = self.config.x.groups.overlap.top + allTitlesWidth;
-            this.plot.margin.top = conf.margin.right + conf.x.groups.overlap.top;
-            this.plot.margin.bottom = conf.margin.bottom + conf.x.groups.overlap.bottom;
+            this.plot.margin.top = this.plot.margin.top + conf.x.groups.overlap.top;
+            this.plot.margin.bottom = this.plot.margin.bottom + conf.x.groups.overlap.bottom;
         }
 
 
@@ -153,8 +153,8 @@ export class Heatmap extends Chart {
             let allTitlesWidth = depth * (titleRectWidth);
             this.plot.y.overlap.right = self.config.y.groups.overlap.left + allTitlesWidth;
             this.plot.y.overlap.left = self.config.y.groups.overlap.left;
-            this.plot.margin.left = conf.margin.left + this.plot.y.overlap.left;
-            this.plot.margin.right = conf.margin.right + this.plot.y.overlap.right;
+            this.plot.margin.left = this.plot.margin.left + this.plot.y.overlap.left;
+            this.plot.margin.right = this.plot.margin.right + this.plot.y.overlap.right;
         }
         this.plot.showLegend = conf.showLegend;
         if (this.plot.showLegend) {
