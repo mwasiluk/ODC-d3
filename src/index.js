@@ -12,6 +12,7 @@ export {BarChart, BarChartConfig} from './bar-chart'
 export {BoxPlotBase, BoxPlotBaseConfig} from './box-plot-base'
 export {BoxPlot, BoxPlotConfig} from './box-plot'
 export {StatisticsUtils} from './statistics-utils'
+export {Utils} from './utils'
 export {Legend} from './legend'
 
 

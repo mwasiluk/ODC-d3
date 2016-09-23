@@ -93,6 +93,10 @@ export class Utils {
         return (item && typeof item === 'object' && !Array.isArray(item) && item !== null);
     };
 
+    static isArray(item) {
+        return Array.isArray(item);
+    };
+
     static isObject(a) {
         return a !== null && typeof a === 'object';
     };
