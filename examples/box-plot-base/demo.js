@@ -1,6 +1,7 @@
 var confFlowers = {
     // width: 500,
     // height: 500,
+
     guides: true,
     dot:{
         // color: function(d) { return d[0]*d[1] }
@@ -22,7 +23,7 @@ var confFlowers = {
 
 var plot;
 var conf = {
-
+    maxBoxWidth: 70,
 };
 
 data = exampleData();

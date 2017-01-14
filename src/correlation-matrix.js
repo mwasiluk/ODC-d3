@@ -39,6 +39,9 @@ export class CorrelationMatrixConfig extends ChartConfig {
         top: 30,
         bottom: 60
     };
+    groups={
+        key: null,
+    };
 
     constructor(custom) {
         super();

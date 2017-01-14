@@ -4,7 +4,6 @@ import {Utils} from './utils'
 export class BoxPlotBaseConfig extends ChartConfig{
 
     svgClass = this.cssClassPrefix + 'box-plot';
-    showLegend = true;
     showTooltip = true;
     x = {// X axis config
         title: '', // axis label

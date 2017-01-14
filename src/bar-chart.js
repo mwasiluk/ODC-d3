@@ -80,7 +80,9 @@ export class BarChart extends ChartWithColorGroups {
         x.map = d => x.scale(x.value(d));
 
         x.axis = Utils.createAxis(conf.orient, x.scale);
-
+        if (conf.ticks) {
+            x.axis.ticks(conf.ticks);
+        }
         var data = this.plot.data;
         var domain;
         if (!data || !data.length) {
@@ -105,9 +107,7 @@ export class BarChart extends ChartWithColorGroups {
         y.map = d => y.scale(y.value(d));
 
         y.axis = Utils.createAxis(conf.orient, y.scale);
-        if (conf.ticks) {
-            y.axis.ticks(conf.ticks);
-        }
+
     };
 
     setupYDomain() {

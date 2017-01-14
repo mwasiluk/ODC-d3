@@ -22,6 +22,7 @@ export class BoxPlotConfig extends BoxPlotBaseConfig{
         label: "",
         displayValue: undefined // optional function returning display value (series label) for given group value, or object/array mapping value to display value
     };
+    tukey= false;
     
     constructor(custom){
         super();

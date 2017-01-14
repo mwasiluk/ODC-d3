@@ -62,6 +62,10 @@ export class Regression extends ScatterPlot{
         var self = this;
 
         self.plot.groupedData.forEach(group=>{
+            if(group.values.length<2){
+                return;
+            }
+
             var regression = this.initRegression(group.values, group.key);
             self.plot.regressions.push(regression);
         });
