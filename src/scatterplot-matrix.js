@@ -2,6 +2,7 @@ import {ChartWithColorGroups} from "./chart-with-color-groups";
 import {ScatterPlotConfig} from "./scatterplot";
 import {Utils} from './utils'
 import {Legend} from "./legend";
+import * as d3 from './d3'
 
 export class ScatterPlotMatrixConfig extends ScatterPlotConfig{
 

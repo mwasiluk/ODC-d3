@@ -1,5 +1,6 @@
 import {Chart, ChartConfig} from "./chart";
 import {Utils} from './utils'
+import * as d3 from './d3'
 
 export class BoxPlotBaseConfig extends ChartConfig{
 

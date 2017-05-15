@@ -1,6 +1,6 @@
 import {ChartWithColorGroups, ChartWithColorGroupsConfig} from "./chart-with-color-groups";
 import {Utils} from './utils'
-import {Legend} from "./legend";
+import * as d3 from './d3'
 
 export class ScatterPlotConfig extends ChartWithColorGroupsConfig{
 
@@ -89,7 +89,8 @@ export class ScatterPlot extends ChartWithColorGroups{
         var data = this.plot.groupedData;
 
         var domain = [parseFloat(d3.min(data, s=>d3.min(s.values, plot.x.value))), parseFloat(d3.max(data, s=>d3.max(s.values, plot.x.value)))];
-        var margin = (domain[1]-domain[0])* conf.domainMargin;
+        var extent = (domain[1]-domain[0]) || 1;
+        var margin = (extent)* conf.domainMargin;
         domain[0]-=margin;
         domain[1]+=margin;
         plot.x.scale.domain(domain);
@@ -127,7 +128,9 @@ export class ScatterPlot extends ChartWithColorGroups{
         var data = this.plot.groupedData;
 
         var domain = [parseFloat(d3.min(data, s=>d3.min(s.values, plot.y.value))), parseFloat(d3.max(data, s=>d3.max(s.values, plot.y.value)))];
-        var margin = (domain[1]-domain[0])* conf.domainMargin;
+        var extent = (domain[1]-domain[0]) || 1;
+        var margin = (extent)* conf.domainMargin;
+
         domain[0]-=margin;
         domain[1]+=margin;
         plot.y.scale.domain(domain);

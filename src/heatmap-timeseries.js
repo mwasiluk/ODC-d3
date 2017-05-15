@@ -2,7 +2,7 @@ import {Chart, ChartConfig} from "./chart";
 import {Heatmap, HeatmapConfig} from "./heatmap";
 import {Utils} from './utils'
 import {StatisticsUtils} from './statistics-utils'
-
+import * as d3 from './d3'
 
 export class HeatmapTimeSeriesConfig extends HeatmapConfig {
     x = {
@@ -227,10 +227,10 @@ export class HeatmapTimeSeries extends Heatmap {
             });
             if(formatMatch){
                 self.plot.x.timeFormat = format;
-                console.log('Guessed timeFormat', format);
+                // console.log('Guessed timeFormat', format);
                 if(!self.plot.x.interval){
                     self.plot.x.interval = intervalFormat.name;
-                    console.log('Guessed interval', self.plot.x.interval);
+                    // console.log('Guessed interval', self.plot.x.interval);
                 }
                 return;
             }
@@ -244,7 +244,7 @@ export class HeatmapTimeSeries extends Heatmap {
 
             if(intervalFormat.formats.indexOf(self.plot.x.timeFormat) >= 0){
                 self.plot.x.interval = intervalFormat.name;
-                console.log('Guessed interval', self.plot.x.interval);
+                // console.log('Guessed interval', self.plot.x.interval);
                 return;
             }
 

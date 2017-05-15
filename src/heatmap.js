@@ -1,7 +1,7 @@
 import {Chart, ChartConfig} from "./chart";
 import {Utils} from './utils'
 import {Legend} from './legend'
-
+import * as d3 from './d3'
 
 export class HeatmapConfig extends ChartConfig {
 
@@ -559,7 +559,7 @@ export class Heatmap extends Chart {
 
         z.domain[0] = z.min; //removing unnecessary floating points
         z.domain[z.domain.length - 1] = z.max; //removing unnecessary floating points
-        console.log(z.domain);
+        // console.log(z.domain);
 
         if (config.color.reverseScale) {
             z.domain.reverse();
@@ -567,7 +567,7 @@ export class Heatmap extends Chart {
 
         var plot = this.plot;
 
-        console.log(range);
+        // console.log(range);
 
         plot.z.color.scale = scale.domain(z.domain).range(range);
         var shape = plot.z.shape = {};

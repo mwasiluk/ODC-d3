@@ -2,7 +2,7 @@ import {Chart, ChartConfig} from "./chart";
 import {ScatterPlot, ScatterPlotConfig} from "./scatterplot";
 import {Utils} from './utils'
 import {StatisticsUtils} from './statistics-utils'
-
+import * as d3 from './d3'
 
 export class RegressionConfig extends ScatterPlotConfig{
 

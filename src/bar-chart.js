@@ -1,6 +1,7 @@
 import {ChartWithColorGroups, ChartWithColorGroupsConfig} from "./chart-with-color-groups";
 import {Utils} from './utils'
 import {Legend} from "./legend";
+import * as d3 from './d3'
 
 export class BarChartConfig extends ChartWithColorGroupsConfig {
 
@@ -122,7 +123,7 @@ export class BarChart extends ChartWithColorGroups {
         domain = [0, max];
 
         plot.y.scale.domain(domain);
-        console.log(' plot.y.scale.domain', plot.y.scale.domain());
+        // console.log(' plot.y.scale.domain', plot.y.scale.domain());
     }
 
     setupGroupStacks() {
@@ -199,7 +200,7 @@ export class BarChart extends ChartWithColorGroups {
         var self = this;
         var plot = self.plot;
 
-        console.log('layers', plot.layers);
+        // console.log('layers', plot.layers);
 
         var layerClass = this.prefixClass("layer");
 

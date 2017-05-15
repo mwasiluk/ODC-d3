@@ -1,6 +1,7 @@
 import {BoxPlotBase, BoxPlotBaseConfig} from "./box-plot-base";
 import {Utils} from './utils'
 import {StatisticsUtils} from './statistics-utils'
+import * as d3 from './d3'
 
 export class BoxPlotConfig extends BoxPlotBaseConfig{
 

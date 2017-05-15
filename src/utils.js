@@ -1,3 +1,5 @@
+import * as d3 from './d3'
+
 export class Utils {
     static SQRT_2 = 1.41421356237;
     // usage example deepExtend({}, objA, objB); => should work similar to $.extend(true, {}, objA, objB);

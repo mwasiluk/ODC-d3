@@ -1,6 +1,7 @@
 import {Chart, ChartConfig} from "./chart";
 import {Utils} from './utils'
 import {Legend} from "./legend";
+import * as d3 from './d3'
 
 export class ChartWithColorGroupsConfig extends ChartConfig{
 
@@ -108,9 +109,16 @@ export class ChartWithColorGroups extends Chart{
             this.plot.colorCategory = d3.scaleOrdinal(d3[colorSchemeCategory]);
         }
         var colorValue = conf.color;
-        if (colorValue && typeof colorValue === 'string' || colorValue instanceof String){
-            this.plot.color = colorValue;
-            this.plot.seriesColor = this.plot.color;
+
+        if (colorValue){
+            if(typeof colorValue === 'string' || colorValue instanceof String){
+                this.plot.color = colorValue;
+                this.plot.seriesColor = this.plot.color;
+            }else{
+                this.plot.color = colorValue;
+                this.plot.seriesColor = this.plot.color;
+            }
+
         }else if(this.plot.colorCategory){
             self.plot.colorValue=colorValue;
             self.plot.colorCategory.domain(domain);

@@ -3,6 +3,7 @@ import {Utils} from './utils'
 import {StatisticsUtils} from './statistics-utils'
 import {Legend} from './legend'
 import {ScatterPlot} from './scatterplot'
+import * as d3 from './d3'
 
 export class CorrelationMatrixConfig extends ChartConfig {
 
@@ -16,7 +17,7 @@ export class CorrelationMatrixConfig extends ChartConfig {
     variables = {
         labels: undefined,
         keys: [], //optional array of variable keys
-        value: (d, variableKey) => d[variableKey], // variable value accessor
+        value: (d, variableKey) => parseFloat(d[variableKey]), // variable value accessor
         scale: "ordinal"
     };
     correlation = {
@@ -191,7 +192,7 @@ export class CorrelationMatrix extends Chart {
             plot.labelByVariable[variableKey] = label;
         });
 
-        console.log(plot.labelByVariable);
+        // console.log(plot.labelByVariable);
 
     };
 

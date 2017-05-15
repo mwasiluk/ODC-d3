@@ -1,8 +1,6 @@
 import {Utils} from "./utils";
 
-import legendColor from '../bower_components/d3-legend/src/color'
-import legendSize from '../bower_components/d3-legend/src/size'
-import legendSymbol from '../bower_components/d3-legend/src/symbol'
+import {legendColor, legendSize, legendSymbol} from 'd3-svg-legend'
 
 
 /*var d3 = require('../bower_components/d3');

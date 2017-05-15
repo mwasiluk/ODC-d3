@@ -9,6 +9,9 @@ var source = require('vinyl-source-stream');
 var tsify = require("tsify");
 var sourcemaps = require('gulp-sourcemaps');
 var buffer = require('vinyl-buffer');
+/* nicer browserify errors */
+var gutil = require('gulp-util');
+var chalk = require('chalk');
 
 var projectName= "odc-d3"
 
@@ -43,8 +46,34 @@ gulp.task('build-js2', function () {
         .pipe(gulp.dest('dist'));
 });
 
-gulp.task('build-js', function () {
-    var jsFileName =  projectName;
+gulp.task('copy-global-d3', function () {
+    return gulp.src("./src/d3_global.js")
+        .pipe(plugins.rename({
+            basename: "d3"
+        }))
+        .pipe(gulp.dest('./src/'))
+});
+
+
+gulp.task('do-build-js', ['copy-global-d3'], function () {
+
+    return buildJs(projectName, "dist")
+
+});
+
+gulp.task('build-js', ['do-build-js'], function () {
+    return gulp.src("./src/d3_import.js")
+        .pipe(plugins.rename({
+            basename: "d3"
+        }))
+        .pipe(gulp.dest('./src/'))
+});
+
+gulp.task('build-js-standalone', function () {
+    return buildJs(projectName, "dist/standalone");
+});
+
+function buildJs(jsFileName, dest) {
     return browserify({
         basedir: '.',
         debug: true,
@@ -53,20 +82,21 @@ gulp.task('build-js', function () {
         packageCache: {},
         standalone: 'ODCD3'
     })
+
         .transform("babelify", {presets: ["es2015"],  plugins: ["transform-class-properties"]})
         .bundle()
+        .on('error', map_error)
         .pipe(plugins.plumber({ errorHandler: onError }))
         .pipe(source(jsFileName+'.js'))
-        .pipe(gulp.dest("dist"))
+        .pipe(gulp.dest(dest))
         .pipe(buffer())
         .pipe(sourcemaps.init({loadMaps: true}))
         .pipe(plugins.stripDebug())
         .pipe(plugins.uglify())
         .pipe(plugins.rename({ extname: '.min.js' }))
         .pipe(sourcemaps.write('./'))
-        .pipe(gulp.dest("dist"));
-});
-
+        .pipe(gulp.dest(dest));
+}
 
 gulp.task('build-clean', ['clean'], function () {
     gulp.start('build');
@@ -102,8 +132,32 @@ gulp.task('serve', ['default'], ()=>{
     gulp.watch(['i18n/**/*.json', './src/**/*.html', './src/styles/*.*css', 'src/**/*.js', 'examples/**/*.*'], ['default-watch']);
 });
 
+
 // error function for plumber
 var onError = function (err) {
-    console.log(err);
+    console.log('onError', err);
     this.emit('end');
 };
+
+
+function map_error(err) {
+    if (err.fileName) {
+        // regular error
+        gutil.log(chalk.red(err.name)
+            + ': '
+            + chalk.yellow(err.fileName.replace(__dirname + '/src/js/', ''))
+            + ': '
+            + 'Line '
+            + chalk.magenta(err.lineNumber)
+            + ' & '
+            + 'Column '
+            + chalk.magenta(err.columnNumber || err.column)
+            + ': '
+            + chalk.blue(err.description))
+    } else {
+        // browserify error..
+        gutil.log(chalk.red(err))
+    }
+
+    this.emit('end');
+}

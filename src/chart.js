@@ -1,5 +1,5 @@
 import {Utils} from './utils'
-
+import * as d3 from './d3'
 
 export class ChartConfig {
     cssClassPrefix = "odc-";
@@ -131,7 +131,7 @@ export class Chart {
                 .attr("class", config.svgClass);
             self.svgG = self.svg.selectOrAppend("g.main-group");
         }else{
-            console.log(self.baseContainer);
+            // console.log(self.baseContainer);
             self.svg = self.baseContainer.svg;
             self.svgG = self.svg.selectOrAppend("g.main-group."+config.svgClass)
         }
@@ -141,7 +141,6 @@ export class Chart {
         if (!config.width || config.height) {
             d3.select(window)
                 .on("resize."+self._id, function () {
-                    console.log("resize", self);
                     var transition = self.config.transition;
                     self.config.transition=false;
                     self.init();

@@ -1,5 +1,6 @@
 import {ChartWithColorGroups, ChartWithColorGroupsConfig} from "./chart-with-color-groups";
 import {Utils} from './utils'
+import * as d3 from './d3'
 
 export class HistogramConfig extends ChartWithColorGroupsConfig{
 
