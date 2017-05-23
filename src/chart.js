@@ -121,14 +121,13 @@ export class Chart {
             if(!this._isInitialized){
                 d3.select(self.baseContainer).select("svg").remove();
             }
-            self.svg = d3.select(self.baseContainer).selectOrAppend("svg");
+            self.svg = d3.select(self.baseContainer).selectOrAppend("svg").classed(config.svgClass, true);
 
             self.svg
                 .attr("width", width)
                 .attr("height", height)
                 .attr("viewBox", "0 0 " + " " + width + " " + height)
                 .attr("preserveAspectRatio", "xMidYMid meet")
-                .attr("class", config.svgClass);
             self.svgG = self.svg.selectOrAppend("g.main-group");
         }else{
             // console.log(self.baseContainer);

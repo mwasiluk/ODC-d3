@@ -104,6 +104,7 @@ export class ChartWithColorGroups extends Chart{
         }else{
             this.plot.groupValue = d => null;
         }
+        this.plot.groupColorDomain = domain;
         if(conf.d3ColorCategory){
             var colorSchemeCategory = 'scheme'+Utils.capitalizeFirstLetter(conf.d3ColorCategory);
             this.plot.colorCategory = d3.scaleOrdinal(d3[colorSchemeCategory]);
@@ -117,6 +118,10 @@ export class ChartWithColorGroups extends Chart{
             }else{
                 this.plot.color = colorValue;
                 this.plot.seriesColor = this.plot.color;
+                var range = domain.map(v=>this.plot.seriesColor({key: v}));
+                this.plot.colorCategory = d3.scaleOrdinal(range);
+                this.plot.colorCategory.domain(domain);
+
             }
 
         }else if(this.plot.colorCategory){
