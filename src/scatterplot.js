@@ -28,7 +28,10 @@ export class ScatterPlotConfig extends ChartWithColorGroupsConfig{
         key: 2
     };
     dotRadius = 2;
+    dotId = (d, i)=> undefined;
     transition= true;
+    onDotHover = (d, i) => {};
+    onDotHoverOut = (d, i) => {};
 
     constructor(custom){
         super();
@@ -191,7 +194,7 @@ export class ScatterPlot extends ChartWithColorGroups{
         var plot = self.plot;
         var data = plot.data;
         var layerClass = self.prefixClass('layer');
-        var dotClass = self.prefixClass('dot');
+        var dotClass = this.dotClass = self.prefixClass('dot');
         self.dotsContainerClass = self.prefixClass('dots-container');
 
         var dotsContainer = self.svgG.selectOrAppend("g." + self.dotsContainerClass);
@@ -217,7 +220,8 @@ export class ScatterPlot extends ChartWithColorGroups{
 
         dotsT.attr("r", self.config.dotRadius)
             .attr("cx", plot.x.map)
-            .attr("cy", plot.y.map);
+            .attr("cy", plot.y.map)
+            .attr("id", this.config.dotId);
 
         if (plot.tooltip) {
             dotsMerge.on("mouseover", d => {
@@ -238,6 +242,9 @@ export class ScatterPlot extends ChartWithColorGroups{
                     self.hideTooltip();
                 });
         }
+
+        dotsMerge.on("mouseover.onDotHover", this.config.onDotHover);
+        dotsMerge.on("mouseout.onDotHoverOut", this.config.onDotHoverOut);
 
         if (plot.seriesColor) {
             layerMerge.style("fill", plot.seriesColor)
