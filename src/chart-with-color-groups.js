@@ -6,6 +6,7 @@ import * as d3 from './d3'
 export class ChartWithColorGroupsConfig extends ChartConfig{
 
     showLegend=true;
+    forceLegend=false;
     legend={
         width: 80,
         margin: 10,
@@ -52,7 +53,7 @@ export class ChartWithColorGroups extends Chart{
 
         if(this.plot.showLegend){
             var scale = this.plot.colorCategory;
-            if(!scale.domain() || scale.domain().length<2){
+            if(!scale.domain() || !this.config.forceLegend && scale.domain().length<2){
                 this.plot.showLegend = false;
             }else{
                 this.plot.margin.right = conf.margin.right + conf.legend.width+conf.legend.margin*2;
@@ -194,9 +195,7 @@ export class ChartWithColorGroups extends Chart{
 
         var scale = plot.colorCategory;
 
-
-
-        if(!scale.domain() || scale.domain().length<2){
+        if(!scale.domain() || !this.config.forceLegend && scale.domain().length<2){
             plot.showLegend = false;
         }
 
