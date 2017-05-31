@@ -217,6 +217,7 @@ export class ChartWithColorGroups extends Chart{
             .shapeWidth(this.config.legend.shapeWidth)
             .orient('vertical')
             .scale(scale)
+            .labelWrap(this.config.legend.width)
             .labels(scale.domain().map(v=>plot.groupToLabel[v]));
 
 
