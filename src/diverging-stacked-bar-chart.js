@@ -209,24 +209,39 @@ export class DivergingStackedBarChart extends Chart{
             plot = self.plot,
             config = self.config;
 
-        var rows = self.svgG.selectAll(".row")
-            .data(plot.rows)
-            .enter().append("g")
-            .attr("class", "bar")
-            .attr("transform", d => "translate(0," + plot.y.map(d.datum) + ")")
+        let rowClass = self.prefixClass("row");
+        let rows = self.svgG.selectAll("."+ rowClass)
+            .data(plot.rows);
+
+        let rowEnter = rows.enter().appendSelector("g."+rowClass);
+
+        let rowMerge = rowEnter.merge(rows)
+            .attr("transform", d => "translate(0," + plot.y.map(d.datum) + ")");
+
+        rows.exit().remove();
 
 
-        var bars = rows.selectAll("rect")
-            .data(function(d) { return d.boxes; })
-            .enter().append("g");
+        let barClass = self.prefixClass("bar");
 
-        bars.append("rect")
-            .attr("height", plot.y.scale.bandwidth())
+        let bars = rowMerge.selectAll("g."+ barClass)
+            .data(function(d) { return d.boxes; });
+        bars.exit().remove();
+
+        let barsEnter = bars.enter()
+            .append("g")
+            .attr("class", barClass);
+
+        barsEnter.append("rect");
+        barsEnter.append("text");
+
+        let barsM =  barsEnter.merge(bars);
+
+        barsM.select("rect").attr("height", plot.y.scale.bandwidth())
             .attr("x", d =>plot.x.scale(d.x0))
             .attr("width", d => plot.x.scale(d.x1) - plot.x.scale(d.x0))
             .style("fill", (d, i) => plot.color(d.name, i));
 
-        bars.append("text")
+        barsM.select("text")
             .attr("x", d => plot.x.scale(d.x0))
             .attr("y", plot.y.scale.bandwidth()/2)
             .attr("dy", "0.5em")

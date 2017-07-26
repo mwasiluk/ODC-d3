@@ -148,6 +148,11 @@ export class Chart {
         }
     }
 
+    destroy(){
+        d3.select(this.baseContainer).selectAll("*").remove();
+        d3.select(window).on("resize." + this._id, null);
+    }
+
     initTooltip(){
         var self = this;
         if (self.config.showTooltip) {
