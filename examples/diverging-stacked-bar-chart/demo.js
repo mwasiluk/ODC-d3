@@ -26,13 +26,15 @@ function exampleData() {
             key: "Sample 1",
             values: [
                 100, 200
-            ]
+            ],
+            categories: [0, 1]
         },
         {
             key: "Sample 2",
             values: [
                 20, 300
-            ]
+            ],
+            categories: [1, 0]
         },
         {
             key: "Sample 3",

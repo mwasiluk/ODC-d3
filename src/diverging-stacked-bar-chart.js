@@ -1,11 +1,19 @@
 import {Chart, ChartConfig} from "./chart";
 import {Utils} from './utils'
+import {Legend} from "./legend";
 import * as d3 from './d3'
 
 export class DivergingStackedBarChartConfig extends ChartConfig{
 
     svgClass = this.cssClassPrefix + 'diverging-stacked-bar-chart';
     showTooltip = true;
+    showLegend=true;
+    forceLegend=false;
+    legend={
+        width: 80,
+        margin: 10,
+        shapeWidth: 20
+    };
     x = {// X axis config
         title: '', // axis label
         value: d => d.values, // x value accessor
@@ -50,11 +58,17 @@ export class DivergingStackedBarChart extends Chart{
 
     initPlot(){
         super.initPlot();
+        this.plot.showLegend = this.config.showLegend;
+        if(this.plot.showLegend){
+            this.plot.margin.right = this.config.margin.right + this.config.legend.width+this.config.legend.margin*2;
+
+        }
         super.computePlotSize();
         this.plot.x = {};
         this.plot.y = {};
 
         this.plot.data = this.getDataToPlot();
+
         this.setupY();
         this.setupX();
 
@@ -96,16 +110,22 @@ export class DivergingStackedBarChart extends Chart{
 
             let values = originalValues.map((v, i) => i<plot.neutralIndex ? this.config.middleValue - v : this.config.middleValue + v);
             let total = d3.sum(originalValues);
+            let categories = plot.categoryNames;
+            if(d.categories){
+                categories = d.categories.map((catIndex, i)=>plot.categoryNames[catIndex])
+            }
+
             return {
                 datum: d,
                 originalValues: originalValues,
                 values: values,
+                categories: [],
                 min: x0,
                 max: x0+total,
                 total: total,
                 boxes: values.map((v, i)=>{
                     return {
-                        name: plot.categoryNames[i],
+                        name: categories[i],
                         x0: x0,
                         x1: x0+=originalValues[i],
                         originalValue: originalValues[i]
@@ -262,8 +282,10 @@ export class DivergingStackedBarChart extends Chart{
         this.drawAxisX();
         this.drawAxisY();
         this.drawBars();
+        this.updateLegend();
         return this;
     };
+
 
     setupColor() {
         var self=this;
@@ -284,5 +306,40 @@ export class DivergingStackedBarChart extends Chart{
             self.plot.colorValue=colorValue;
             this.plot.color = this.plot.colorCategory
         }
+    }
+
+    updateLegend() {
+
+        var self =this;
+        var plot = this.plot;
+
+        var scale = plot.color;
+
+        if(!scale.domain() || !this.config.forceLegend && scale.domain().length<2){
+            plot.showLegend = false;
+        }
+
+        if(!plot.showLegend){
+            if(plot.legend && plot.legend.container){
+                plot.legend.container.remove();
+            }
+            return;
+        }
+
+
+        var legendX = this.plot.width + this.config.legend.margin;
+        var legendY = this.config.legend.margin;
+
+        plot.legend = new Legend(this.svg, this.svgG, scale, legendX, legendY);
+
+        plot.legendColor = plot.legend.color()
+            .shapeWidth(this.config.legend.shapeWidth)
+            .orient('vertical')
+            .scale(scale)
+            .labelWrap(this.config.legend.width)
+            // .labels(scale.domain().map(v=>plot.groupToLabel[v]));
+
+        plot.legend.container
+            .call(plot.legendColor);
     }
 }

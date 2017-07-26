@@ -1,6 +1,6 @@
 {
   "name": "odc-d3",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "description": "Open Data Charts for D3",
   "main": "src/index.js",
   "scripts": {
