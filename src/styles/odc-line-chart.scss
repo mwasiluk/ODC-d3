@@ -1,0 +1,28 @@
+.odc-line-chart{
+  background-color: white;
+  font-size: 11px;
+  height: 100%;
+  .odc-axis{
+
+    path{
+      fill: none;
+      stroke: #000;
+      shape-rendering: crispEdges;
+    }
+    line {
+      shape-rendering: crispEdges;
+      stroke: #eaeaea;
+    }
+    &.odc-no-guides{
+      line{
+        //display: none;
+        stroke: #a1a1a1;
+      }
+    }
+  }
+
+  .odc-dot {
+    //stroke: #000;
+  }
+
+}
