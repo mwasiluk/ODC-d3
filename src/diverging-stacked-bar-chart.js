@@ -141,7 +141,8 @@ export class DivergingStackedBarChart extends Chart{
             domain = [];
         } else {
             domain = d3.extent([].concat(...plot.rows.map(b=>[b.min, b.max])));
-            let margin = (domain[1]-domain[0])* conf.domainMargin;
+            let margin = ((domain[1]-domain[0])* conf.domainMargin) || conf.domainMargin*domain[0];
+
             domain[0]-=margin;
             domain[1]+=margin;
         }
