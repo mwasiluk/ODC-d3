@@ -33,6 +33,8 @@ export class DivergingStackedBarChartConfig extends ChartConfig{
     transition = true;
     color =  undefined;// string or function returning color's value for color scale
     d3ColorCategory= 'category10';
+    showBarValues = true;
+
 
     colorRange = undefined;
 
@@ -252,7 +254,10 @@ export class DivergingStackedBarChart extends Chart{
             .attr("class", barClass);
 
         barsEnter.append("rect");
-        barsEnter.append("text");
+        if(config.showBarValues){
+            barsEnter.append("text");
+        }
+
 
         let barsM =  barsEnter.merge(bars);
 
@@ -261,13 +266,20 @@ export class DivergingStackedBarChart extends Chart{
             .attr("width", d => plot.x.scale(d.x1) - plot.x.scale(d.x0))
             .style("fill", (d, i) => plot.color(d.name, i));
 
-        barsM.select("text")
-            .attr("x", d => plot.x.scale(d.x0))
-            .attr("y", plot.y.scale.bandwidth()/2)
-            .attr("dy", "0.5em")
-            .attr("dx", d=>(plot.x.scale(d.x1)-plot.x.scale(d.x0))/2)
-            .style("text-anchor", "middle")
-            .text(d => d.originalValue !== 0 && (d.x1-d.x0)>0.04 ? d.originalValue : "");
+
+        let textM = barsM.select("text");
+        if(config.showBarValues){
+            textM.attr("x", d => plot.x.scale(d.x0))
+                .attr("y", plot.y.scale.bandwidth()/2)
+                .attr("dy", "0.5em")
+                .attr("dx", d=>(plot.x.scale(d.x1)-plot.x.scale(d.x0))/2)
+                .style("text-anchor", "middle")
+                .text(d => d.originalValue !== 0 && (d.x1-d.x0)>0.04 ? d.originalValue : "");
+        }else{
+            textM.remove();
+        }
+
+
 
         self.svgG.selectOrAppend("line."+self.prefixClass("middle-line"))
             .attr("x1", plot.x.scale(self.config.middleValue))

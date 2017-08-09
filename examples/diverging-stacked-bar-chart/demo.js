@@ -13,7 +13,8 @@ var plot;
 var conf = {
     categoryNames: ["Low", "High"],
     colorRange: ["#4f81bd", "#9bbb59"],
-    middleValue: 100
+    middleValue: 100,
+    showBarValues: true
 };
 
 data = exampleData();
