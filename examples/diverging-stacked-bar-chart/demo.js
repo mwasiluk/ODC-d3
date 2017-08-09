@@ -14,7 +14,10 @@ var conf = {
     categoryNames: ["Low", "High"],
     colorRange: ["#4f81bd", "#9bbb59"],
     middleValue: 100,
-    showBarValues: true
+    showBarValues: true,
+    x:{
+        title: 'X title'
+    }
 };
 
 data = exampleData();
@@ -42,6 +45,19 @@ function exampleData() {
             values: [30, 45]
         }
 
+
+    ];
+}
+
+function exampleData2() {
+    return  [
+        {
+            key: "Sample 1",
+            values: [
+                0, 0
+            ],
+            categories: [0, 1]
+        }
 
     ];
 }

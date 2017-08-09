@@ -199,11 +199,14 @@ export class DivergingStackedBarChart extends Chart{
 
         axisT.call(plot.x.axis);
 
+        var titleY = axisConf.orient === 'bottom' ? plot.margin.bottom : 0;
+        var titleDY = axisConf.orient === 'bottom' ? "-1em" : "-2em";
+
         axis.selectOrAppend("text."+self.prefixClass('label'))
-            .attr("transform", "translate("+ (plot.width/2) +","+ (plot.margin.bottom) +")")  // text is drawn off the screen top left, move down and out and rotate
-            .attr("dy", "-1em")
+            .attr("transform", "translate("+ (plot.width/2) +","+ (titleY) +")")  // text is drawn off the screen top left, move down and out and rotate
+            .attr("dy", titleDY)
             .style("text-anchor", "middle")
-            .text(axisConf.label);
+            .text(axisConf.title);
     };
 
     drawAxisY() {
