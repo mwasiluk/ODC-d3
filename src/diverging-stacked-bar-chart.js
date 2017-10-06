@@ -200,7 +200,7 @@ export class DivergingStackedBarChart extends Chart{
         axisT.call(plot.x.axis);
 
         var titleY = axisConf.orient === 'bottom' ? plot.margin.bottom : 0;
-        var titleDY = axisConf.orient === 'bottom' ? "-1em" : "-2em";
+        var titleDY = axisConf.orient === 'bottom' ? "-1em" : "-1.5em";
 
         axis.selectOrAppend("text."+self.prefixClass('label'))
             .attr("transform", "translate("+ (plot.width/2) +","+ (titleY) +")")  // text is drawn off the screen top left, move down and out and rotate
