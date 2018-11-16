@@ -26,7 +26,7 @@ gulp.task('build-css', function () {
         .pipe(plugins.sass())
         .pipe(plugins.concat(fileName+'.css'))
         .pipe(gulp.dest('./dist'))
-        .pipe(plugins.minifyCss())
+        .pipe(plugins.cleanCss())
         .pipe(plugins.rename({ extname: '.min.css' }))
         .pipe(gulp.dest('./dist'));
 });
@@ -55,19 +55,19 @@ gulp.task('copy-global-d3', function () {
 });
 
 
-gulp.task('do-build-js', ['copy-global-d3'], function () {
+gulp.task('do-build-js', gulp.series('copy-global-d3', function () {
 
     return buildJs(projectName, "dist")
 
-});
+}));
 
-gulp.task('build-js', ['do-build-js'], function () {
+gulp.task('build-js', gulp.series('do-build-js', function () {
     return gulp.src("./src/d3_import.js")
         .pipe(plugins.rename({
             basename: "d3"
         }))
         .pipe(gulp.dest('./src/'))
-});
+}));
 
 gulp.task('build-js-standalone', function () {
     return buildJs(projectName, "dist/standalone");
@@ -83,7 +83,7 @@ function buildJs(jsFileName, dest) {
         standalone: 'ODCD3'
     })
 
-        .transform("babelify", {presets: ["es2015"],  plugins: ["transform-class-properties"]})
+        .transform("babelify", {presets: ["@babel/preset-env"],  plugins: ["transform-class-properties"]})
         .bundle()
         .on('error', map_error)
         .pipe(plugins.plumber({ errorHandler: onError }))
@@ -98,24 +98,20 @@ function buildJs(jsFileName, dest) {
         .pipe(gulp.dest(dest));
 }
 
-gulp.task('build-clean', ['clean'], function () {
-    gulp.start('build');
-});
+gulp.task('build', gulp.parallel('build-css', 'build-js'));
 
-gulp.task('build', ['build-css', 'build-js'], function () {
-    
-});
+gulp.task('build-clean', gulp.series('clean', 'build'));
+
+
 
 gulp.task('watch', function() {
     return gulp.watch(['./src/**/*.html', './src/styles/*.*css', 'src/**/*.js' , "!src/d3.js"], ['default']);
 });
 
-gulp.task('default', ['build-clean'],  function() {
+gulp.task('default', gulp.series('build-clean', 'build-js-standalone'));
 
-});
-
-gulp.task('default-watch', ['default'], ()=>{ browserSync.reload() });
-gulp.task('serve', ['default'], ()=>{
+gulp.task('default-watch', gulp.series('default', ()=>{ browserSync.reload() }));
+gulp.task('serve', gulp.series('default', ()=>{
     browserSync.init({
         server: {
             baseDir: "examples",
@@ -130,7 +126,7 @@ gulp.task('serve', ['default'], ()=>{
         browser: "google chrome"
     });
     gulp.watch(['i18n/**/*.json', './src/**/*.html', './src/styles/*.*css', 'src/**/*.js', "!src/d3.js", 'examples/**/*.*'], ['default-watch']);
-});
+}));
 
 
 // error function for plumber
