@@ -29,7 +29,7 @@ plot = new ODCD3.BoxPlot("#plot", data, conf);
 
 
 var plot2;
-d3.csv("../data/flowers.csv", function(error, data) {
+d3.csv("../data/flowers.csv").then(function(data) {
     // data = d3.nest().key(function(d){return d.species}).entries(data);
     console.log(data);
     plot2 = new ODCD3.BoxPlot("#plot2", data, confFlowers);

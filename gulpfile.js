@@ -2,6 +2,7 @@ var gulp = require('gulp');
 var del = require('del');
 var merge = require('merge-stream');
 var plugins = require('gulp-load-plugins')();
+var sass = require('gulp-sass')(require('sass'));
 var browserSync = require('browser-sync').create();
 
 var browserify = require("browserify");
@@ -13,7 +14,10 @@ var buffer = require('vinyl-buffer');
 var gutil = require('gulp-util');
 var chalk = require('chalk');
 
-var projectName= "odc-d3"
+var p = require('./package.json')
+var projectName= p.name
+
+const browserifyTransforms = p.browserify.transform.reduce((acc, curr) => (acc[curr[0]] = curr[1], acc), {});
 
 gulp.task('clean', function (cb) {
     return del(['tmp', 'dist'], cb);
@@ -23,7 +27,7 @@ gulp.task('build-css', function () {
     var fileName = projectName;
     return gulp.src('./src/styles/*')
         .pipe(plugins.plumber({ errorHandler: onError }))
-        .pipe(plugins.sass())
+        .pipe(sass())
         .pipe(plugins.concat(fileName+'.css'))
         .pipe(gulp.dest('./dist'))
         .pipe(plugins.cleanCss())
@@ -83,7 +87,7 @@ function buildJs(jsFileName, dest) {
         standalone: 'ODCD3'
     })
 
-        .transform("babelify", {presets: ["@babel/preset-env"],  plugins: ["transform-class-properties"]})
+        .transform("babelify", browserifyTransforms['babelify'])
         .bundle()
         .on('error', map_error)
         .pipe(plugins.plumber({ errorHandler: onError }))

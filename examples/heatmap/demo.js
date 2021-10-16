@@ -210,7 +210,7 @@ var conf = confFlowers;
 var plot2;
 var plot3;
 var plot4;
-d3.csv("../data/flowers.csv", function(error, data) {
+d3.csv("../data/flowers.csv").then(function(data) {
     console.log(data);
     plot = new ODCD3.Heatmap("#plot", data, conf);
 

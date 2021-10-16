@@ -45,7 +45,7 @@ var plot;
 var conf = confSeries;
 var seriesData  = exampleData(3);
 console.log(seriesData)
-d3.csv("../data/flowers.csv", function(error, data) {
+d3.csv("../data/flowers.csv").then(function(data) {
     console.log(data);
 
     // data = d3.nest().key(function(d){return d.species}).entries(data);

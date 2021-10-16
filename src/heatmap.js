@@ -24,7 +24,7 @@ export class HeatmapConfig extends ChartConfig {
         value: (d) => d[this.x.key], // x value accessor
         rotateLabels: true,
         sortLabels: false,
-        sortComparator: (a, b)=> Utils.isNumber(a) ? a - b : a.localeCompare(b),
+        sortComparator: (a, b) => Utils.isNumber(a) ? a - b : a.localeCompare(b),
         groups: {
             keys: [],
             labels: [],
@@ -43,7 +43,7 @@ export class HeatmapConfig extends ChartConfig {
         key: 1,
         value: (d) => d[this.y.key], // y value accessor
         sortLabels: false,
-        sortComparator: (a, b)=> Utils.isNumber(b) ? b - a : b.localeCompare(a),
+        sortComparator: (a, b) => Utils.isNumber(b) ? b - a : b.localeCompare(a),
         groups: {
             keys: [],
             labels: [],
@@ -207,7 +207,7 @@ export class Heatmap extends Chart {
         var valueMap = {};
         var minZ = undefined;
         var maxZ = undefined;
-        this.data.forEach(d=> {
+        this.data.forEach(d => {
 
             var xVal = x.value(d);
             var yVal = y.value(d);
@@ -294,7 +294,7 @@ export class Heatmap extends Chart {
         var matrixCells = self.plot.cells = [];
         var matrix = self.plot.matrix = [];
 
-        y.allValuesList.forEach((v1, i)=> {
+        y.allValuesList.forEach((v1, i) => {
             var row = [];
             matrix.push(row);
 
@@ -382,7 +382,7 @@ export class Heatmap extends Chart {
             if (axisConfig.sortLabels) {
                 group.values.sort(axisConfig.sortComparator);
             }
-            group.values.forEach(v=>axis.allValuesList.push({val: v, group: group}));
+            group.values.forEach(v => axis.allValuesList.push({val: v, group: group}));
             group.allValuesBeforeCount = axis.totalValuesCount;
             axis.totalValuesCount += group.values.length;
             group.allValuesCount += group.values.length;
@@ -409,7 +409,7 @@ export class Heatmap extends Chart {
             }
 
             group.gapsInside = [];
-            gaps.forEach((d, i)=> {
+            gaps.forEach((d, i) => {
                 group.gapsInside.push(d - (group.gapsBefore[i] || 0));
             });
             group.gapsInsideSize = Heatmap.computeGapsSize(group.gapsInside);
@@ -433,7 +433,7 @@ export class Heatmap extends Chart {
         if (this.config.y.rotateLabels) {
             maxWidth *= Utils.SQRT_2;
             var fontSize = 11; //todo check actual font size
-            maxWidth -=fontSize/2;
+            maxWidth -= fontSize / 2;
         }
 
         return maxWidth;
@@ -454,7 +454,7 @@ export class Heatmap extends Chart {
         size *= Utils.SQRT_2;
 
         var fontSize = 11; //todo check actual font size
-        size -=fontSize/2;
+        size -= fontSize / 2;
 
         return size;
     }
@@ -465,7 +465,7 @@ export class Heatmap extends Chart {
 
     static computeGapsSize(gaps) {
         var gapsSize = 0;
-        gaps.forEach((gapsNumber, gapsLevel)=> gapsSize += gapsNumber * Heatmap.computeGapSize(gapsLevel));
+        gaps.forEach((gapsNumber, gapsLevel) => gapsSize += gapsNumber * Heatmap.computeGapSize(gapsLevel));
         return gapsSize;
     }
 
@@ -533,14 +533,14 @@ export class Heatmap extends Chart {
         z.domain = [];
         if (config.color.scale == "pow") {
             var exponent = 10;
-            range.forEach((c, i)=> {
+            range.forEach((c, i) => {
                 var v = z.max - (extent / Math.pow(10, i));
                 z.domain.push(v)
             });
             scale = d3.scalePow().exponent(exponent);
         } else if (config.color.scale == "log") {
 
-            range.forEach((c, i)=> {
+            range.forEach((c, i) => {
                 var v = z.min + (extent / Math.pow(10, i));
                 z.domain.unshift(v)
 
@@ -548,7 +548,7 @@ export class Heatmap extends Chart {
 
             scale = d3.scaleLog()
         } else {
-            range.forEach((c, i)=> {
+            range.forEach((c, i) => {
                 var v = z.min + (extent * (i / (range.length - 1)));
                 z.domain.push(v)
             });
@@ -635,7 +635,7 @@ export class Heatmap extends Chart {
 
 
         var labels = self.svgG.selectAll("text." + labelXClass)
-            .data(plot.x.allValuesList, (d, i)=>i);
+            .data(plot.x.allValuesList, (d, i) => i);
 
         var labelsMerge = labels.enter().append("text").attr("class", (d, i) => labelClass + " " + labelXClass + " " + labelXClass + "-" + i).merge(labels);
 
@@ -645,8 +645,7 @@ export class Heatmap extends Chart {
             .attr("dy", 10)
 
             .attr("text-anchor", "middle")
-            .text(d=>self.formatValueX(d.val));
-
+            .text(d => self.formatValueX(d.val));
 
 
         var maxWidth = self.computeXAxisLabelsWidth(offsetX);
@@ -658,7 +657,7 @@ export class Heatmap extends Chart {
         });
 
         if (self.config.x.rotateLabels) {
-            labelsMerge.attr("transform", (d, i) => "rotate(-45, " + ((i * plot.cellWidth + plot.cellWidth / 2) + d.group.gapsSize + offsetX.x ) + ", " + ( plot.height + offsetX.y) + ")")
+            labelsMerge.attr("transform", (d, i) => "rotate(-45, " + ((i * plot.cellWidth + plot.cellWidth / 2) + d.group.gapsSize + offsetX.x) + ", " + (plot.height + offsetX.y) + ")")
                 .attr("dx", -2)
                 .attr("dy", 8)
                 .attr("text-anchor", "end");
@@ -724,7 +723,7 @@ export class Heatmap extends Chart {
 
         if (self.config.y.rotateLabels) {
             labelsMerge
-                .attr("transform", (d, i) => "rotate(-45, " + (offsetY.x  ) + ", " + (d.group.gapsSize + (i * plot.cellHeight + plot.cellHeight / 2) + offsetY.y) + ")")
+                .attr("transform", (d, i) => "rotate(-45, " + (offsetY.x) + ", " + (d.group.gapsSize + (i * plot.cellHeight + plot.cellHeight / 2) + offsetY.y) + ")")
                 .attr("text-anchor", "end");
             // .attr("dx", -7);
         } else {
@@ -803,7 +802,7 @@ export class Heatmap extends Chart {
 
         var tileRects = titleGroups.selectAll("rect")
             .attr("width", titleRectWidth)
-            .attr("height", d=> {
+            .attr("height", d => {
                 return (d.gapsInsideSize || 0) + plot.cellHeight * d.allValuesCount + padding * 2
             })
             .attr("x", 0)
@@ -815,9 +814,9 @@ export class Heatmap extends Chart {
 
 
         groupsMerge.selectAll("rect.group-rect")
-            .attr("class", d=> "group-rect group-rect-" + d.index)
+            .attr("class", d => "group-rect group-rect-" + d.index)
             .attr("width", groupWidth)
-            .attr("height", d=> {
+            .attr("height", d => {
                 return (d.gapsInsideSize || 0) + plot.cellHeight * d.allValuesCount + padding * 2
             })
             .attr("x", 0)
@@ -898,7 +897,7 @@ export class Heatmap extends Chart {
 
         var tileRects = titleGroups.selectAll("rect")
             .attr("height", titleRectHeight)
-            .attr("width", d=> {
+            .attr("width", d => {
                 return (d.gapsInsideSize || 0) + plot.cellWidth * d.allValuesCount + padding * 2
             })
             .attr("x", 0)
@@ -910,9 +909,9 @@ export class Heatmap extends Chart {
 
 
         groupsMerge.selectAll("rect.group-rect")
-            .attr("class", d=> "group-rect group-rect-" + d.index)
+            .attr("class", d => "group-rect group-rect-" + d.index)
             .attr("height", groupHeight)
-            .attr("width", d=> {
+            .attr("width", d => {
                 return (d.gapsInsideSize || 0) + plot.cellWidth * d.allValuesCount + padding * 2
             })
             .attr("x", 0)
@@ -946,24 +945,24 @@ export class Heatmap extends Chart {
         });
         if (plot.tooltip) {
 
-            mouseoverCallbacks.push(d=> {
+            mouseoverCallbacks.push(d => {
                 var html = parentGroup.label + ": " + d.groupingValue;
                 self.showTooltip(html);
             });
 
-            mouseoutCallbacks.push(d=> {
+            mouseoutCallbacks.push(d => {
                 self.hideTooltip();
             });
 
 
         }
-        tileRects.on("mouseover", function (d) {
+        tileRects.on("mouseover", function (e, d) {
             var self = this;
             mouseoverCallbacks.forEach(function (callback) {
                 callback.call(self, d)
             });
         });
-        tileRects.on("mouseout", function (d) {
+        tileRects.on("mouseout", function (e, d) {
             var self = this;
             mouseoutCallbacks.forEach(function (callback) {
                 callback.call(self, d)
@@ -992,7 +991,7 @@ export class Heatmap extends Chart {
             .classed(cellClass, true);
 
         var cellsMerge = cellEnter.merge(cells);
-        cellsMerge.attr("transform", c=> "translate(" + ((plot.cellWidth * c.col + plot.cellWidth / 2) + c.colVar.group.gapsSize) + "," + ((plot.cellHeight * c.row + plot.cellHeight / 2) + c.rowVar.group.gapsSize) + ")");
+        cellsMerge.attr("transform", c => "translate(" + ((plot.cellWidth * c.col + plot.cellWidth / 2) + c.colVar.group.gapsSize) + "," + ((plot.cellHeight * c.row + plot.cellHeight / 2) + c.rowVar.group.gapsSize) + ")");
 
         var shapes = cellsMerge.selectOrAppend(cellShape + ".cell-shape-" + cellShape);
 
@@ -1002,51 +1001,51 @@ export class Heatmap extends Chart {
             .attr("x", -plot.cellWidth / 2)
             .attr("y", -plot.cellHeight / 2);
 
-        shapes.style("fill", c=> c.value === undefined ? self.config.color.noDataColor : plot.z.color.scale(c.value));
-        shapes.attr("fill-opacity", d=> d.value === undefined ? 0 : 1);
+        shapes.style("fill", c => c.value === undefined ? self.config.color.noDataColor : plot.z.color.scale(c.value));
+        shapes.attr("fill-opacity", d => d.value === undefined ? 0 : 1);
 
         var mouseoverCallbacks = [];
         var mouseoutCallbacks = [];
 
         if (plot.tooltip) {
 
-            mouseoverCallbacks.push(c=> {
+            mouseoverCallbacks.push(c => {
                 var html = c.value === undefined ? self.config.tooltip.noDataText : self.formatValueZ(c.value);
                 self.showTooltip(html);
 
             });
 
-            mouseoutCallbacks.push(c=> {
+            mouseoutCallbacks.push(c => {
                 self.hideTooltip();
             });
         }
 
         if (self.config.highlightLabels) {
             var highlightClass = self.config.cssClassPrefix + "highlight";
-            var xLabelClass = c=>plot.labelClass + "-x-" + c.col;
-            var yLabelClass = c=>plot.labelClass + "-y-" + c.row;
+            var xLabelClass = c => plot.labelClass + "-x-" + c.col;
+            var yLabelClass = c => plot.labelClass + "-y-" + c.row;
 
 
-            mouseoverCallbacks.push(c=> {
+            mouseoverCallbacks.push(c => {
 
                 self.svgG.selectAll("text." + xLabelClass(c)).classed(highlightClass, true);
                 self.svgG.selectAll("text." + yLabelClass(c)).classed(highlightClass, true);
             });
-            mouseoutCallbacks.push(c=> {
+            mouseoutCallbacks.push(c => {
                 self.svgG.selectAll("text." + xLabelClass(c)).classed(highlightClass, false);
                 self.svgG.selectAll("text." + yLabelClass(c)).classed(highlightClass, false);
             });
         }
 
 
-        cellsMerge.on("mouseover", c => {
-            mouseoverCallbacks.forEach(callback=>callback(c));
+        cellsMerge.on("mouseover", (e, c) => {
+            mouseoverCallbacks.forEach(callback => callback(c));
         })
-            .on("mouseout", c => {
-                mouseoutCallbacks.forEach(callback=>callback(c));
+            .on("mouseout", (e, c) => {
+                mouseoutCallbacks.forEach(callback => callback(c));
             });
 
-        cellsMerge.on("click", c=> {
+        cellsMerge.on("click", (e, c) => {
             self.trigger("cell-selected", c);
         });
 

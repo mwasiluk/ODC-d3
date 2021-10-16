@@ -2,6 +2,7 @@ import * as d3 from './d3'
 
 export class Utils {
     static SQRT_2 = 1.41421356237;
+
     // usage example deepExtend({}, objA, objB); => should work similar to $.extend(true, {}, objA, objB);
     static deepExtend(out) {
 
@@ -63,7 +64,7 @@ export class Utils {
 
     static inferVariables(data, groupKey, includeGroup) {
         var res = [];
-        if(!data){
+        if (!data) {
             return res;
         }
 
@@ -111,11 +112,11 @@ export class Utils {
         return typeof a === 'function';
     };
 
-    static isDate(a){
+    static isDate(a) {
         return Object.prototype.toString.call(a) === '[object Date]'
     }
 
-    static isString(a){
+    static isString(a) {
         return typeof a === 'string' || a instanceof String
     }
 
@@ -123,7 +124,7 @@ export class Utils {
 
         var selectorParts = selector.split(/([\.\#])/);
         var element = parent[operation](selectorParts.shift(), before);//":first-child"
-        
+
         while (selectorParts.length > 1) {
             var selectorModifier = selectorParts.shift();
             var selectorItem = selectorParts.shift();
@@ -215,39 +216,39 @@ export class Utils {
     }
 
     //places textString in textObj, adds an ellipsis if text can't fit in width
-    static placeTextWithEllipsis(textD3Obj, textString, width){
+    static placeTextWithEllipsis(textD3Obj, textString, width) {
         var textObj = textD3Obj.node();
-        textObj.textContent=textString;
+        textObj.textContent = textString;
 
         var margin = 0;
         var ellipsisLength = 9;
         //ellipsis is needed
-        if (textObj.getComputedTextLength()>width+margin){
-            for (var x=textString.length-3;x>0;x-=1){
-                if (textObj.getSubStringLength(0,x)+ellipsisLength<=width+margin){
-                    textObj.textContent=textString.substring(0,x)+"...";
+        if (textObj.getComputedTextLength() > width + margin) {
+            for (var x = textString.length - 3; x > 0; x -= 1) {
+                if (textObj.getSubStringLength(0, x) + ellipsisLength <= width + margin) {
+                    textObj.textContent = textString.substring(0, x) + "...";
                     return true;
                 }
             }
-            textObj.textContent="..."; //can't place at all
+            textObj.textContent = "..."; //can't place at all
             return true;
         }
         return false;
     }
 
-    static placeTextWithEllipsisAndTooltip(textD3Obj, textString, width, tooltip){
+    static placeTextWithEllipsisAndTooltip(textD3Obj, textString, width, tooltip) {
         var ellipsisPlaced = Utils.placeTextWithEllipsis(textD3Obj, textString, width);
-        if(ellipsisPlaced && tooltip){
-            textD3Obj.on("mouseover", function (d) {
+        if (ellipsisPlaced && tooltip) {
+            textD3Obj.on("mouseover", function (event, d) {
                 tooltip.transition()
                     .duration(200)
                     .style("opacity", .9);
                 tooltip.html(textString)
-                    .style("left", (d3.event.pageX + 5) + "px")
-                    .style("top", (d3.event.pageY - 28) + "px");
+                    .style("left", (event.pageX + 5) + "px")
+                    .style("top", (event.pageY - 28) + "px");
             });
 
-            textD3Obj.on("mouseout", function (d) {
+            textD3Obj.on("mouseout", function () {
                 tooltip.transition()
                     .duration(500)
                     .style("opacity", 0);
@@ -256,7 +257,7 @@ export class Utils {
 
     }
 
-    static getFontSize(element){
+    static getFontSize(element) {
         return window.getComputedStyle(element, null).getPropertyValue("font-size");
     }
 
@@ -265,20 +266,26 @@ export class Utils {
     }
 
     static createScale(scaleName) {
-        var scaleFunctionName = 'scale'+Utils.capitalizeFirstLetter(scaleName);
-        try{
+        var scaleFunctionName = 'scale' + Utils.capitalizeFirstLetter(scaleName);
+        try {
             return d3[scaleFunctionName]();
-        }catch (e){
-            throw 'ODC-D3 - scale not supported: '+scaleName+ ' ('+scaleFunctionName+')';
+        } catch (e) {
+            throw 'ODC-D3 - scale not supported: ' + scaleName + ' (' + scaleFunctionName + ')';
         }
     }
 
-    static createAxis(orient, scale){
-        var axisFnName = 'axis'+Utils.capitalizeFirstLetter(orient);
-        try{
+    static createAxis(orient, scale) {
+        var axisFnName = 'axis' + Utils.capitalizeFirstLetter(orient);
+        try {
             return d3[axisFnName](scale)
-        }catch (e){
-            throw 'ODC-D3 - axis orient not supported: '+orient;
+        } catch (e) {
+            throw 'ODC-D3 - axis orient not supported: ' + orient;
         }
+    }
+
+    static nest(entries, key) {
+        return Array.from(d3.group(entries, key)).map(function (d) {
+            return {key: d[0], values: d[1]}
+        })
     }
 }

@@ -49,7 +49,7 @@ var data3 = [
 var plot;
 /*plot = new D3ScatterPlotMatrix("#scatterplot", data, conf);
 plot.init();*/
-d3.csv("../data/flowers.csv", function(error, data) {
+d3.csv("../data/flowers.csv").then(function(data) {
     console.log(data);
 
     // data = d3.nest().key(function(d){return d.species}).entries(data);

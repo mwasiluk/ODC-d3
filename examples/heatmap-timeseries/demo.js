@@ -48,7 +48,7 @@ var plot2;
 var plot3;
 var plot4;
 
-d3.json("../data/eurostat3.json", function(error, data) {
+d3.json("../data/eurostat3.json").then(function(error, data) {
     // console.log(data); // this is your data
 
 

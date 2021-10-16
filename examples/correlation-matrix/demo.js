@@ -53,7 +53,7 @@ var data3 = [
 var plot;
 /*plot = new D3ScatterPlotMatrix("#scatterplot", data, conf);
 plot.init();*/
-d3.csv("../data/flowers.csv", function(error, d) {
+d3.csv("../data/flowers.csv").then(function(d) {
     console.log(data);
     data = d;
 

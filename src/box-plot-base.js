@@ -2,7 +2,7 @@ import {Chart, ChartConfig} from "./chart";
 import {Utils} from './utils'
 import * as d3 from './d3'
 
-export class BoxPlotBaseConfig extends ChartConfig{
+export class BoxPlotBaseConfig extends ChartConfig {
 
     svgClass = this.cssClassPrefix + 'box-plot';
     showTooltip = true;
@@ -26,35 +26,35 @@ export class BoxPlotBaseConfig extends ChartConfig{
     Q3 = d => d.values.Q3;
     Wl = d => d.values.whiskerLow;
     Wh = d => d.values.whiskerHigh;
-    outliers= d=> d.values.outliers;
-    outlierValue = (d,i)=> d;
-    outlierLabel = (d,i)=> d;
+    outliers = d => d.values.outliers;
+    outlierValue = (d, i) => d;
+    outlierLabel = (d, i) => d;
     minBoxWidth = 35;
     maxBoxWidth = 100;
 
     transition = true;
-    color =  undefined;// string or function returning color's value for color scale
-    d3ColorCategory= 'category10';
+    color = undefined;// string or function returning color's value for color scale
+    d3ColorCategory = 'category10';
 
-    constructor(custom){
+    constructor(custom) {
         super();
-        if(custom){
+        if (custom) {
             Utils.deepExtend(this, custom);
         }
 
     }
 }
 
-export class BoxPlotBase extends Chart{
+export class BoxPlotBase extends Chart {
     constructor(placeholderSelector, data, config) {
         super(placeholderSelector, data, new BoxPlotBaseConfig(config));
     }
 
-    setConfig(config){
+    setConfig(config) {
         return super.setConfig(new BoxPlotBaseConfig(config));
     }
 
-    initPlot(){
+    initPlot() {
         super.initPlot();
         super.computePlotSize();
         this.plot.x = {};
@@ -83,7 +83,7 @@ export class BoxPlotBase extends Chart{
         x.map = d => x.scale(x.value(d));
 
         x.axis = Utils.createAxis(conf.orient, x.scale);
-        if(conf.guides){
+        if (conf.guides) {
             x.axis.tickSize(-plot.height);
         }
 
@@ -112,7 +112,7 @@ export class BoxPlotBase extends Chart{
         if (conf.ticks) {
             y.axis.ticks(conf.ticks);
         }
-        if(conf.guides){
+        if (conf.guides) {
             y.axis.tickSize(-plot.width);
         }
         this.setupYDomain();
@@ -125,28 +125,36 @@ export class BoxPlotBase extends Chart{
 
         var values = [], yMin, yMax;
         data.forEach(function (d, i) {
-            let q1 = c.Q1(d), 
-                q3 = c.Q3(d), 
-                wl = c.Wl(d), 
+            let q1 = c.Q1(d),
+                q3 = c.Q3(d),
+                wl = c.Wl(d),
                 wh = c.Wh(d),
                 outliers = c.outliers(d);
-            
+
             if (outliers) {
                 outliers.forEach(function (o, i) {
                     values.push(c.outlierValue(o, i));
                 });
             }
-            if (wl) { values.push(wl) }
-            if (q1) { values.push(q1) }
-            if (q3) { values.push(q3) }
-            if (wh) { values.push(wh) }
+            if (wl) {
+                values.push(wl)
+            }
+            if (q1) {
+                values.push(q1)
+            }
+            if (q3) {
+                values.push(q3)
+            }
+            if (wh) {
+                values.push(wh)
+            }
         });
         yMin = d3.min(values);
         yMax = d3.max(values);
-        var margin = (yMax-yMin)* this.config.y.domainMargin;
-        yMin-=margin;
-        yMax+=margin;
-        var domain = [ yMin, yMax ] ;
+        var margin = (yMax - yMin) * this.config.y.domainMargin;
+        yMin -= margin;
+        yMax += margin;
+        var domain = [yMin, yMax];
 
         plot.y.scale.domain(domain);
     }
@@ -165,8 +173,8 @@ export class BoxPlotBase extends Chart{
 
         axisT.call(plot.x.axis);
 
-        axis.selectOrAppend("text."+self.prefixClass('label'))
-            .attr("transform", "translate("+ (plot.width/2) +","+ (plot.margin.bottom) +")")  // text is drawn off the screen top left, move down and out and rotate
+        axis.selectOrAppend("text." + self.prefixClass('label'))
+            .attr("transform", "translate(" + (plot.width / 2) + "," + (plot.margin.bottom) + ")")  // text is drawn off the screen top left, move down and out and rotate
             .attr("dy", "-1em")
             .style("text-anchor", "middle")
             .text(axisConf.label);
@@ -197,8 +205,8 @@ export class BoxPlotBase extends Chart{
             plot = self.plot,
             config = self.config,
             boxplotClass = self.prefixClass("boxplot-item")
-        
-        var boxplots = self.svgG.selectAll('.'+boxplotClass).data(plot.data);
+
+        var boxplots = self.svgG.selectAll('.' + boxplotClass).data(plot.data);
         var boxplotEnter = boxplots.enter()
             .append('g')
             .attr('class', boxplotClass)
@@ -210,81 +218,84 @@ export class BoxPlotBase extends Chart{
         var boxplotsT = boxplotsMerge;
         if (self.transitionEnabled()) {
             boxplotsT = boxplotsMerge.transition();
-            boxplotsT.delay(function(d,i) { return i * duration / plot.data.length })
+            boxplotsT.delay(function (d, i) {
+                return i * duration / plot.data.length
+            })
         }
 
         boxplotsT
             .style('fill', plot.color)
             .style('stroke-opacity', 1)
             .style('fill-opacity', 0.75)
-            .attr('transform', (d,i) =>'translate(' + (plot.x.map(d,i) + plot.x.scale.bandwidth() * 0.05) + ', 0)')
+            .attr('transform', (d, i) => 'translate(' + (plot.x.map(d, i) + plot.x.scale.bandwidth() * 0.05) + ', 0)')
         boxplots.exit().remove();
 
         var boxWidth = !config.maxBoxWidth ? plot.x.scale.bandwidth() * 0.9 : Math.min(config.maxBoxWidth, Math.max(config.minBoxWidth, plot.x.scale.bandwidth() * 0.9));
-        var boxLeft  = plot.x.scale.bandwidth() * 0.45 - boxWidth/2;
-        var boxRight = plot.x.scale.bandwidth() * 0.45 + boxWidth/2;
+        var boxLeft = plot.x.scale.bandwidth() * 0.45 - boxWidth / 2;
+        var boxRight = plot.x.scale.bandwidth() * 0.45 + boxWidth / 2;
 
         var boxClass = self.prefixClass("box");
 
         boxplotEnter.append('rect')
             .attr('class', boxClass)
             // tooltip events
-            .on('mouseover', function(d,i) {
+            .on('mouseover', function (event, d) {
+                const i = boxplotEnter.nodes().indexOf(this);
                 d3.select(this).classed('hover', true);
-                var html = 'Q3: '+config.Q3(d,i)+'<br/>Q2: '+config.Q2(d,i)+'<br/>Q1: '+config.Q1(d,i);
+                var html = 'Q3: ' + config.Q3(d, i) + '<br/>Q2: ' + config.Q2(d, i) + '<br/>Q1: ' + config.Q1(d, i);
                 self.showTooltip(html)
             })
-            .on('mouseout', function(d,i) {
+            .on('mouseout', function (e, d) {
                 d3.select(this).classed('hover', false);
                 self.hideTooltip();
             });
 
-        var boxRects = boxplotsMerge.select('rect.'+boxClass);
+        var boxRects = boxplotsMerge.select('rect.' + boxClass);
 
         var boxRectsT = boxRects;
         if (self.config.transition) {
             boxRectsT = boxRects.transition();
         }
 
-        boxRectsT.attr('y', (d,i) => plot.y.scale(config.Q3(d)))
+        boxRectsT.attr('y', (d, i) => plot.y.scale(config.Q3(d)))
             .attr('width', boxWidth)
-            .attr('x', boxLeft )
-            .attr('height', (d,i) => Math.abs(plot.y.scale(config.Q3(d)) - plot.y.scale(config.Q1(d))) || 1)
+            .attr('x', boxLeft)
+            .attr('height', (d, i) => Math.abs(plot.y.scale(config.Q3(d)) - plot.y.scale(config.Q1(d))) || 1)
             .style('stroke', plot.color);
 
         // median line
         var medianClass = self.prefixClass('median');
         boxplotEnter.append('line').attr('class', medianClass);
 
-        var medianLine = boxplotsMerge.select('line.'+medianClass);
+        var medianLine = boxplotsMerge.select('line.' + medianClass);
         if (self.config.transition) {
             medianLine = medianLine.transition();
         }
         medianLine
             .attr('x1', boxLeft)
-            .attr('y1', (d,i) => plot.y.scale(config.Q2(d)))
+            .attr('y1', (d, i) => plot.y.scale(config.Q2(d)))
             .attr('x2', boxRight)
-            .attr('y2', (d,i) => plot.y.scale(config.Q2(d)));
+            .attr('y2', (d, i) => plot.y.scale(config.Q2(d)));
 
 
         //whiskers
 
-        var whiskerClass= self.prefixClass("whisker"),
+        var whiskerClass = self.prefixClass("whisker"),
             tickClass = self.prefixClass("boxplot-tick");
 
         var whiskers = [{key: 'low', value: config.Wl}, {key: 'high', value: config.Wh}];
 
-        boxplotEnter.each(function(d,i) {
+        boxplotEnter.each(function (d, i) {
             var box = d3.select(this);
 
-            whiskers.forEach(f=> {
+            whiskers.forEach(f => {
                 if (f.value(d)) {
                     box.append('line')
-                        .style('stroke', plot.color(d,i))
-                        .attr('class', whiskerClass+' ' + boxplotClass+'-'+f.key);
+                        .style('stroke', plot.color(d, i))
+                        .attr('class', whiskerClass + ' ' + boxplotClass + '-' + f.key);
                     box.append('line')
-                        .style('stroke', plot.color(d,i))
-                        .attr('class', tickClass+' ' + boxplotClass+'-'+f.key);
+                        .style('stroke', plot.color(d, i))
+                        .attr('class', tickClass + ' ' + boxplotClass + '-' + f.key);
                 }
             });
         });
@@ -292,30 +303,30 @@ export class BoxPlotBase extends Chart{
         whiskers.forEach(f => {
             var endpoint = (f.key === 'low') ? config.Q1 : config.Q3;
 
-            var whisker = boxplotsMerge.select('.'+whiskerClass+'.'+boxplotClass+'-'+f.key);
-            var tick = boxplotsMerge.select('.'+tickClass+'.'+boxplotClass+'-'+f.key);
+            var whisker = boxplotsMerge.select('.' + whiskerClass + '.' + boxplotClass + '-' + f.key);
+            var tick = boxplotsMerge.select('.' + tickClass + '.' + boxplotClass + '-' + f.key);
             if (self.config.transition) {
                 whisker = whisker.transition();
-                tick=tick.transition();
+                tick = tick.transition();
             }
             whisker
-                .attr('x1', plot.x.scale.bandwidth() * 0.45 )
-                .attr('y1', (d,i) => plot.y.scale(f.value(d)))
-                .attr('x2', plot.x.scale.bandwidth() * 0.45 )
-                .attr('y2', (d,i) => plot.y.scale(endpoint(d)));
+                .attr('x1', plot.x.scale.bandwidth() * 0.45)
+                .attr('y1', (d, i) => plot.y.scale(f.value(d)))
+                .attr('x2', plot.x.scale.bandwidth() * 0.45)
+                .attr('y2', (d, i) => plot.y.scale(endpoint(d)));
 
             tick
-                .attr('x1', boxLeft )
-                .attr('y1', (d,i) => plot.y.scale(f.value(d)))
-                .attr('x2', boxRight )
-                .attr('y2', (d,i) => plot.y.scale(f.value(d)));
+                .attr('x1', boxLeft)
+                .attr('y1', (d, i) => plot.y.scale(f.value(d)))
+                .attr('x2', boxRight)
+                .attr('y2', (d, i) => plot.y.scale(f.value(d)));
 
-            boxplotEnter.selectAll('.'+boxplotClass+'-'+f.key)
-                .on('mouseover', function(d,i,j) {
+            boxplotEnter.selectAll('.' + boxplotClass + '-' + f.key)
+                .on('mouseover', function (event, d) {
                     d3.select(this).classed('hover', true);
                     self.showTooltip(f.value(d))
                 })
-                .on('mouseout', function(d,i,j) {
+                .on('mouseout', function () {
                     d3.select(this).classed('hover', false);
                     self.hideTooltip();
                 })
@@ -324,18 +335,19 @@ export class BoxPlotBase extends Chart{
 
         // outliers
         var outlierClass = self.prefixClass("outlier");
-        var outliers = boxplotsMerge.selectAll('.'+outlierClass).data((d,i) => config.outliers(d,i) || []);
+        var outliers = boxplotsMerge.selectAll('.' + outlierClass).data((d, i) => config.outliers(d, i) || []);
 
         var outlierEnterCircle = outliers.enter().append('circle')
             .attr('class', outlierClass)
             .style('z-index', 9000);
 
         outlierEnterCircle
-            .on('mouseover', function (d, i, j) {
+            .on('mouseover', function (event, d) {
+                const i = outlierEnterCircle.nodes().indexOf(this);
                 d3.select(this).classed('hover', true);
-                self.showTooltip(config.outlierLabel(d,i))
+                self.showTooltip(config.outlierLabel(d, i))
             })
-            .on('mouseout', function (d, i, j) {
+            .on('mouseout', function () {
                 d3.select(this).classed('hover', false);
                 self.hideTooltip();
             });
@@ -347,13 +359,13 @@ export class BoxPlotBase extends Chart{
         }
         outliersT
             .attr('cx', plot.x.scale.bandwidth() * 0.45)
-            .attr('cy', (d,i) => plot.y.scale(config.outlierValue(d,i)))
+            .attr('cy', (d, i) => plot.y.scale(config.outlierValue(d, i)))
             .attr('r', '3');
         outliers.exit().remove();
 
     }
 
-    update(newData){
+    update(newData) {
         super.update(newData);
         this.drawAxisX();
         this.drawAxisY();
@@ -362,19 +374,19 @@ export class BoxPlotBase extends Chart{
     };
 
     setupColor() {
-        var self=this;
+        var self = this;
         var conf = this.config;
 
-        if(conf.d3ColorCategory){
-            var colorSchemeCategory = 'scheme'+Utils.capitalizeFirstLetter(conf.d3ColorCategory);
+        if (conf.d3ColorCategory) {
+            var colorSchemeCategory = 'scheme' + Utils.capitalizeFirstLetter(conf.d3ColorCategory);
             this.plot.colorCategory = d3.scaleOrdinal(d3[colorSchemeCategory]);
         }
         var colorValue = conf.color;
-        if (colorValue && typeof colorValue === 'string' || colorValue instanceof String){
+        if (colorValue && typeof colorValue === 'string' || colorValue instanceof String) {
             this.plot.color = colorValue;
-        }else if(this.plot.colorCategory){
-            self.plot.colorValue=colorValue;
-            this.plot.color = d =>  self.plot.colorCategory(this.plot.x.value(d));
+        } else if (this.plot.colorCategory) {
+            self.plot.colorValue = colorValue;
+            this.plot.color = d => self.plot.colorCategory(this.plot.x.value(d));
         }
     }
 }

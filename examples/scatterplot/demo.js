@@ -19,7 +19,8 @@ var confFlowers = {
         displayValue: {'setosa': 'Setosa'}
     },
     title: "Anderson's Iris data set",
-    subtitle: "en.wikipedia.org/wiki/Iris_flower_data_set"
+    subtitle: "en.wikipedia.org/wiki/Iris_flower_data_set",
+    forceLegend: true
     // series: true
 
 };
@@ -44,9 +45,8 @@ var dataArray = [
 var plot;
 var conf = confFlowers;
 
-d3.csv("../data/flowers.csv", function(error, data) {
+d3.csv("../data/flowers.csv").then(function(data) {
     console.log(data);
     // data = d3.nest().key(function(d){return d.species}).entries(data);
     plot = new ODCD3.ScatterPlot("#scatterplot", data, conf);
-
 });

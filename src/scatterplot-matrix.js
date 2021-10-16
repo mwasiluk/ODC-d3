@@ -1,39 +1,38 @@
 import {ChartWithColorGroups} from "./chart-with-color-groups";
 import {ScatterPlotConfig} from "./scatterplot";
 import {Utils} from './utils'
-import {Legend} from "./legend";
 import * as d3 from './d3'
 
-export class ScatterPlotMatrixConfig extends ScatterPlotConfig{
+export class ScatterPlotMatrixConfig extends ScatterPlotConfig {
 
-    svgClass= this.cssClassPrefix+'scatterplot-matrix';
-    size= undefined; //scatter plot cell size
+    svgClass = this.cssClassPrefix + 'scatterplot-matrix';
+    size = undefined; //scatter plot cell size
     minCellSize = 50;
     maxCellSize = 1000;
-    padding= 20; //scatter plot cell padding
-    brush= true;
-    guides= true; //show axis guides
-    showTooltip= true; //show tooltip on dot hover
-    ticks= undefined; //ticks number, (default: computed using cell size)
-    x={// X axis config
+    padding = 20; //scatter plot cell padding
+    brush = true;
+    guides = true; //show axis guides
+    showTooltip = true; //show tooltip on dot hover
+    ticks = undefined; //ticks number, (default: computed using cell size)
+    x = {// X axis config
         orient: "bottom",
         scale: "linear"
     };
-    y={// Y axis config
+    y = {// Y axis config
         orient: "left",
         scale: "linear"
     };
-    groups={
+    groups = {
         key: undefined, //object property name or array index with grouping variable
         includeInPlot: false, //include group as variable in plot, boolean (default: false)
     };
-    variables= {
+    variables = {
         labels: [], //optional array of variable labels (for the diagonal of the plot).
         keys: [], //optional array of variable keys
         value: (d, variableKey) => d[variableKey] // variable value accessor
     };
 
-    constructor(custom){
+    constructor(custom) {
         super();
         Utils.deepExtend(this, custom);
     }
@@ -57,12 +56,12 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
         var self = this;
         var margin = this.plot.margin;
         var conf = this.config;
-        this.plot.x={};
-        this.plot.y={};
-        this.plot.dot={
+        this.plot.x = {};
+        this.plot.y = {};
+        this.plot.dot = {
             color: null//color scale mapping function
         };
-        
+
         this.setupVariables();
 
         this.plot.size = conf.size;
@@ -72,12 +71,12 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
         var availableWidth = Utils.availableWidth(this.config.width, this.getBaseContainer(), margin);
         var availableHeight = Utils.availableHeight(this.config.height, this.getBaseContainer(), margin);
         if (!width) {
-            if(!this.plot.size){
-                this.plot.size =  Math.min(conf.maxCellSize, Math.max(conf.minCellSize, availableWidth/this.plot.variables.length));
+            if (!this.plot.size) {
+                this.plot.size = Math.min(conf.maxCellSize, Math.max(conf.minCellSize, availableWidth / this.plot.variables.length));
             }
-            width = margin.left + margin.right + this.plot.variables.length*this.plot.size;
+            width = margin.left + margin.right + this.plot.variables.length * this.plot.size;
         }
-        if(!this.plot.size){
+        if (!this.plot.size) {
             this.plot.size = (width - (margin.left + margin.right)) / this.plot.variables.length;
         }
 
@@ -92,7 +91,7 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
 
         this.plot.ticks = conf.ticks;
 
-        if(this.plot.ticks===undefined){
+        if (this.plot.ticks === undefined) {
             this.plot.ticks = this.plot.size / 40;
         }
 
@@ -110,7 +109,7 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
         var plot = this.plot;
         plot.domainByVariable = {};
         plot.variables = variablesConf.keys;
-        if(!plot.variables || !plot.variables.length){
+        if (!plot.variables || !plot.variables.length) {
 
             plot.variables = data.length ? Utils.inferVariables(data[0].values, this.config.groups.key, this.config.includeInPlot) : [];
         }
@@ -118,11 +117,11 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
         plot.labels = [];
         plot.labelByVariable = {};
         plot.variables.forEach((variableKey, index) => {
-            var min = d3.min(data, s=>d3.min(s.values, d=>variablesConf.value(d, variableKey)));
-            var max = d3.max(data, s=>d3.max(s.values, d=>variablesConf.value(d, variableKey)));
-            plot.domainByVariable[variableKey] = [min,max];
+            var min = d3.min(data, s => d3.min(s.values, d => variablesConf.value(d, variableKey)));
+            var max = d3.max(data, s => d3.max(s.values, d => variablesConf.value(d, variableKey)));
+            plot.domainByVariable[variableKey] = [min, max];
             var label = variableKey;
-            if(variablesConf.labels && variablesConf.labels.length>index){
+            if (variablesConf.labels && variablesConf.labels.length > index) {
 
                 label = variablesConf.labels[index];
             }
@@ -139,7 +138,7 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
         var x = plot.x;
         var conf = this.config;
 
-        
+
         x.value = conf.variables.value;
         x.scale = Utils.createScale(conf.x.scale).range([conf.padding / 2, plot.size - conf.padding / 2]);
         x.map = (d, variable) => x.scale(x.value(d, variable));
@@ -156,26 +155,26 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
         var conf = this.config;
 
         y.value = conf.variables.value;
-        y.scale = Utils.createScale(conf.y.scale).range([ plot.size - conf.padding / 2, conf.padding / 2]);
+        y.scale = Utils.createScale(conf.y.scale).range([plot.size - conf.padding / 2, conf.padding / 2]);
 
         y.map = (d, variable) => y.scale(y.value(d, variable));
         y.axis = Utils.createAxis(conf.y.orient, y.scale).ticks(plot.ticks);
         y.axis.tickSize(-plot.size * plot.variables.length);
     };
 
-    update( newData) {
+    update(newData) {
         super.update(newData);
 
-        var self =this;
+        var self = this;
         var n = self.plot.variables.length;
         var conf = this.config;
 
         var axisClass = self.prefixClass("axis");
-        var axisXClass = axisClass+"-x";
-        var axisYClass = axisClass+"-y";
+        var axisXClass = axisClass + "-x";
+        var axisYClass = axisClass + "-y";
 
-        var xAxisSelector = "g."+axisXClass+"."+axisClass;
-        var yAxisSelector = "g."+axisYClass+"."+axisClass;
+        var xAxisSelector = "g." + axisXClass + "." + axisClass;
+        var yAxisSelector = "g." + axisYClass + "." + axisClass;
 
         var noGuidesClass = self.prefixClass("no-guides");
         var xAxis = self.svgG.selectAll(xAxisSelector)
@@ -186,7 +185,7 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
 
 
         xAxisMerge.attr("transform", (d, i) => "translate(" + (n - i - 1) * self.plot.size + ",0)")
-            .each(function(d) {
+            .each(function (d) {
                 self.plot.x.scale.domain(self.plot.domainByVariable[d]);
                 var axis = d3.select(this);
                 if (self.transitionEnabled()) {
@@ -203,7 +202,7 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
         var yAxisMerge = yAxis.enter().appendSelector(yAxisSelector).merge(yAxis);
         yAxisMerge.classed(noGuidesClass, !conf.guides)
             .attr("transform", (d, i) => "translate(0," + i * self.plot.size + ")");
-        yAxisMerge.each(function(d) {
+        yAxisMerge.each(function (d) {
             self.plot.y.scale.domain(self.plot.domainByVariable[d]);
             var axis = d3.select(this);
             if (self.transitionEnabled()) {
@@ -215,17 +214,17 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
 
         yAxis.exit().remove();
 
-        var cellClass =  self.prefixClass("cell");
-        var cell = self.svgG.selectAll("."+cellClass)
+        var cellClass = self.prefixClass("cell");
+        var cell = self.svgG.selectAll("." + cellClass)
             .data(self.utils.cross(self.plot.variables, self.plot.variables));
 
-        var cellEnter =  cell.enter().appendSelector("g."+cellClass);
+        var cellEnter = cell.enter().appendSelector("g." + cellClass);
         cellEnter.filter(d => d.i === d.j).append("text");
 
         var cellMerge = cellEnter.merge(cell);
         cellMerge.attr("transform", d => "translate(" + (n - d.i - 1) * self.plot.size + "," + d.j * self.plot.size + ")");
 
-        if(conf.brush){
+        if (conf.brush) {
             this.drawBrush(cellMerge);
         }
 
@@ -237,7 +236,7 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
             .attr("x", conf.padding)
             .attr("y", conf.padding)
             .attr("dy", ".71em")
-            .text( d => self.plot.labelByVariable[d.x]);
+            .text(d => self.plot.labelByVariable[d.x]);
 
         cell.exit().remove();
 
@@ -249,26 +248,26 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
             plot.x.scale.domain(plot.domainByVariable[p.x]);
             plot.y.scale.domain(plot.domainByVariable[p.y]);
 
-            var frameClass =  self.prefixClass("frame");
-            cell.selectOrAppend("rect."+frameClass)
+            var frameClass = self.prefixClass("frame");
+            cell.selectOrAppend("rect." + frameClass)
                 .attr("class", frameClass)
                 .attr("x", conf.padding / 2)
                 .attr("y", conf.padding / 2)
                 .attr("width", plot.size - conf.padding)
                 .attr("height", plot.size - conf.padding);
-            
-            p.update = function() {
+
+            p.update = function () {
 
                 var subplot = this;
                 var layerClass = self.prefixClass('layer');
 
 
-                var layer = cell.selectAll("g."+layerClass).data(self.plot.groupedData);
+                var layer = cell.selectAll("g." + layerClass).data(self.plot.groupedData);
 
-                var layerMerge = layer.enter().appendSelector("g."+layerClass).merge(layer);
+                var layerMerge = layer.enter().appendSelector("g." + layerClass).merge(layer);
 
                 var dots = layerMerge.selectAll("circle")
-                    .data(d=>d.values);
+                    .data(d => d.values);
 
                 var dotsMerge = dots.enter().append("circle").merge(dots);
 
@@ -284,13 +283,13 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
 
                 if (plot.seriesColor) {
                     layerMerge.style("fill", plot.seriesColor)
-                }else if(plot.color){
+                } else if (plot.color) {
                     dotsMerge.style("fill", plot.color)
                 }
 
 
                 if (plot.tooltip) {
-                    dotsMerge.on("mouseover", (d) => {
+                    dotsMerge.on("mouseover", (event, d) => {
 
                         var html = "(" + plot.x.value(d, subplot.x) + ", " + plot.y.value(d, subplot.y) + ")";
                         var group = self.config.groups ? self.config.groups.value.call(self.config, d) : null;
@@ -305,7 +304,7 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
                         }
                         self.showTooltip(html);
                     })
-                        .on("mouseout", (d)=> {
+                        .on("mouseout", () => {
                             self.hideTooltip();
                         });
                 }
@@ -320,7 +319,7 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
 
     drawBrush(cell) {
         var self = this;
-        var hiddenClass = self.plot.hiddenClass =  self.prefixClass("hidden");
+        var hiddenClass = self.plot.hiddenClass = self.prefixClass("hidden");
         var brush = d3.brush()
             // .x(self.plot.x.scale)
             // .y(self.plot.y.scale)
@@ -334,7 +333,7 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
         self.clearBrush();
 
         // Clear the previously-active brush, if any.
-        function brushstart(p) {
+        function brushstart(event, p) {
             if (self.plot.brushCell !== this) {
                 self.clearBrush();
                 self.plot.x.scale.domain(self.plot.domainByVariable[p.x]);
@@ -345,10 +344,10 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
         }
 
         // Highlight the selected circles.
-        function brushmove(p) {
-            var s = d3.event.selection;
-            if(!s)return;
-            var e = s.map(_=> [self.plot.x.scale.invert(_[0]), self.plot.y.scale.invert(_[1])]);
+        function brushmove(event, p) {
+            var s = event.selection;
+            if (!s) return;
+            var e = s.map(_ => [self.plot.x.scale.invert(_[0]), self.plot.y.scale.invert(_[1])]);
             // console.log(e);
 
             self.svgG.selectAll("circle").classed(hiddenClass, function (d) {
@@ -359,21 +358,22 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
                     || e[1][1] > y || y > e[0][1];
             });
         }
+
         // If the brush is empty, select all circles.
-        function brushend() {
-            if (!d3.event.selection) self.svgG.selectAll("."+hiddenClass).classed(hiddenClass, false);
+        function brushend(event) {
+            if (!event.selection) self.svgG.selectAll("." + hiddenClass).classed(hiddenClass, false);
         }
     };
 
-    clearBrush(){
+    clearBrush() {
         var self = this;
-        if(!self.plot.brushCell){
+        if (!self.plot.brushCell) {
             return;
         }
-        
+
         self.plot.brush.move(d3.select(self.plot.brushCell), null);
-        self.svgG.selectAll("."+self.plot.hiddenClass).classed(self.plot.hiddenClass, false);
-        self.plot.brushCell=null;
+        self.svgG.selectAll("." + self.plot.hiddenClass).classed(self.plot.hiddenClass, false);
+        self.plot.brushCell = null;
 
     }
 }

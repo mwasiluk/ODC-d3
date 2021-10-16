@@ -2,13 +2,13 @@ import {ChartWithColorGroups, ChartWithColorGroupsConfig} from "./chart-with-col
 import {Utils} from './utils'
 import * as d3 from './d3'
 
-export class ScatterPlotConfig extends ChartWithColorGroupsConfig{
+export class ScatterPlotConfig extends ChartWithColorGroupsConfig {
 
-    svgClass= this.cssClassPrefix+'scatterplot';
-    guides= false; //show axis guides
-    showTooltip= true; //show tooltip on dot hover
+    svgClass = this.cssClassPrefix + 'scatterplot';
+    guides = false; //show axis guides
+    showTooltip = true; //show tooltip on dot hover
 
-    x={// X axis config
+    x = {// X axis config
         title: '', // axis label
         key: 0,
         value: (d, key) => d[key], // x value accessor
@@ -16,7 +16,7 @@ export class ScatterPlotConfig extends ChartWithColorGroupsConfig{
         scale: "linear",
         domainMargin: 0.05
     };
-    y={// Y axis config
+    y = {// Y axis config
         title: '', // axis label,
         key: 1,
         value: (d, key) => d[key], // y value accessor
@@ -24,44 +24,43 @@ export class ScatterPlotConfig extends ChartWithColorGroupsConfig{
         scale: "linear",
         domainMargin: 0.05
     };
-    groups={
+    groups = {
         key: 2
     };
     dotRadius = 2;
-    dotId = (d, i)=> undefined;
-    transition= true;
-    onDotHover = (d, i) => {};
-    onDotHoverOut = (d, i) => {};
+    dotId = (event, d) => undefined;
+    transition = true;
+    onDotHover = (event, d) => {};
+    onDotHoverOut = (event, d) => {};
 
-    constructor(custom){
+    constructor(custom) {
         super();
 
 
-
-        if(custom){
+        if (custom) {
             Utils.deepExtend(this, custom);
         }
 
     }
 }
 
-export class ScatterPlot extends ChartWithColorGroups{
+export class ScatterPlot extends ChartWithColorGroups {
     constructor(placeholderSelector, data, config) {
         super(placeholderSelector, data, new ScatterPlotConfig(config));
     }
 
-    setConfig(config){
+    setConfig(config) {
         return super.setConfig(new ScatterPlotConfig(config));
     }
 
-    initPlot(){
+    initPlot() {
         super.initPlot();
-        var self=this;
+        var self = this;
 
         var conf = this.config;
 
-        this.plot.x={};
-        this.plot.y={};
+        this.plot.x = {};
+        this.plot.y = {};
 
         this.computePlotSize();
         this.setupX();
@@ -70,7 +69,7 @@ export class ScatterPlot extends ChartWithColorGroups{
         return this;
     }
 
-    setupX(){
+    setupX() {
 
         var plot = this.plot;
         var x = plot.x;
@@ -83,27 +82,27 @@ export class ScatterPlot extends ChartWithColorGroups{
          * axis - sets up axis
          **/
         x.value = d => conf.value(d, conf.key);
-        
+
         x.scale = Utils.createScale(conf.scale).range([0, plot.width]);
         x.map = d => x.scale(x.value(d));
-        
+
         x.axis = Utils.createAxis(conf.orient, x.scale);
 
         var data = this.plot.groupedData;
 
-        var domain = [parseFloat(d3.min(data, s=>d3.min(s.values, plot.x.value))), parseFloat(d3.max(data, s=>d3.max(s.values, plot.x.value)))];
-        var extent = (domain[1]-domain[0]) || 1;
-        var margin = (extent)* conf.domainMargin;
-        domain[0]-=margin;
-        domain[1]+=margin;
+        var domain = [parseFloat(d3.min(data, s => d3.min(s.values, plot.x.value))), parseFloat(d3.max(data, s => d3.max(s.values, plot.x.value)))];
+        var extent = (domain[1] - domain[0]) || 1;
+        var margin = (extent) * conf.domainMargin;
+        domain[0] -= margin;
+        domain[1] += margin;
         plot.x.scale.domain(domain);
-        if(this.config.guides) {
+        if (this.config.guides) {
             x.axis.tickSize(-plot.height);
         }
 
     };
 
-    setupY (){
+    setupY() {
 
         var plot = this.plot;
         var y = plot.y;
@@ -123,49 +122,49 @@ export class ScatterPlot extends ChartWithColorGroups{
 
         y.axis = Utils.createAxis(conf.orient, y.scale);
 
-        if(this.config.guides){
+        if (this.config.guides) {
             y.axis.tickSize(-plot.width);
         }
 
 
         var data = this.plot.groupedData;
 
-        var domain = [parseFloat(d3.min(data, s=>d3.min(s.values, plot.y.value))), parseFloat(d3.max(data, s=>d3.max(s.values, plot.y.value)))];
-        var extent = (domain[1]-domain[0]) || 1;
-        var margin = (extent)* conf.domainMargin;
+        var domain = [parseFloat(d3.min(data, s => d3.min(s.values, plot.y.value))), parseFloat(d3.max(data, s => d3.max(s.values, plot.y.value)))];
+        var extent = (domain[1] - domain[0]) || 1;
+        var margin = (extent) * conf.domainMargin;
 
-        domain[0]-=margin;
-        domain[1]+=margin;
+        domain[0] -= margin;
+        domain[1] += margin;
         plot.y.scale.domain(domain);
         // plot.y.scale.domain([d3.min(data, plot.y.value)-1, d3.max(data, plot.y.value)+1]);
     };
 
-    drawAxisX(){
+    drawAxisX() {
         var self = this;
         var plot = self.plot;
         var axisConf = this.config.x;
-        var axis = self.svgG.selectOrAppend("g."+self.prefixClass('axis-x')+"."+self.prefixClass('axis')+(self.config.guides ? '' : '.'+self.prefixClass('no-guides')))
+        var axis = self.svgG.selectOrAppend("g." + self.prefixClass('axis-x') + "." + self.prefixClass('axis') + (self.config.guides ? '' : '.' + self.prefixClass('no-guides')))
             .attr("transform", "translate(0," + plot.height + ")");
-        
+
         var axisT = axis;
         if (self.transitionEnabled()) {
             axisT = axis.transition().ease(d3.easeSinInOut);
         }
 
         axisT.call(plot.x.axis);
-        
-        axis.selectOrAppend("text."+self.prefixClass('label'))
-            .attr("transform", "translate("+ (plot.width/2) +","+ (plot.margin.bottom) +")")  // text is drawn off the screen top left, move down and out and rotate
+
+        axis.selectOrAppend("text." + self.prefixClass('label'))
+            .attr("transform", "translate(" + (plot.width / 2) + "," + (plot.margin.bottom) + ")")  // text is drawn off the screen top left, move down and out and rotate
             .attr("dy", "-1em")
             .style("text-anchor", "middle")
             .text(axisConf.title);
     };
 
-    drawAxisY(){
+    drawAxisY() {
         var self = this;
         var plot = self.plot;
         var axisConf = this.config.y;
-        var axis = self.svgG.selectOrAppend("g."+self.prefixClass('axis-y')+"."+self.prefixClass('axis')+(self.config.guides ? '' : '.'+self.prefixClass('no-guides')));
+        var axis = self.svgG.selectOrAppend("g." + self.prefixClass('axis-y') + "." + self.prefixClass('axis') + (self.config.guides ? '' : '.' + self.prefixClass('no-guides')));
 
         var axisT = axis;
         if (self.transitionEnabled()) {
@@ -174,14 +173,14 @@ export class ScatterPlot extends ChartWithColorGroups{
 
         axisT.call(plot.y.axis);
 
-        axis.selectOrAppend("text."+self.prefixClass('label'))
-            .attr("transform", "translate("+ -plot.margin.left +","+(plot.height/2)+")rotate(-90)")  // text is drawn off the screen top left, move down and out and rotate
+        axis.selectOrAppend("text." + self.prefixClass('label'))
+            .attr("transform", "translate(" + -plot.margin.left + "," + (plot.height / 2) + ")rotate(-90)")  // text is drawn off the screen top left, move down and out and rotate
             .attr("dy", "1em")
             .style("text-anchor", "middle")
             .text(axisConf.title);
     };
 
-    update(newData){
+    update(newData) {
         super.update(newData);
         this.drawAxisX();
         this.drawAxisY();
@@ -199,14 +198,14 @@ export class ScatterPlot extends ChartWithColorGroups{
 
         var dotsContainer = self.svgG.selectOrAppend("g." + self.dotsContainerClass);
 
-        var layer = dotsContainer.selectAll("g."+layerClass).data(plot.groupedData);
+        var layer = dotsContainer.selectAll("g." + layerClass).data(plot.groupedData);
 
-        var layerEnter = layer.enter().appendSelector("g."+layerClass);
+        var layerEnter = layer.enter().appendSelector("g." + layerClass);
 
         var layerMerge = layerEnter.merge(layer);
 
         var dots = layerMerge.selectAll('.' + dotClass)
-            .data(d=>d.values)
+            .data(d => d.values)
 
         var dotsEnter = dots.enter().append("circle")
             .attr("class", dotClass);
@@ -224,9 +223,9 @@ export class ScatterPlot extends ChartWithColorGroups{
             .attr("id", this.config.dotId);
 
         if (plot.tooltip) {
-            dotsMerge.on("mouseover", d => {
+            dotsMerge.on("mouseover", (event, d) => {
                 var html = "(" + plot.x.value(d) + ", " + plot.y.value(d) + ")";
-                var group = self.config.groups ?  self.config.groups.value.call(self.config,d) : null;
+                var group = self.config.groups ? self.config.groups.value.call(self.config, d) : null;
                 if (group || group === 0) {
                     group = plot.groupToLabel[group];
                     html += "<br/>";
@@ -238,7 +237,7 @@ export class ScatterPlot extends ChartWithColorGroups{
                 }
                 self.showTooltip(html);
             })
-                .on("mouseout", d => {
+                .on("mouseout", () => {
                     self.hideTooltip();
                 });
         }
@@ -248,7 +247,7 @@ export class ScatterPlot extends ChartWithColorGroups{
 
         if (plot.seriesColor) {
             layerMerge.style("fill", plot.seriesColor)
-        }else if(plot.color){
+        } else if (plot.color) {
             dotsMerge.style("fill", plot.color)
         }
 

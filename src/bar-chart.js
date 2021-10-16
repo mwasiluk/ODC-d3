@@ -1,6 +1,5 @@
 import {ChartWithColorGroups, ChartWithColorGroupsConfig} from "./chart-with-color-groups";
 import {Utils} from './utils'
-import {Legend} from "./legend";
 import * as d3 from './d3'
 
 export class BarChartConfig extends ChartWithColorGroupsConfig {
@@ -89,9 +88,9 @@ export class BarChart extends ChartWithColorGroups {
         if (!data || !data.length) {
             domain = [];
         } else if (!this.config.series) {
-            domain = d3.map(data, x.value).keys();
+            domain = Array.from(new Set(data.map(x.value)));
         } else {
-            domain = d3.map(data[0].values, x.value).keys();
+            domain = Array.from(new Set(data[0].values.map(x.value)));
         }
 
         plot.x.scale.domain(domain);
@@ -131,13 +130,13 @@ export class BarChart extends ChartWithColorGroups {
         this.groupData();
 
         var y0s = [];
-        this.plot.groupedData.forEach(s=> {
-            s.points = s.values.map(v=>self.mapToPoint(v));
-            s.points.forEach((p, i)=> {
+        this.plot.groupedData.forEach(s => {
+            s.points = s.values.map(v => self.mapToPoint(v));
+            s.points.forEach((p, i) => {
                 var prevY0 = y0s[i];
-                if(!prevY0) prevY0 = 0;
+                if (!prevY0) prevY0 = 0;
                 p.y0 = prevY0;
-                y0s[i] = p.y+prevY0;
+                y0s[i] = p.y + prevY0;
             });
 
         });
@@ -252,9 +251,9 @@ export class BarChart extends ChartWithColorGroups {
         }
 
         if (plot.tooltip) {
-            barMerge.on("mouseover", d => {
-                self.showTooltip(d.y);
-            }).on("mouseout", d => {
+            barMerge.on("mouseover", (event, d) => {
+                self.showTooltip(event, d.y);
+            }).on("mouseout", (event, d) => {
                 self.hideTooltip();
             });
         }

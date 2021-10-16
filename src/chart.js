@@ -16,8 +16,8 @@ export class ChartConfig {
     transition = true;
 
     title = undefined;
-    titleSize=20;
-    titleMargin={
+    titleSize = 20;
+    titleMargin = {
         left: 0,
         right: 0,
         top: 15,
@@ -25,8 +25,8 @@ export class ChartConfig {
     };
 
     subtitle = undefined;
-    subtitleSize=14;
-    subtitleMargin={
+    subtitleSize = 14;
+    subtitleMargin = {
         left: 0,
         right: 0,
         top: 10,
@@ -54,7 +54,7 @@ export class Chart {
     _layers = {};
     _events = {};
     _isAttached;
-    _isInitialized=false;
+    _isInitialized = false;
 
 
     constructor(base, data, config) {
@@ -92,20 +92,20 @@ export class Chart {
         self.initPlot();
         self.initSvg();
 
-        if(!this._isInitialized){
+        if (!this._isInitialized) {
             self.initTooltip();
         }
         self.draw();
-        this._isInitialized=true;
+        this._isInitialized = true;
         return this;
     }
 
-    redraw(){
+    redraw() {
         this.initConfigAccessors(true);
         return this.init();
     }
 
-    postInit(){
+    postInit() {
 
     }
 
@@ -115,10 +115,10 @@ export class Chart {
 
         var margin = self.plot.margin;
         var width = self.svgWidth = self.plot.width + margin.left + margin.right;
-        var height = self.svgHeight =  self.plot.height + margin.top + margin.bottom;
+        var height = self.svgHeight = self.plot.height + margin.top + margin.bottom;
         var aspect = width / height;
-        if(!self._isAttached){
-            if(!this._isInitialized){
+        if (!self._isAttached) {
+            if (!this._isInitialized) {
                 d3.select(self.baseContainer).select("svg").remove();
             }
             self.svg = d3.select(self.baseContainer).selectOrAppend("svg").classed(config.svgClass, true);
@@ -129,41 +129,41 @@ export class Chart {
                 .attr("viewBox", "0 0 " + " " + width + " " + height)
                 .attr("preserveAspectRatio", "xMidYMid meet")
             self.svgG = self.svg.selectOrAppend("g.main-group");
-        }else{
+        } else {
             // console.log(self.baseContainer);
             self.svg = self.baseContainer.svg;
-            self.svgG = self.svg.selectOrAppend("g.main-group."+config.svgClass)
+            self.svgG = self.svg.selectOrAppend("g.main-group." + config.svgClass)
         }
 
         self.svgG.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
         if (!config.width || config.height) {
             d3.select(window)
-                .on("resize."+self._id, function () {
+                .on("resize." + self._id, function () {
                     var transition = self.config.transition;
-                    self.config.transition=false;
+                    self.config.transition = false;
                     self.init();
                     self.config.transition = transition;
                 });
         }
     }
 
-    destroy(){
+    destroy() {
         d3.select(this.baseContainer).selectAll("*").remove();
         d3.select(window).on("resize." + this._id, null);
     }
 
-    initTooltip(){
+    initTooltip() {
         var self = this;
         if (self.config.showTooltip) {
-            if(!self._isAttached ){
-                self.plot.tooltip = d3.select("body").selectOrAppend('div.'+self.config.cssClassPrefix+'tooltip')
+            if (!self._isAttached) {
+                self.plot.tooltip = d3.select("body").selectOrAppend('div.' + self.config.cssClassPrefix + 'tooltip')
                     .style("opacity", 0);
-            }else{
-                self.plot.tooltip= self.baseContainer.plot.tooltip;
+            } else {
+                self.plot.tooltip = self.baseContainer.plot.tooltip;
             }
 
-        }else{
+        } else {
             self.plot.tooltip = null;
         }
     }
@@ -180,18 +180,18 @@ export class Chart {
 
 
         var titleMarginSize = 0;
-        if(this.config.title){
-            titleMarginSize= this.config.titleSize+this.config.titleMargin.top;
-            if(!this.config.subtitle){
+        if (this.config.title) {
+            titleMarginSize = this.config.titleSize + this.config.titleMargin.top;
+            if (!this.config.subtitle) {
                 titleMarginSize += this.config.titleMargin.bottom;
             }
 
-            this.plot.margin.top=Math.max(this.plot.margin.top,titleMarginSize);
+            this.plot.margin.top = Math.max(this.plot.margin.top, titleMarginSize);
         }
 
-        if(this.config.subtitle){
+        if (this.config.subtitle) {
 
-            this.plot.margin.top=Math.max(this.plot.margin.top, titleMarginSize+this.config.subtitleMargin.top+this.config.subtitleSize+this.config.subtitleMargin.bottom);
+            this.plot.margin.top = Math.max(this.plot.margin.top, titleMarginSize + this.config.subtitleMargin.top + this.config.subtitleSize + this.config.subtitleMargin.bottom);
         }
 
     }
@@ -215,38 +215,38 @@ export class Chart {
 
     updateTitle() {
         var titleClass = this.prefixClass('plot-title');
-        if(!this.config.title){
-            this.svg.select("text."+titleClass).remove();
+        if (!this.config.title) {
+            this.svg.select("text." + titleClass).remove();
             return;
         }
 
-        this.svg.selectOrAppend("text."+titleClass)
-            .attr("transform", "translate("+ (this.svgWidth/2) +","+ (this.config.titleMargin.top) +")")  // text is drawn off the screen top left, move down and out and rotate
+        this.svg.selectOrAppend("text." + titleClass)
+            .attr("transform", "translate(" + (this.svgWidth / 2) + "," + (this.config.titleMargin.top) + ")")  // text is drawn off the screen top left, move down and out and rotate
             .attr("dy", "0.5em")
             .style("text-anchor", "middle")
             .style("dominant-baseline", "central")
-            .style("font-size", this.config.titleSize+"px")
+            .style("font-size", this.config.titleSize + "px")
             .text(this.config.title);
     }
 
     updateSubtitle() {
         var subtitleClass = this.prefixClass('plot-subtitle');
-        if(!this.config.subtitle){
-            this.svg.select("text."+subtitleClass).remove();
+        if (!this.config.subtitle) {
+            this.svg.select("text." + subtitleClass).remove();
             return;
         }
 
         var y = this.config.subtitleMargin.top;
-        if(this.config.title){
-            y+=this.config.titleMargin.top+this.config.titleSize;
+        if (this.config.title) {
+            y += this.config.titleMargin.top + this.config.titleSize;
         }
 
-        this.svg.selectOrAppend("text."+subtitleClass)
-            .attr("transform", "translate("+ (this.svgWidth/2) +","+ (y) +")")  // text is drawn off the screen top left, move down and out and rotate
+        this.svg.selectOrAppend("text." + subtitleClass)
+            .attr("transform", "translate(" + (this.svgWidth / 2) + "," + (y) + ")")  // text is drawn off the screen top left, move down and out and rotate
             .attr("dy", "0.5em")
             .style("text-anchor", "middle")
             .style("dominant-baseline", "central")
-            .style("font-size", this.config.subtitleSize+"px")
+            .style("font-size", this.config.subtitleSize + "px")
             .text(this.config.subtitle);
     }
 
@@ -282,7 +282,6 @@ export class Chart {
         return chart;
     };
 
-    
 
     //Borrowed from d3.chart
     /**
@@ -421,44 +420,46 @@ export class Chart {
 
         return this;
     };
-    getBaseContainer(){
-        if(this._isAttached){
+
+    getBaseContainer() {
+        if (this._isAttached) {
             return this.baseContainer.svg;
         }
         return d3.select(this.baseContainer);
     }
 
-    getBaseContainerNode(){
+    getBaseContainerNode() {
 
         return this.getBaseContainer().node();
     }
 
-    prefixClass(clazz, addDot){
-        return addDot? '.': ''+this.config.cssClassPrefix+clazz;
+    prefixClass(clazz, addDot) {
+        return addDot ? '.' : '' + this.config.cssClassPrefix + clazz;
     }
+
     computePlotSize() {
         this.plot.width = Utils.availableWidth(this.config.width, this.getBaseContainer(), this.plot.margin);
         this.plot.height = Utils.availableHeight(this.config.height, this.getBaseContainer(), this.plot.margin);
     }
 
-    transitionEnabled(){
+    transitionEnabled() {
         return this._isInitialized && this.config.transition;
     }
 
-    showTooltip(html){
-        if(!this.plot.tooltip){
+    showTooltip(event, html) {
+        if (!this.plot.tooltip) {
             return;
         }
         this.plot.tooltip.transition()
             .duration(200)
             .style("opacity", .9);
         this.plot.tooltip.html(html)
-            .style("left", (d3.event.pageX + 5) + "px")
-            .style("top", (d3.event.pageY - 28) + "px");
+            .style("left", (event.pageX + 5) + "px")
+            .style("top", (event.pageY - 28) + "px");
     }
 
-    hideTooltip(){
-        if(!this.plot.tooltip){
+    hideTooltip() {
+        if (!this.plot.tooltip) {
             return;
         }
         this.plot.tooltip.transition()
@@ -467,16 +468,16 @@ export class Chart {
     }
 
     initConfigAccessors(clean) {
-        if(clean){
-            this.removePropertyAccessors(this,this, this.config, "$");
+        if (clean) {
+            this.removePropertyAccessors(this, this, this.config, "$");
         }
-        this.initPropertyAccessors(this,this, this.config, "$", true);
+        this.initPropertyAccessors(this, this, this.config, "$", true);
     }
 
-    removePropertyAccessors(bindTo,returnObj, source, prefix) {
-        var self  = this;
+    removePropertyAccessors(bindTo, returnObj, source, prefix) {
+        var self = this;
         for (var i in source) {
-            if(!source.hasOwnProperty(i)){
+            if (!source.hasOwnProperty(i)) {
                 continue;
             }
 
@@ -484,16 +485,16 @@ export class Chart {
         }
     }
 
-    initPropertyAccessors(bindTo,returnObj, source, prefix, recursive) {
-        var self  = this;
+    initPropertyAccessors(bindTo, returnObj, source, prefix, recursive) {
+        var self = this;
         for (var i in source) {
-            if(!source.hasOwnProperty(i)){
+            if (!source.hasOwnProperty(i)) {
                 continue;
             }
 
-            var accessor = self.initPropertyAccessor(bindTo,returnObj, source, i, prefix);
+            var accessor = self.initPropertyAccessor(bindTo, returnObj, source, i, prefix);
 
-            if(recursive && Utils.isObjectNotArray(source[i])){
+            if (recursive && Utils.isObjectNotArray(source[i])) {
                 self.initPropertyAccessors(accessor, bindTo, source[i], prefix, recursive)
             }
         }

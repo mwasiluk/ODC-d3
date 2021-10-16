@@ -45,7 +45,7 @@ plot = new ODCD3.Histogram("#plot", values, {
     }
 });
 
-d3.csv("../data/flowers.csv", function(error, data) {
+d3.csv("../data/flowers.csv").then(function(data) {
     console.log(data);
 
     plot2 = new ODCD3.Histogram("#plot2", data, conf);

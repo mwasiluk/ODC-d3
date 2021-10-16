@@ -46,9 +46,10 @@ var dataArray = [
 var plot;
 var conf = confFlowers;
 
-d3.csv("../data/flowers.csv", function(error, data) {
+d3.csv("../data/flowers.csv").then(function(data) {
     console.log(data);
-    data = d3.nest().key(function(d){return d.species}).entries(data);
+    // data = d3.nest().key(function(d){return d.species}).entries(data);
+    data = nest(data, function(d){return d.species});
     plot = new ODCD3.Regression("#plot", data, conf);
     setTimeout(function(){
         conf.confidence.level = 0.9999;
@@ -56,3 +57,9 @@ d3.csv("../data/flowers.csv", function(error, data) {
         plot.setConfig(conf).init();
     }, 1000);
 });
+
+function nest(entries, key) {
+    return Array.from(d3.group(entries, key)).map(function (d) {
+        return {key: d[0], values: d[1]}
+    })
+}
