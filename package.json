@@ -33,13 +33,20 @@
             "@babel/preset-env"
           ],
           "plugins": [
-            "transform-class-properties"
+            "transform-class-properties",
+            [
+              "@babel/plugin-transform-runtime",
+              {
+                "regenerator": true
+              }
+            ]
           ]
         }
       ]
     ]
   },
   "dependencies": {
+    "@babel/runtime": "^7.15.4",
     "d3-array": "^3.1.1",
     "d3-axis": "^3.0.0",
     "d3-brush": "^3.0.0",
@@ -53,13 +60,14 @@
     "d3-scale-chromatic": "^3.0.0",
     "d3-selection": "3.0.0",
     "d3-shape": "^3.0.1",
-    "d3-svg-legend": "^2.25.6",
+    "odc-d3-svg-legend": "3.0.0",
     "simple-statistics": "^4.1.0"
   },
   "devDependencies": {
-    "babel-plugin-transform-class-properties": "^6.24.1",
     "@babel/core": "^7.15.8",
+    "@babel/plugin-transform-runtime": "^7.15.8",
     "@babel/preset-env": "^7.15.8",
+    "babel-plugin-transform-class-properties": "^6.24.1",
     "babelify": "^10.0.0",
     "browser-sync": "^2.27.5",
     "browserify": "^17.0.0",
@@ -67,9 +75,9 @@
     "conditionalify": "^1.1.0",
     "del": "^6.0.0",
     "gulp": "^4.0.2",
+    "gulp-clean-css": "^4.3.0",
     "gulp-concat": "^2.6.1",
     "gulp-load-plugins": "^2.0.7",
-    "gulp-clean-css": "^4.3.0",
     "gulp-plumber": "^1.2.1",
     "gulp-rename": "^2.0.0",
     "gulp-sass": "^5.0.0",

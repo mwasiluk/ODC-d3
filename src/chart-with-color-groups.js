@@ -69,8 +69,7 @@ export class ChartWithColorGroups extends Chart {
     }
 
     computeGroupColorDomain() {
-        var map = new Set(this.data.map(d => this.plot.groupValue(d)));
-        return Object.getOwnPropertyNames(map).map(d => map[d]);
+        return Array.from(new Set(this.data.map(d => this.plot.groupValue(d))));
     }
 
     setupGroups() {
@@ -195,7 +194,6 @@ export class ChartWithColorGroups extends Chart {
         var plot = this.plot;
 
         var scale = plot.colorCategory;
-
         if (!scale.domain() || !this.config.forceLegend && scale.domain().length < 2) {
             plot.showLegend = false;
         }
@@ -221,7 +219,7 @@ export class ChartWithColorGroups extends Chart {
             .labels(scale.domain().map(v => plot.groupToLabel[v]));
 
 
-        plot.legendColor.on('cellclick', (event, c) => self.onLegendCellClick(c));
+        plot.legendColor.on('cellclick', (c) => self.onLegendCellClick(c));
 
         plot.legend.container
             .call(plot.legendColor);
@@ -246,6 +244,7 @@ export class ChartWithColorGroups extends Chart {
         if (!this.enabledGroups) {
             this.enabledGroups = this.plot.colorCategory.domain().slice();
         }
+
         var index = this.enabledGroups.indexOf(cellValue);
 
         if (index < 0) {
