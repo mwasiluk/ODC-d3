@@ -1,6 +1,6 @@
 {
   "name": "odc-d3",
-  "version": "1.1.8",
+  "version": "2.0.0",
   "description": "Open Data Charts for D3",
   "main": "src/index.js",
   "scripts": {
@@ -50,7 +50,6 @@
     "d3-array": "^3.1.1",
     "d3-axis": "^3.0.0",
     "d3-brush": "^3.0.0",
-    "d3-collection": "^1.0.7",
     "d3-dispatch": "3.0.1",
     "d3-drag": "^3.0.0",
     "d3-ease": "^3.0.1",
