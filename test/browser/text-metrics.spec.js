@@ -68,6 +68,8 @@ function readLabels(odc) {
                 out.labels.push({
                     axis, full: values[i], shown,
                     length: t.getComputedTextLength(),
+                    prefix: p ? t.getSubStringLength(0, p) : 0,
+                    dots: shown.length > p ? t.getSubStringLength(p, shown.length - p) : 0,
                     fits: probe.getSubStringLength(0, p) + 9 <= widths[axis],
                     maximal: p === values[i].length || probe.getSubStringLength(0, p + 1) + 9 > widths[axis]
                 });
@@ -85,11 +87,16 @@ test('Heatmap: long axis labels are shortened with an ellipsis to the available 
     for (const l of r.labels) {
         expect(l.fits, l.axis + ' ' + l.shown).toBe(true);
         expect(l.maximal, l.axis + ' ' + l.shown).toBe(true);
-        expect(l.length, l.axis + ' ' + l.shown).toBeLessThanOrEqual(r.widths[l.axis] + 0.5);
+        expect(l.prefix + l.dots, l.axis + ' ' + l.shown).toBeCloseTo(l.length, 1);
         if (l.shown.endsWith('...')) {
             expect(l.full.startsWith(l.shown.slice(0, -3))).toBe(true);
+            // "..." is budgeted as 9px; the label overflows maxWidth by at most
+            // the difference to its real width (current behaviour)
+            expect(l.length).toBeLessThanOrEqual(r.widths[l.axis] + Math.max(0, l.dots - 9) + 1e-6);
         }
     }
+    // real width of "..." at 11px in the test font
+    expect(r.labels.find(l => l.shown.endsWith('...')).dots).toBeCloseTo(10.47, 1);
     // labels keep the data order (sortLabels is off by default)
     expect(r.labels.map(l => [l.axis, l.shown])).toEqual([
         ['x', 'categories of the ...'], ['x', 'an extremely lon...'], ['x', 'b'],

@@ -18,7 +18,11 @@ module.exports = defineConfig({
         viewport: {width: 1000, height: 800},
         deviceScaleFactor: 1,
         locale: 'en-US',
-        timezoneId: 'UTC'
+        timezoneId: 'UTC',
+        // Chromium on Linux takes font hinting from the system configuration;
+        // hinted advances are rounded to whole pixels and differ between
+        // machines. Unhinted metrics are the same everywhere for the same font file.
+        launchOptions: {args: ['--font-render-hinting=none']}
     },
     projects: [
         {name: 'global', use: {variant: 'global'}},
