@@ -10,3 +10,5 @@ Short version for Claude Code:
 - No dependency/lockfile updates, no `dist/` commits, no npm publish, no
   `gh-pages` deploy unless the task explicitly asks for it.
 - PRs for the modernization program target `modernize/odc-d3`.
+- Commits: concise, no `Co-Authored-By`, no `Claude-Session` trailer.
+  PRs and GitHub comments in English.

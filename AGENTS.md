@@ -102,3 +102,6 @@ D3_FILE=/path/to/d3@7.9.0/dist/d3.min.js node docs/modernization/evidence/smoke.
   (created from tag `v2.0.0`, commit `a937bce`). One topic per PR.
 - `master` is the 1.x / D3 v4 line; `d3v3`, `d3v4` are legacy lines; `d3v7`
   equals `v2.0.0`.
+- Commit messages: concise and factual, no long prose. No `Co-Authored-By`
+  and no session/tool URL trailers.
+- PR titles, descriptions and GitHub comments: in English.
