@@ -95,6 +95,18 @@ and `default` additionally deletes the previous `dist/` first (#5). CI or a
 release script cannot rely on the exit code at this baseline; it must verify
 the output files.
 
+**Fixed** in the `fix/build-error-exit-codes` PR (§8.1): `gulpfile.js` builds
+the JS bundles and the CSS with `stream.pipeline`, which passes an error of any
+stage to the task callback, and `map_error` no longer calls `emit('end')`.
+`build-js` restores `src/d3.js` before it reports the error, and a
+`process.on('exit')` hook restores it when gulp-cli calls `process.exit(1)`
+while the global bundle is still running (several tasks on the command line).
+`build` waits for both `build-css` and `build-js` before it reports the first
+error, so `default` neither stops a running bundle half way nor starts
+`build-js-standalone`. The results of #4–#6 above are kept as the baseline
+record; the current behaviour of each case (exit 1, diagnostic, what stays in
+`dist/`) is tested by `scripts/check-build.js`, see TESTING.md.
+
 ### 4.3 Reproducibility of committed `dist/`
 
 Rebuilt in the isolated copy and compared with the files at `a937bce`:
@@ -310,6 +322,8 @@ ChartWithColorGroups, Heatmap, CorrelationMatrix and DivergingStackedBarChart.
 ## 8. Defects observed (not fixed here)
 
 1. Build exits 0 on JS and SCSS errors (§4.2); `default` deletes `dist/` first.
+   **Fixed** (§4.2): exit 1 with diagnostic. `default` still deletes `dist/`
+   first and `dist/` is still not replaced atomically.
 2. Interrupted build leaves `src/d3.js` mutated (§4.1).
 3. `watch`, `serve`, `default-watch`, `build-js2` are broken (§3 #8, #9).
 4. `statistics-distributions.js` `max()`/`min()` loop over `$i` but test the
@@ -367,7 +381,8 @@ None of the blockers stopped this baseline:
   add Playwright (Chromium) and a test runner explicitly (that is a lockfile
   change and belongs to that PR).
 - **Build exit code is unreliable**: every automated check has to verify
-  output files until §8.1 is fixed.
+  output files until §8.1 is fixed. (Fixed since, see §4.2; the artifact
+  checks stay.)
 
 ## 10. Minimal test set for the next PR
 
@@ -424,7 +439,7 @@ against the committed `dist/` and against a fresh build.
 | # | Task | Notes |
 |---|---|---|
 | 1 | Add the test set from §10 + an `npm test` script + CI workflow | Done in `test/chart-contracts` (lockfile converted to v3 without version changes, see TESTING.md). |
-| 2 | Make the build fail on errors | Remove `this.emit('end')` swallowing for release builds; keep plumber only for watch. Test #1 turns green. |
+| 2 | Make the build fail on errors | Done in `fix/build-error-exit-codes` (§4.2). Signal handling and the `src/d3.js` swap are #3. |
 | 3 | Stop rewriting `src/d3.js` | Select the D3 module at bundle time (e.g. browserify `require`/alias or an env-based entry) instead of copying files over a tracked source. |
 | 4 | Fix or remove `watch`/`serve`/`default-watch`/`build-js2` | gulp 4 `watch(globs, gulp.series(...))`; drop `bower_components` route and the hard-coded browser. |
 | 5 | Fix `examples/heatmap-timeseries` (and the dead `d3.json` call in `heatmap`) | Replace bower `lodash`/`moment` and D3 v4 callback API. Examples only, no library change. |

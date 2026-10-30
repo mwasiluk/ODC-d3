@@ -71,8 +71,9 @@ D3_FILE=/path/to/d3@7.9.0/dist/d3.min.js node docs/modernization/evidence/smoke.
 ## Build caveats (read before running the build)
 
 - `gulp build-js` overwrites the tracked `src/d3.js` with `src/d3_global.js` and
-  restores it from `src/d3_import.js` afterwards. If the build is interrupted,
-  `src/d3.js` stays modified; never commit the global variant.
+  restores it from `src/d3_import.js` afterwards, also after a compile error
+  or when gulp-cli exits early. If the process is killed by a signal
+  (Ctrl+C, SIGTERM), `src/d3.js` stays modified; never commit the global variant.
 - **Build in an isolated copy by default** (`git archive HEAD | tar -x -C <tmp>`,
   or a separate worktree). Only build in the working checkout if it is
   required, and then record its state first (`git status --short`,
@@ -82,9 +83,13 @@ D3_FILE=/path/to/d3@7.9.0/dist/d3.min.js node docs/modernization/evidence/smoke.
   you have verified it was produced by your own build (state before matched
   `HEAD`). If `src/d3.js` or `dist/` were already modified before the build,
   stop and ask instead of reverting.
-- **The exit code is 0 even when JS or SCSS compilation fails**, and
-  `gulp` deletes `dist/` first. Always check the log for `SyntaxError` /
-  `onError` and check that all 8 `dist/` files exist and are non-empty.
+- A JS (Browserify/Babel) or SCSS compile error fails the command with exit
+  code 1 and a diagnostic (file, line, code frame); tasks that depend on the
+  failed one do not run. `dist/` is **not** replaced atomically: `gulp`
+  deletes `dist/` first, a failed single task (`build-js`, `build-css`, …)
+  leaves the previous files in place, so after a failure `dist/` can be
+  missing files or mix old and new ones. Do not use `dist/` after a failed
+  build; after a successful one `npm run test:build` checks all 8 files.
 - A rebuild on Linux differs from the committed `dist/` only in source-map
   `sourcesContent` line endings. Treat any other diff in `dist/` as a real change.
 
