@@ -1,0 +1,200 @@
+[
+ {
+  "page": "docs/modernization/evidence/fixtures/standalone.html",
+  "svgs": 0,
+  "svgElements": 0,
+  "result": {
+   "hasGlobalD3": false,
+   "exports": [
+    "BarChart",
+    "BarChartConfig",
+    "BoxPlot",
+    "BoxPlotBase",
+    "BoxPlotBaseConfig",
+    "BoxPlotConfig",
+    "CorrelationMatrix",
+    "CorrelationMatrixConfig",
+    "DivergingStackedBarChart",
+    "DivergingStackedBarChartConfig",
+    "Heatmap",
+    "HeatmapConfig",
+    "HeatmapTimeSeries",
+    "HeatmapTimeSeriesConfig",
+    "Histogram",
+    "HistogramConfig",
+    "Legend",
+    "LineChart",
+    "LineChartConfig",
+    "Regression",
+    "RegressionConfig",
+    "ScatterPlot",
+    "ScatterPlotConfig",
+    "ScatterPlotMatrix",
+    "ScatterPlotMatrixConfig",
+    "StatisticsUtils",
+    "Utils"
+   ],
+   "svgAfterInit": 1,
+   "dots": 4,
+   "linearRegression": {
+    "m": 0.8,
+    "b": 1.5
+   },
+   "sampleCorrelation": 0.7999999999999999,
+   "tValue_10_005": 1.8125,
+   "nodesAfterDestroy": 0
+  },
+  "errors": [],
+  "failedRequests": []
+ },
+ {
+  "page": "docs/modernization/evidence/fixtures/global.html",
+  "svgs": 1,
+  "svgElements": 66,
+  "result": {
+   "d3version": "7.9.0",
+   "exports": [
+    "BarChart",
+    "BarChartConfig",
+    "BoxPlot",
+    "BoxPlotBase",
+    "BoxPlotBaseConfig",
+    "BoxPlotConfig",
+    "CorrelationMatrix",
+    "CorrelationMatrixConfig",
+    "DivergingStackedBarChart",
+    "DivergingStackedBarChartConfig",
+    "Heatmap",
+    "HeatmapConfig",
+    "HeatmapTimeSeries",
+    "HeatmapTimeSeriesConfig",
+    "Histogram",
+    "HistogramConfig",
+    "Legend",
+    "LineChart",
+    "LineChartConfig",
+    "Regression",
+    "RegressionConfig",
+    "ScatterPlot",
+    "ScatterPlotConfig",
+    "ScatterPlotMatrix",
+    "ScatterPlotMatrixConfig",
+    "StatisticsUtils",
+    "Utils"
+   ],
+   "prototypeExtensions": [
+    "selectOrAppend:function",
+    "selectOrInsert:function",
+    "appendSelector:function",
+    "insertSelector:function"
+   ],
+   "dots": 4,
+   "legendCells": 2
+  },
+  "errors": [],
+  "failedRequests": []
+ },
+ {
+  "page": "docs/modernization/evidence/fixtures/global-no-d3.html",
+  "svgs": 0,
+  "svgElements": 0,
+  "result": {
+   "ODCD3": "undefined"
+  },
+  "errors": [
+   "pageerror: d3 is not defined"
+  ],
+  "failedRequests": []
+ },
+ {
+  "page": "examples/bar-chart/index.html",
+  "svgs": 2,
+  "svgElements": 329,
+  "errors": [],
+  "failedRequests": []
+ },
+ {
+  "page": "examples/box-plot/index.html",
+  "svgs": 2,
+  "svgElements": 103,
+  "errors": [],
+  "failedRequests": []
+ },
+ {
+  "page": "examples/box-plot-base/index.html",
+  "svgs": 1,
+  "svgElements": 73,
+  "errors": [],
+  "failedRequests": []
+ },
+ {
+  "page": "examples/correlation-matrix/index.html",
+  "svgs": 1,
+  "svgElements": 67,
+  "errors": [],
+  "failedRequests": []
+ },
+ {
+  "page": "examples/diverging-stacked-bar-chart/index.html",
+  "svgs": 1,
+  "svgElements": 75,
+  "errors": [],
+  "failedRequests": []
+ },
+ {
+  "page": "examples/heatmap/index.html",
+  "svgs": 4,
+  "svgElements": 6250,
+  "errors": [],
+  "failedRequests": []
+ },
+ {
+  "page": "examples/heatmap-timeseries/index.html",
+  "svgs": 0,
+  "svgElements": 0,
+  "errors": [
+   "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "pageerror: _ is not defined",
+   "pageerror: Cannot read properties of undefined (reading 'filter')"
+  ],
+  "failedRequests": [
+   "404 /bower_components/moment/min/moment.min.js",
+   "404 /bower_components/lodash/dist/lodash.min.js"
+  ]
+ },
+ {
+  "page": "examples/histogram/index.html",
+  "svgs": 2,
+  "svgElements": 321,
+  "errors": [],
+  "failedRequests": []
+ },
+ {
+  "page": "examples/line-chart/index.html",
+  "svgs": 1,
+  "svgElements": 121,
+  "errors": [],
+  "failedRequests": []
+ },
+ {
+  "page": "examples/regression/index.html",
+  "svgs": 1,
+  "svgElements": 268,
+  "errors": [],
+  "failedRequests": []
+ },
+ {
+  "page": "examples/scatterplot/index.html",
+  "svgs": 1,
+  "svgElements": 258,
+  "errors": [],
+  "failedRequests": []
+ },
+ {
+  "page": "examples/scatterplot-matrix/index.html",
+  "svgs": 1,
+  "svgElements": 2805,
+  "errors": [],
+  "failedRequests": []
+ }
+]

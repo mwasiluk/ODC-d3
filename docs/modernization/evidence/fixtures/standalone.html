@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="../../../../dist/odc-d3.css">
+</head>
+<body>
+<div id="c" style="width:600px;height:400px"></div>
+<!-- standalone bundle: no global d3 on the page -->
+<script src="../../../../dist/standalone/odc-d3.js"></script>
+<script>
+    window.result = {hasGlobalD3: typeof window.d3 !== 'undefined', exports: Object.keys(window.ODCD3 || {}).sort()};
+    var data = [{x: 1, y: 2, g: 'a'}, {x: 2, y: 3, g: 'a'}, {x: 3, y: 5, g: 'b'}, {x: 4, y: 4, g: 'b'}];
+    var chart = new ODCD3.ScatterPlot('#c', data, {x: {key: 'x'}, y: {key: 'y'}, groups: {key: 'g'}});
+    window.result.svgAfterInit = document.querySelectorAll('#c svg').length;
+    window.result.dots = document.querySelectorAll('#c svg circle').length;
+    window.result.linearRegression = ODCD3.StatisticsUtils.linearRegression([[1, 2], [2, 3], [3, 5], [4, 4]]);
+    window.result.sampleCorrelation = ODCD3.StatisticsUtils.sampleCorrelation([1, 2, 3, 4], [2, 3, 5, 4]);
+    window.result.tValue_10_005 = ODCD3.StatisticsUtils.tValue(10, 0.05);
+    chart.destroy();
+    window.result.nodesAfterDestroy = document.querySelectorAll('#c *').length;
+</script>
+</body>
+</html>

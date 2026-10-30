@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<body>
+<div id="c" style="width:600px;height:400px"></div>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="../../../../dist/odc-d3.js"></script>
+<script>
+    window.result = {
+        d3version: d3.version,
+        exports: Object.keys(ODCD3).sort(),
+        prototypeExtensions: ['selectOrAppend', 'selectOrInsert', 'appendSelector', 'insertSelector']
+            .map(n => n + ':' + typeof d3.selection.prototype[n])
+    };
+    var data = [{x: 1, y: 2, g: 'a'}, {x: 2, y: 3, g: 'a'}, {x: 3, y: 5, g: 'b'}, {x: 4, y: 4, g: 'b'}];
+    new ODCD3.ScatterPlot('#c', data, {x: {key: 'x'}, y: {key: 'y'}, groups: {key: 'g'}});
+    window.result.dots = document.querySelectorAll('#c circle').length;
+    window.result.legendCells = document.querySelectorAll('#c .cell').length;
+</script>
+</body>
+</html>
