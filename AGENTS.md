@@ -54,9 +54,16 @@ D3_FILE=/path/to/d3@7.9.0/dist/d3.min.js node docs/modernization/evidence/smoke.
 
 - `gulp build-js` overwrites the tracked `src/d3.js` with `src/d3_global.js` and
   restores it from `src/d3_import.js` afterwards. If the build is interrupted,
-  `src/d3.js` stays modified. After every build run `git status` and
-  `git checkout -- src/d3.js` if needed; never commit the global variant.
-  Prefer building in an isolated copy (`git archive HEAD | tar -x -C <tmp>`).
+  `src/d3.js` stays modified; never commit the global variant.
+- **Build in an isolated copy by default** (`git archive HEAD | tar -x -C <tmp>`,
+  or a separate worktree). Only build in the working checkout if it is
+  required, and then record its state first (`git status --short`,
+  `git stash list`, checksums of `src/d3.js` and `dist/`).
+- Never run `git checkout --`, `git restore`, `git clean` or `git stash` on
+  files you did not change in the current task. Revert build output only if
+  you have verified it was produced by your own build (state before matched
+  `HEAD`). If `src/d3.js` or `dist/` were already modified before the build,
+  stop and ask instead of reverting.
 - **The exit code is 0 even when JS or SCSS compilation fails**, and
   `gulp` deletes `dist/` first. Always check the log for `SyntaxError` /
   `onError` and check that all 8 `dist/` files exist and are non-empty.
@@ -66,7 +73,8 @@ D3_FILE=/path/to/d3@7.9.0/dist/d3.min.js node docs/modernization/evidence/smoke.
 ## Rules
 
 - **Do not commit `dist/`** unless the task is explicitly a release/dist
-  update. Revert build output before committing.
+  update. Do not stage build output; revert it only under the conditions in
+  "Build caveats".
 - **Do not update dependencies or `package-lock.json`** unless the task says
   so. Never run `npm install <pkg>` / `npm update` / `npm audit fix` casually;
   they rewrite the v1 lockfile.

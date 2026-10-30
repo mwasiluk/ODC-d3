@@ -321,7 +321,8 @@ None of the blockers stopped this baseline:
   devDependency, or keep the routing in the harness.
 - **No test runner and no DOM library in devDependencies**: the browser checks
   used the Playwright copy pre-installed in the container. A following PR must
-  add a runner explicitly (that is a lockfile change and belongs to that PR).
+  add Playwright (Chromium) and a test runner explicitly (that is a lockfile
+  change and belongs to that PR).
 - **Build exit code is unreliable**: every automated check has to verify
   output files until §8.1 is fixed.
 
@@ -344,16 +345,29 @@ against the committed `dist/` and against a fresh build.
    `createAxis('bottom'|'left')` and the error for unknown names.
 4. **Export surface snapshot**: the 27 names of §7.1 for `src/index.js`,
    `dist/odc-d3.js` (with a global d3) and `dist/standalone/odc-d3.js`.
-5. **Browser smoke** (needs a runner – Playwright or jsdom as a devDependency):
+5. **Browser smoke** (minimum: Playwright + Chromium as a devDependency; not
+   jsdom, because rendering depends on real SVG layout –
+   `getComputedTextLength()` in `Utils.placeTextWithEllipsis`,
+   `getBoundingClientRect()` in `CorrelationMatrix`, `getComputedStyle` in
+   `Utils.getFontSize` – and mocked geometry would hide regressions; jsdom may
+   be used only for separate non-rendering DOM tests):
    for each of the 12 chart classes, render inline deterministic data with
    default config in both bundles and assert: one `svg` with the expected
    `odc-*` class, expected count of marks (dots/bars/cells), no page errors,
    `destroy()` empties the container, and a second `init()` does not duplicate
    the `svg`. Use deterministic fixture data, not the random demos.
-6. **Prototype extensions**: `selectOrAppend('g.a.b#c')` creates
-   `<g class="a b" id="c">` once and returns the existing one on the second
-   call; same for `selectOrInsert`, `appendSelector`, `insertSelector`; the
-   methods exist on the global `d3.selection.prototype` in the global build.
+6. **Prototype extensions**:
+   - `selectOrAppend('g.a.b#c')` creates `<g class="a b" id="c">` on the first
+     call and returns the existing element on the second (no duplicate);
+     `selectOrInsert(selector, before)` likewise, inserting before `before`.
+   - `appendSelector('g.a.b#c')` and `insertSelector(selector, before)` are
+     **not** idempotent: every call creates a new element with the parsed
+     tag/classes/id. Two calls → two elements.
+   - All four methods exist on the global `d3.selection.prototype` in the
+     global build and on enter selections.
+   (Behaviour above checked once in Chromium on the committed global bundle
+   with d3 7.9.0: two calls → 1 element for `selectOrAppend`/`selectOrInsert`,
+   2 elements for `appendSelector`/`insertSelector`.)
 7. **Lifecycle**: `setConfig(plain object)` keeps class defaults;
    `$accessor` get/set chaining; `on/once/off/trigger`; `cell-selected` fires on
    Heatmap click; resize listener removed by `destroy()`.
