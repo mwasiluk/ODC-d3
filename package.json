@@ -4,7 +4,11 @@
   "description": "Open Data Charts for D3",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm run test:unit && npm run test:browser",
+    "test:setup": "npm ci --prefix test/vendor --no-audit --no-fund",
+    "test:unit": "node --test \"test/unit/*.test.js\"",
+    "test:browser": "playwright test",
+    "test:build": "node scripts/check-build.js"
   },
   "repository": {
     "type": "git",
