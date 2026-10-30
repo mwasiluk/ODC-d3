@@ -240,8 +240,9 @@ const JS_ERROR = {file: 'src/utils.js', marker: 'odcInjectedJsError', append: '\
         + '[\\s\\S]*?' + line + ': export const odcInjectedJsError = ;').test(log)};
 const SCSS_ERROR = {file: 'src/styles/shared.scss', marker: 'odc-injected-scss-error', append: '\n.odc-injected-scss-error { color: ; }\n',
     diagnostic: (log, line) => new RegExp('Error: Expected expression\\.'
-        + '[\\s\\S]*?' + line + ' │ \\.odc-injected-scss-error \\{ color: ; \\}'
-        + '[\\s\\S]*?src/styles/shared\\.scss ' + line + ':\\d+').test(log)};
+        // Windows: ASCII gutter "|" and backslashes
+        + '[\\s\\S]*?' + line + ' [│|] \\.odc-injected-scss-error \\{ color: ; \\}'
+        + '[\\s\\S]*?src[\\\\/]styles[\\\\/]shared\\.scss ' + line + ':\\d+').test(log)};
 const CSS = ['dist/odc-d3.css', 'dist/odc-d3.min.css'];
 const JS = ARTIFACTS.filter(rel => !CSS.includes(rel));
 const RUNS_ROLLUP = '> rollup -c', RUNS_SASS = '> sass ';
@@ -287,7 +288,8 @@ function errorCases(base, nodeModules, logs) {
         }
         c.inject.forEach((e, i) => {
             if (!e.diagnostic(r.log, lines[i])) {
-                problems.push('no diagnostic for the error injected into ' + e.file + ':' + lines[i]);
+                problems.push('no diagnostic for the error injected into ' + e.file + ':' + lines[i]
+                    + '; log:\n' + r.log.split('\n').slice(0, 25).map(l => '       | ' + l).join('\n'));
             }
         });
         c.ran.filter(s => !r.log.includes(s)).forEach(s => problems.push("'" + s.trim() + "' did not run"));
