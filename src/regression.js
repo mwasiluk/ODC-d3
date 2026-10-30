@@ -216,7 +216,7 @@ export class Regression extends ScatterPlot {
         var regressionContainerClass = this.prefixClass("regression-container");
         var regressionContainerSelector = "g." + regressionContainerClass;
 
-        var clipPathId = self.prefixClass("clip");
+        var clipPathId = self.prefixClass("clip") + "-" + self._id;
 
         var regressionContainer = self.svgG.selectOrInsert(regressionContainerSelector, "." + self.dotsContainerClass);
         var regressionContainerClip = regressionContainer.selectOrAppend("clipPath")

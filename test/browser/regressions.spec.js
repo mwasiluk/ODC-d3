@@ -1,5 +1,6 @@
 // Regression tests for fixed defects (BASELINE §8 numbers). Each was a
-// "[current behaviour]" + "[known bug, expected]" pair in known-bugs.spec.js.
+// "[current behaviour]" + "[known bug, expected]" pair in the former
+// known-bugs.spec.js (removed when its last defect was fixed).
 const {test, expect} = require('./fixtures');
 const fixtures = require('./chart-fixtures');
 
@@ -80,3 +81,29 @@ for (const [name, selector, html] of [
         }
     });
 }
+
+// §8.17: Regression used the fixed clipPath id "odc-clip"; with two charts on a
+// page the second chart's clip-path resolved to the first chart's clipPath
+test('two Regression charts use their own clipPath (§8.17)', async ({odc}) => {
+    const r = await odc.run((ODCD3, h) => {
+        const data = [];
+        for (let i = 0; i < 8; i++) {
+            data.push({x: i, y: (i * 7) % 5, g: 'a'});
+        }
+        const config = {x: {key: 'x'}, y: {key: 'y'}, groups: {key: 'g'}};
+        const first = new ODCD3.Regression('#c1', data, config);
+        new ODCD3.Regression('#c2', data, config);
+        const id = document.querySelector('#c1 clipPath').id;
+        first.init();
+        return {duplicates: h.duplicateIds(), c1: h.references('c1'), c2: h.references('c2'),
+            sameIdAfterInit: document.querySelector('#c1 clipPath').id === id, clipPaths: h.count('clipPath', 'c1')};
+    });
+    expect(r.duplicates).toEqual([]);
+    for (const refs of [r.c1, r.c2]) {
+        expect(refs.length).toBe(1);
+        expect(refs[0]).toMatchObject({from: 'g@clip-path', exists: true, inSameSvg: true});
+    }
+    expect(r.c1[0].id).not.toBe(r.c2[0].id);
+    expect(r.c1[0].id).toMatch(/^odc-clip-/);
+    expect({sameIdAfterInit: r.sameIdAfterInit, clipPaths: r.clipPaths}).toEqual({sameIdAfterInit: true, clipPaths: 1});
+});

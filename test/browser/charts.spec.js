@@ -19,10 +19,6 @@ const MARKS = {
     'line-chart': {'path.odc-line': 2, 'circle.odc-dot': 8, 'g.odc-legend g.cell': 2}
 };
 
-// Fixed ids that are duplicated when the chart is rendered twice on one page
-// (current behaviour, BASELINE §8.17, see known-bugs.spec.js)
-const FIXED_IDS = {'regression': ['odc-clip']};
-
 function render(odc, f, container) {
     return odc.run((ODCD3, h, [f, id]) => {
         window.charts = window.charts || {};
@@ -92,10 +88,10 @@ for (const f of fixtures) {
             const [a, b] = await odc.run((O, h) => [h.serialize('c1'), h.serialize('c2')]);
             expect(b).toBe(a);
             // ids are unique on the page and references stay inside each chart
-            expect(await odc.run((O, h) => h.duplicateIds())).toEqual(FIXED_IDS[f.name] || []);
+            expect(await odc.run((O, h) => h.duplicateIds())).toEqual([]);
             for (const id of ['c1', 'c2']) {
                 const refs = await odc.run((O, h, id) => h.references(id), id);
-                for (const r of refs.filter(r => !(FIXED_IDS[f.name] || []).includes(r.id))) {
+                for (const r of refs) {
                     expect(r, id + ': ' + r.from + ' -> #' + r.id).toMatchObject({exists: true, inSameSvg: true});
                 }
             }
