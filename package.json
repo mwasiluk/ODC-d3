@@ -73,10 +73,10 @@
     "simple-statistics": "^4.1.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.15.8",
-    "@babel/plugin-transform-modules-commonjs": "^7.15.4",
-    "@babel/plugin-transform-runtime": "^7.15.8",
-    "@babel/preset-env": "^7.15.8",
+    "@babel/core": "^7.29.7",
+    "@babel/plugin-transform-modules-commonjs": "^7.29.7",
+    "@babel/plugin-transform-runtime": "^7.29.7",
+    "@babel/preset-env": "^7.29.7",
     "@playwright/test": "1.63.0",
     "@rollup/plugin-babel": "^7.1.0",
     "@rollup/plugin-commonjs": "^29.0.3",
@@ -85,6 +85,6 @@
     "acorn": "^8.19.0",
     "babel-plugin-transform-class-properties": "^6.24.1",
     "rollup": "^4.64.2",
-    "sass": "^1.42.1"
+    "sass": "^1.106.1"
   }
 }
