@@ -31,11 +31,12 @@ npm run test:browser                           # Playwright, both variants
 npx playwright test --project=standalone       # one bundle variant
 npx playwright test test/browser/charts.spec.js -g heatmap
 ODC_DIST=/path/to/other/dist npm test          # test another dist directory
-node scripts/check-build.js --keep --skip-error-cases  # keep the temp copy for inspection
+node scripts/check-build.js --keep --skip-error-cases --skip-dev-scripts  # keep the temp copy for inspection
 ```
 
 Every command exits non-zero on failure. `npm run test:build` takes about
-2.5–3 minutes (`npm ci` + `gulp` + full test run + 7 compile error cases).
+2 minutes (`npm ci` + `npm run build` + full test run + 4 compile error
+cases + watch/serve).
 
 ## Layout
 
@@ -50,6 +51,7 @@ Every command exits non-zero on failure. `npm run test:build` takes about
 | `test/helpers/` | Paths (`ODC_DIST`), bundle loaders, `expectStillBroken`. |
 | `test/vendor/` | Separate package with its own lockfile: `d3@7.9.0` for the global variant, `@fontsource/dejavu-sans@5.3.0` (OFL-1.1) as the fixed font of the text-metrics tests. |
 | `scripts/check-build.js` | Build check in an isolated copy. |
+| `rollup.config.mjs`, `src/odc-d3.scss`, `scripts/{clean,watch,serve}.js` | The build itself (`npm run build`, `watch`, `serve`); checked by `check-build.js`. |
 | `scripts/lockfile-tree.js` | Prints the resolved package tree of a lockfile (v1 or v3) for diffs. |
 | `.github/workflows/ci.yml` | Linux (ubuntu-24.04), Node 22.22.0, Chromium. |
 
@@ -64,6 +66,8 @@ Both bundle variants run the same tests unless noted.
 | `Utils` | `unit/utils` | `deepExtend` (incl. array-into-object merge), `mergeDeep`, `nest`, `cross`, `inferVariables`, type predicates, `guid`, `createScale` (17 scale names), `createAxis`. |
 | Config | `unit/config` | `ChartConfig` defaults, `svgClass` of all 12 configs, deep-merge semantics, subclass defaults, `$`-accessors, `prefixClass`. |
 | CSS | `unit/css` | Required selectors in `odc-d3.css` and `.min.css`, same selector set in both, tooltip rule. |
+| Artifacts | `unit/bundles`, `unit/exports` | All 4 JS files parse as ES5 (acorn); plain bundles carry an inline source map, `*.min.js` reference their `.map` (version 3, relative sources incl. `src/*`, `sourcesContent`); no `console.*` in `*.min.js`. The export object is a plain extensible object with a non-enumerable `__esModule: true`, as with Babel/browserify (bundlers use it for default-import interop). |
+| Package metadata | `unit/package` | `main: src/index.js`, no `exports`/`module`/`browser`/`type`; the `browserify.transform` field unchanged (consumer contract, see BASELINE §7.1). |
 | Rendering, 12 classes | `browser/charts` | Synchronous render into one `svg` with the chart class; explicit mark counts; settled SVG snapshot; every `url(#id)` / `href="#id"` points to an element in the same svg; second `init()` keeps one svg and the same output; `destroy()` empties the container; two independent instances with unique ids on the page. |
 | Text metrics | `browser/text-metrics` | Without the 10px override, with a fixed font file: default font sizes, title centring and measured width, Heatmap ellipsis (fits, longest possible prefix, pinned results, full text in the tooltip), legend layout from measured label heights, wrapping of long legend labels, legend position. |
 | Computations | `browser/computations` | Correlation cells = `sampleCorrelation`; regression lines = `linearRegression` per group and overall, confidence points pinned; box-plot quartiles/whiskers (plain and Tukey); histogram bins; diverging bar segments. Reference values computed in Node on the standalone bundle. |
@@ -71,56 +75,65 @@ Both bundle variants run the same tests unless noted.
 | D3 extensions | `browser/extensions` | `selectOrAppend`/`selectOrInsert` idempotent, `appendSelector`/`insertSelector` always create, selector parsing, enter selections, where they are installed. |
 | Build | `scripts/check-build.js` | See below. |
 
-Test counts at the time of writing: unit 58 (5 files), browser 262 = 131 per
+Test counts at the time of writing: unit 72 (7 files), browser 262 = 131 per
 project (4 skipped by design: variant-specific tests).
 
 ### Build check (`npm run test:build`)
 
 1. Copies the tracked files of the working tree to a temp dir and runs `npm ci` there.
-2. Runs `gulp`. Fails on a non-zero exit code **and** on error markers in the
-   log (`SyntaxError`, `PluginError`, `onError`, `Error:` …). The build exits
-   non-zero on compile errors since §8.1 was fixed; the marker check stays as
-   a second guard.
+2. Deletes the copied `dist/` and runs `npm run build`. Fails on a non-zero
+   exit code and on errors or warnings in the log (Rollup `[!]`/`(!)`,
+   `Error:`, `SyntaxError` …). Rollup warnings about import cycles inside the
+   `d3-*` packages are filtered in `rollup.config.mjs`.
 3. All 8 artifacts exist and are not empty.
-4. No file outside `dist/` changed, appeared or disappeared (catches the
-   `src/d3.js` swap).
-5. Compares each artifact with `HEAD`: CSS and `*.min.js` byte-identical;
-   for `odc-d3.js` and the `.map` files the generated code and every source
-   map field must be equal, and `sourcesContent` may differ **only** in CRLF
-   vs LF. Anything else fails.
-6. Runs `test:unit` and `test:browser` with `ODC_DIST` pointing at the fresh build.
-7. Compile error cases (BASELINE §8.1, fixed). Each case gets its own fresh
-   copy of the tracked files (committed `dist/`, `node_modules` symlinked from
-   step 1), so one case cannot affect the next; the copy of step 1 and the
-   working checkout are not touched. Each case requires:
-   - exit code exactly 1 (a spawn failure, a missing command or a crash
-     with another code fails the case), `Using gulpfile` and `Starting '<task>'`
-     in the log;
-   - a diagnostic for every injected error: file, line number of the injected
-     line and the code frame (`SyntaxError: …src/utils.js: Unexpected token
-     (L:C)` / `Error in plugin "gulp-sass" … Expected expression … shared.scss L:C`);
-   - `'<task>' errored after` for the failing tasks, no `Finished` for the
-     requested task, dependent tasks not started;
-   - all files outside `dist/` unchanged after the injected file is put back
-     (`src/d3.js` restored);
+4. No file outside `dist/` changed, appeared or disappeared (the build never
+   writes `src/`).
+5. Against the committed `dist/` at `HEAD`:
+   - `odc-d3.css` equal except blank lines; both CSS files contain the same
+     rules in the same order (whitespace and the minifier spelling
+     `bold`/`700` ignored);
+   - JS is **not** compared byte by byte (the committed files come from the
+     Browserify build). Instead, no `package@version` may be bundled that the
+     committed bundle does not contain (from the `.min.js.map` sources and the
+     lockfile each was built from); packages without code left are listed;
+   - sizes of all 8 files, raw and gzip, are printed.
+6. Runs `test:unit` and `test:browser` with `ODC_DIST` pointing at the fresh
+   build; behaviour, exports, extensions, rendering and computations are
+   checked there.
+7. Compile error cases. Each case gets its own fresh copy of the tracked files
+   (committed `dist/`, `node_modules` symlinked from step 1), so one case
+   cannot affect the next. Each case requires:
+   - the exit code of the failing tool, passed on by npm (Rollup 1, Dart
+     Sass 65); a spawn failure or a missing command (127) fails the case;
+   - the npm scripts that must have run (`> rollup -c`, `> sass …`) and, for
+     `build`, that `build:js` did not start after a CSS error;
+   - a diagnostic for the injected error: file, line number of the injected
+     line and the code frame (`src/utils.js (L:C)` / `Expected expression …
+     src/styles/shared.scss L:C`);
+   - all files outside `dist/` unchanged after the injected file is put back;
    - the listed state of each `dist/` file (below).
 
-   | Case | Command | Injected | `dist/` afterwards |
-   |---|---|---|---|
-   | `js-error-build-js` | `gulp build-js` | JS syntax error in `src/utils.js` | everything kept (old global bundle stays) |
-   | `js-error-build-js-standalone` | `gulp build-js-standalone` | same | everything kept (old standalone bundle stays) |
-   | `scss-error-build-css` | `gulp build-css` | SCSS error in `src/styles/shared.scss` | everything kept (old CSS stays) |
-   | `js-and-scss-error-build` | `gulp build` | both | everything kept; both errors reported |
-   | `js-error-default` | `gulp` | JS | CSS written, all 6 JS files missing (`clean` ran), `build-js-standalone` not started |
-   | `scss-error-default` | `gulp` | SCSS | global bundle written (`build-js` runs to the end), CSS and standalone missing, `build-js-standalone` not started |
-   | `cli-parallel-error-while-d3-swapped` | `gulp build-js odc-fail-while-swapped` | a task appended to the copy's `gulpfile.js` that fails once `src/d3.js` holds the global variant | gulp-cli exits during `build-js`; the exit hook restores `src/d3.js` |
+   | Case | Command | Injected | Exit | `dist/` afterwards |
+   |---|---|---|---|---|
+   | `js-error-build-js` | `npm run build:js` | JS syntax error in `src/utils.js` | 1 | everything kept |
+   | `scss-error-build-css` | `npm run build:css` | SCSS error in `src/styles/shared.scss` | 65 | `odc-d3.css` missing (Sass deletes the file it failed to write), `.min.css` and JS kept |
+   | `js-error-build` | `npm run build` | JS | 1 | CSS written, all 6 JS files missing (`clean` ran) |
+   | `scss-error-build` | `npm run build` | SCSS | 65 | everything missing, `build:js` not started |
 
    "kept" means content and mtime unchanged (mtimes are reset before the run,
    so rewriting identical content counts as written). The table records
-   observed behaviour; the build does not publish `dist/` atomically, so a
-   failed command can leave stale files from an older build next to new ones.
+   observed behaviour; the build does not publish `dist/` atomically.
+8. Dev scripts, in another fresh copy:
+   - `scripts/serve.js --port 0`: `/examples/scatterplot/` and
+     `/dist/odc-d3.js` are served with the right content type, a directory URL
+     without slash is redirected, a path outside the repository is refused;
+   - `scripts/watch.js` with `dist/` deleted: builds all 8 files, rebuilds
+     both CSS files and both bundles after a change of `src/styles/shared.scss`
+     and `src/utils.js`, exits 0 on SIGTERM (it waits for its watchers);
+   - no file outside `dist/` changed afterwards (the edits are reverted).
 
-It was checked that a one-line change in `src/legend.js` makes step 5 fail.
+It was checked that the steps fail when they should, see the PR of
+`feat/modern-build` (negative controls).
 
 ## Known bugs
 
@@ -155,7 +168,9 @@ Fixed defects (regular regression tests now):
 
 | § | Defect | Tests |
 |---|---|---|
-| 8.1 | build exited 0 on compile errors | `check-build.js` step 7 (7 cases) |
+| 8.1 | build exited 0 on compile errors | `check-build.js` step 7 (4 cases) |
+| 8.2 | interrupted build left `src/d3.js` modified | no longer possible: the Rollup build never writes `src/`; `check-build.js` steps 4, 7, 8 |
+| 8.3 | `watch`, `serve`, `default-watch`, `build-js2` broken | replaced by `npm run watch` / `npm run serve`; `check-build.js` step 8 |
 
 ## Snapshots
 
@@ -205,8 +220,26 @@ Two separate commits:
    `d3-time-format` 2.1.3 → 4.1.0, `d3-timer` 1.0.9 → 3.0.1) and would change
    the bundles. It lives in `test/vendor` with its own lockfile (38 packages).
 
-`npm run test:build` confirms that a build from the new lockfile reproduces
-the committed bundles (§4.3 rules).
+3. **Build toolchain** (`feat/modern-build`): Gulp, Browserify and their
+   plugins removed (`browserify`, `babelify`, `tsify`, `browser-sync`, `del`,
+   `gulp*`, `vinyl-*`, `merge-stream`, `chalk`, `conditionalify`); added
+   `rollup`, `@rollup/plugin-{babel,commonjs,node-resolve,terser}`,
+   `@babel/plugin-transform-modules-commonjs` (already in the tree via
+   `@babel/preset-env`, same version) and `acorn` (ES5 check, already in the
+   tree via `terser`). Kept: `@babel/core`, `@babel/preset-env`,
+   `@babel/plugin-transform-runtime`, `babel-plugin-transform-class-properties`
+   (same versions, also named by the `browserify.transform` field) and `sass`
+   1.42.1. The 27 runtime entries of the lockfile (`scripts/lockfile-tree.js`,
+   `prod`) are identical. `@rollup/plugin-babel` needs a newer
+   `@babel/helper-module-imports`, so Babel's internal packages (`parser`,
+   `generator`, `traverse`, `types`, …) are deduplicated at 7.29.x. Without
+   `tsify` (whose `typescript` peer was the reason) `.npmrc` with
+   `legacy-peer-deps` is gone: the lockfile is generated with standard peer
+   handling and `npm ci` works without the flag. 1041 → 260 installed packages.
+
+Before step 3, `npm run test:build` confirmed that a build from the new
+lockfile reproduces the committed bundles (§4.3 rules); since step 3 it
+checks behaviour instead (see "Build check").
 
 ## Limitations
 
@@ -219,7 +252,9 @@ the committed bundles (§4.3 rules).
   contents (§8.14) are not covered beyond the known-bug tests.
 - Text metrics are measured with one font (DejaVu Sans). The real font a
   user gets depends on their system; that is not tested.
-- Interrupted build (§8.2), `watch`/`serve`/`build-js2` (§8.3) and the
-  examples (§8.8) are not tested.
+- The examples (§8.8) are not tested beyond the page fetch in step 8; the
+  smoke harness (`docs/modernization/evidence/smoke.js`) renders them.
+- The npm scripts are written to work on Windows (Node scripts, no shell
+  commands except `&&`), but CI runs Linux only.
 - Snapshot values are characterization data: they pin the current output,
   including the known defects; they are not a statement that the output is correct.

@@ -16,14 +16,16 @@ published on the `gh-pages` branch.
 src/index.js                 public entry (named exports, applies D3 prototype extensions)
 src/chart.js                 Chart / ChartConfig base class (lifecycle, events, $-accessors)
 src/chart-with-color-groups.js, src/<chart>.js   chart classes, each with a XxxConfig
-src/d3.js                    D3 shim; build swaps it (see "Build"), tracked file
-src/d3_import.js             standalone variant: re-exports bundled d3-* packages
-src/d3_global.js             global variant: module.exports = d3
+src/d3.js                    D3 shim: re-exports the d3-* packages (standalone bundle, npm consumers)
+src/d3_import.js             same content as src/d3.js
+src/d3_global.js             `module.exports = d3`; the global bundle resolves src/d3.js to it at build time
 src/d3-extensions.js         selectOrAppend / selectOrInsert / appendSelector / insertSelector
 src/statistics-utils.js      wraps simple-statistics/src/* (deep CJS requires) + tValue
 src/statistics-distributions.js  t-distribution (ported code, $-prefixed variables)
 src/legend.js                wraps odc-d3-svg-legend
-src/styles/*.scss            concatenated into dist/odc-d3(.min).css
+src/styles/*.scss            one Sass module per chart, all @use'd by src/odc-d3.scss
+src/odc-d3.scss              CSS entry -> dist/odc-d3(.min).css (Dart Sass CLI)
+rollup.config.mjs            JS build of both bundles (Rollup + Babel)
 dist/odc-d3(.min).js         UMD `ODCD3`, needs global d3 v7 loaded first
 dist/standalone/odc-d3(.min).js  UMD `ODCD3`, D3 bundled
 examples/<chart>/            demo pages loading d3 from https://d3js.org/d3.v7.min.js
@@ -31,25 +33,25 @@ docs/modernization/          modernization program docs and evidence
 test/unit/, test/browser/    contract tests (node:test, Playwright), see docs/modernization/TESTING.md
 test/vendor/                 test-only d3 7.9.0 and a font file, separate lockfile (keeps root runtime tree unchanged)
 scripts/check-build.js       build check in an isolated copy
+scripts/clean.js, watch.js, serve.js   used by the npm scripts below
 ```
 
 ## Commands
 
 ```bash
-npm ci                 # install from package-lock.json (lockfile v3, .npmrc legacy-peer-deps)
+npm ci                 # install from package-lock.json (lockfile v3)
 npm run test:setup     # test/vendor (d3 for the global-bundle tests)
 npx playwright install --with-deps chromium
+npm run build          # clean dist/, then CSS (Dart Sass) and both bundles (Rollup), ~20 s
+npm run build:css      # dist/odc-d3.css and .min.css only
+npm run build:js       # the 6 JS files only
+npm run watch          # rebuild CSS and JS on changes, Ctrl+C stops
+npm run serve          # examples at http://127.0.0.1:8089/examples/ (needs a built dist/)
 npm test               # unit (node:test) + browser (Playwright) tests on dist/
-npm run test:build     # isolated gulp build + dist comparison + tests on the fresh dist
-npx gulp               # default: clean dist, build css + global bundle, then standalone bundle (~40 s)
-npx gulp build-css     # css only
-npx gulp build-js      # global bundle only (swaps src/d3.js)
-npx gulp build-js-standalone
+npm run test:build     # isolated build + artifact checks + tests on the fresh dist + error cases + watch/serve
 ```
 
 Details, coverage and limitations: `docs/modernization/TESTING.md`.
-`gulp watch`, `gulp serve`, `gulp default-watch` and `gulp build-js2` are
-broken at baseline. Do not report any of them as passing.
 
 Tests:
 
@@ -70,28 +72,35 @@ D3_FILE=/path/to/d3@7.9.0/dist/d3.min.js node docs/modernization/evidence/smoke.
 
 ## Build caveats (read before running the build)
 
-- `gulp build-js` overwrites the tracked `src/d3.js` with `src/d3_global.js` and
-  restores it from `src/d3_import.js` afterwards, also after a compile error
-  or when gulp-cli exits early. If the process is killed by a signal
-  (Ctrl+C, SIGTERM), `src/d3.js` stays modified; never commit the global variant.
-- **Build in an isolated copy by default** (`git archive HEAD | tar -x -C <tmp>`,
-  or a separate worktree). Only build in the working checkout if it is
-  required, and then record its state first (`git status --short`,
-  `git stash list`, checksums of `src/d3.js` and `dist/`).
+- The build writes only `dist/`; it never modifies `src/`. (The old Gulp
+  build copied `src/d3_global.js` over the tracked `src/d3.js`; Rollup now
+  resolves the import instead, see `rollup.config.mjs`.)
+- `dist/` is tracked, so a build in the working checkout rewrites committed
+  files. **Build in an isolated copy by default** (`git archive HEAD | tar -x
+  -C <tmp>`, a separate worktree, or `npm run test:build`). If you must build
+  in the checkout, record the state of `dist/` first.
 - Never run `git checkout --`, `git restore`, `git clean` or `git stash` on
   files you did not change in the current task. Revert build output only if
   you have verified it was produced by your own build (state before matched
-  `HEAD`). If `src/d3.js` or `dist/` were already modified before the build,
-  stop and ask instead of reverting.
-- A JS (Browserify/Babel) or SCSS compile error fails the command with exit
-  code 1 and a diagnostic (file, line, code frame); tasks that depend on the
-  failed one do not run. `dist/` is **not** replaced atomically: `gulp`
-  deletes `dist/` first, a failed single task (`build-js`, `build-css`, …)
-  leaves the previous files in place, so after a failure `dist/` can be
-  missing files or mix old and new ones. Do not use `dist/` after a failed
+  `HEAD`). If `dist/` was already modified before the build, stop and ask
+  instead of reverting.
+- A JS (Rollup/Babel) or SCSS (Dart Sass) error fails the npm script with the
+  tool's exit code (Rollup 1, Sass 65) and a diagnostic (file, line, code
+  frame); `npm run build` stops at the first failing step. `dist/` is **not**
+  replaced atomically: `build` deletes `dist/` first, a failed `build:css`
+  deletes `odc-d3.css` and keeps the old `.min.css`, a failed `build:js`
+  writes nothing for the failing bundle. Do not use `dist/` after a failed
   build; after a successful one `npm run test:build` checks all 8 files.
-- A rebuild on Linux differs from the committed `dist/` only in source-map
-  `sourcesContent` line endings. Treat any other diff in `dist/` as a real change.
+- The committed `dist/` is still the `v2.0.0` Browserify build. A Rollup
+  build is not byte-identical (different module wrapper and order, smaller
+  files); behaviour is covered by the tests, and `npm run test:build` compares
+  the CSS rules and the set of bundled packages with the committed files.
+- `main` (`src/index.js`) and the `browserify.transform` field in
+  `package.json` are for consumers that bundle the sources (SilverDecisions
+  browserifies `odc-d3/src/*`); the library build does not read them. Do not
+  change or remove the transform: it decides how those consumers compile
+  `odc-d3/src` (e.g. class fields as assignments). `rollup.config.mjs` uses
+  the same Babel options.
 
 ## Rules
 
@@ -100,7 +109,8 @@ D3_FILE=/path/to/d3@7.9.0/dist/d3.min.js node docs/modernization/evidence/smoke.
   "Build caveats".
 - **Do not update dependencies or `package-lock.json`** unless the task says
   so. Never run `npm install <pkg>` / `npm update` / `npm audit fix` casually;
-  they rewrite the v1 lockfile.
+  they change the lockfile. Runtime `dependencies` end up in the bundles:
+  compare `node scripts/lockfile-tree.js` output before and after.
 - **Do not publish to npm, push to `gh-pages`, or change the default branch.**
 - **Keep the public contracts** listed in `BASELINE.md` §7: the 27 named
   exports, deep import paths (`odc-d3/src/*`, `odc-d3/dist/*`), global

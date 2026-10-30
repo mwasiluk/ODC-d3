@@ -87,6 +87,12 @@ Consequences, all confirmed in §3:
   bundle that requires global D3.
 - The swap is not safe to run concurrently with an editor/IDE watcher or a second build.
 
+**Removed** in `feat/modern-build` (§8.2): Gulp and Browserify were replaced
+by Rollup. For the global bundle `rollup.config.mjs` resolves the import of
+`src/d3.js` to `src/d3_global.js`; no file is copied and `src/` is never
+written. `src/d3.js`, `src/d3_import.js` and `src/d3_global.js` keep their
+content and paths.
+
 ### 4.2 Errors do not fail the build
 
 `map_error` (browserify) and `onError` (gulp-plumber) both log and call
@@ -106,6 +112,9 @@ error, so `default` neither stops a running bundle half way nor starts
 `build-js-standalone`. The results of #4–#6 above are kept as the baseline
 record; the current behaviour of each case (exit 1, diagnostic, what stays in
 `dist/`) is tested by `scripts/check-build.js`, see TESTING.md.
+
+Since `feat/modern-build` the build is `npm run build` (Rollup + Dart Sass
+CLI); a failing tool's exit code (Rollup 1, Sass 65) is passed on by npm.
 
 ### 4.3 Reproducibility of committed `dist/`
 
@@ -133,6 +142,46 @@ Other build facts:
 - `dist/*.js` (non-minified) contain an inline base64 source map (`debug: true`), which is why they are 2–3 MB. `*.min.js` reference external `.map` files.
 - `gulp-strip-debug` removes `console.*`/`debugger` only from `*.min.js`.
 - CSS: all `src/styles/*` compiled and concatenated in alphabetical file order into one file.
+- Found during `feat/modern-build`: the `ignore` option of the babelify
+  transform (`"/\\/node_modules\\/(?!d3-.+\\/)/"`) is a string, which Babel 7
+  treats as a path pattern, not a regular expression. It matches nothing, so
+  with `global: true` **every** module was compiled to ES5, including
+  `internmap`, `simple-statistics`, `odc-d3-svg-legend` and `@babel/runtime`
+  (e.g. `InternMap` is an ES5 function in the committed bundle).
+
+**Build since `feat/modern-build`.** The committed `dist/` above is still the
+`v2.0.0` Browserify build; it is not regenerated in that PR. The Rollup build
+keeps file names, the UMD global `ODCD3`, the export object shape
+(`__esModule`, getters), inline maps in the plain files and external maps for
+`*.min.js`, ES5 syntax (the same Babel options, applied to all modules except
+`@babel/runtime` and `regenerator-runtime`, which are ES5 already) and
+`console.*` removal in `*.min.js`. It is not byte-identical: Rollup hoists ES
+modules into one scope instead of wrapping each module, uses the `module` entry
+of `odc-d3-svg-legend` (same code as its `main`) and drops unused code. The
+global bundle no longer contains `d3-time`, `d3-time-format` and `internmap`
+(only reachable through the unused time scales of the legend's internal
+`d3-scale`). CSS is compiled from `src/odc-d3.scss`, which `@use`s every file
+of `src/styles/` in the old alphabetical order: each file stays its own Sass
+module, as with the separate compilation before. Compared with the committed
+files, `odc-d3.css` differs only in blank lines and `odc-d3.min.css` only in
+minifier spelling (`bold` for `700`, a space before `!important`).
+Sizes (`npm run test:build`, KiB raw / gzip):
+
+| File | Browserify (committed) | Rollup |
+|---|---|---|
+| `odc-d3.js` (inline map) | 2098.0 / 423.4 | 1417.8 / 319.3 |
+| `odc-d3.min.js` | 359.8 / 69.7 | 162.3 / 41.1 |
+| `odc-d3.min.js.map` | 847.9 / 206.9 | 578.6 / 141.5 |
+| `standalone/odc-d3.js` (inline map) | 2987.2 / 605.8 | 2800.6 / 614.8 |
+| `standalone/odc-d3.min.js` | 536.1 / 108.7 | 343.8 / 87.2 |
+| `standalone/odc-d3.min.js.map` | 1209.7 / 297.0 | 1130.8 / 276.5 |
+
+The minified bundles shrink because there is no per-module wrapper and
+`require` prelude, no CommonJS interop helpers between ES modules, and unused
+code is dropped (the D3 namespace of `src/d3.js` is kept whole, so every
+re-exported name stays available). The only growth is the gzip size of
+`standalone/odc-d3.js` (+9 KiB, +1.5 %): most of that file is the base64
+inline source map, which compresses worse than code; the code part is smaller.
 
 ## 5. Browser smoke results (Chromium, committed `dist/`)
 
@@ -203,6 +252,17 @@ deliberately, with a changelog entry).
   HistogramConfig, Legend, LineChart, LineChartConfig, Regression,
   RegressionConfig, ScatterPlot, ScatterPlotConfig, ScatterPlotMatrix,
   ScatterPlotMatrixConfig, StatisticsUtils, Utils`.
+- **Consumers bundle the sources** (checked in `feat/modern-build`):
+  SilverDecisions (`SilverDecisions/SilverDecisions`, `odc-d3 ^2.0.0`)
+  browserifies `odc-d3/src/scatterplot`, `…/diverging-stacked-bar-chart` and
+  `…/line-chart` into its vendor bundle. Its own global babelify has the same
+  (ineffective) `ignore` string and compiles everything, but the
+  `browserify.transform` field of odc-d3 runs first on odc-d3's files and
+  decides the class-field semantics: with the field `this.x = v` (as in
+  `dist/`), without it SilverDecisions' `transform-class-properties`
+  `{spec: true}` gives `Object.defineProperty`. The field stays unchanged; a
+  vendor bundle built that way is byte-identical for the old and the new
+  tarball.
 - Not exported but reachable by deep import: `Chart`, `ChartConfig`,
   `ChartWithColorGroups(Config)`, `D3Extensions`, `tdistr` etc.
 - Importing `src/index.js` has a **side effect**: `D3Extensions.extend()` (§7.5).
@@ -212,6 +272,13 @@ deliberately, with a changelog entry).
 Both bundles are browserify UMD (`standalone: 'ODCD3'`): CommonJS
 `module.exports`, AMD `define([])`, else `window.ODCD3`. The README documents
 only the script-tag usage.
+
+Since `feat/modern-build`: Rollup UMD with a default export, i.e. the same
+three branches (`module.exports = factory()`, `define(factory)`,
+`ODCD3 = factory()`); the global is assigned only after the bundle loaded, so
+the global bundle without d3 leaves `ODCD3` undefined, as before. The export
+object keeps the Babel shape: non-enumerable `__esModule: true` and an
+enumerable getter per export.
 
 ### 7.3 The two bundles
 
@@ -325,7 +392,9 @@ ChartWithColorGroups, Heatmap, CorrelationMatrix and DivergingStackedBarChart.
    **Fixed** (§4.2): exit 1 with diagnostic. `default` still deletes `dist/`
    first and `dist/` is still not replaced atomically.
 2. Interrupted build leaves `src/d3.js` mutated (§4.1).
+   **Fixed** (§4.1): the Rollup build never writes `src/`.
 3. `watch`, `serve`, `default-watch`, `build-js2` are broken (§3 #8, #9).
+   **Replaced** by `npm run watch` and `npm run serve` (Gulp removed).
 4. `statistics-distributions.js` `max()`/`min()` loop over `$i` but test the
    undeclared `i` → `tValue` throws for df ≤ 3. Effect: `Regression` with
    confidence bands fails for any group with ≤ 5 points (`df = n - 2`).
@@ -440,16 +509,21 @@ against the committed `dist/` and against a fresh build.
 |---|---|---|
 | 1 | Add the test set from §10 + an `npm test` script + CI workflow | Done in `test/chart-contracts` (lockfile converted to v3 without version changes, see TESTING.md). |
 | 2 | Make the build fail on errors | Done in `fix/build-error-exit-codes` (§4.2). Signal handling and the `src/d3.js` swap are #3. |
-| 3 | Stop rewriting `src/d3.js` | Select the D3 module at bundle time (e.g. browserify `require`/alias or an env-based entry) instead of copying files over a tracked source. |
-| 4 | Fix or remove `watch`/`serve`/`default-watch`/`build-js2` | gulp 4 `watch(globs, gulp.series(...))`; drop `bower_components` route and the hard-coded browser. |
+| 3 | Stop rewriting `src/d3.js` | Done in `feat/modern-build` (Rollup resolves the import, §4.1). |
+| 4 | Fix or remove `watch`/`serve`/`default-watch`/`build-js2` | Done in `feat/modern-build`: Gulp removed, `npm run watch` / `npm run serve`. |
 | 5 | Fix `examples/heatmap-timeseries` (and the dead `d3.json` call in `heatmap`) | Replace bower `lodash`/`moment` and D3 v4 callback API. Examples only, no library change. |
 | 6 | Regenerate lockfile (v3) with the same direct ranges; decide on the stale `d3-color@1` / `d3-time-format@2` transitive packages | Separate PR, compare bundles and golden values before/after. |
 | 7 | Fix `statistics-distributions` `max/min` (`i` → `$i`) | Changes behaviour (no more exception for df ≤ 3); needs a changelog note. Decide separately whether to touch the negative critical value (§8.5). |
 | 8 | Fix `prefixClass` and the resize condition (§8.6, §8.7) | Behaviour changes, each covered by a test. |
 | 9 | Package metadata: `files`, `exports` (keeping current deep paths), `module`/`browser`, `engines`, README for D3 v7 | Must not break the deep imports listed in §7.1. |
-| 10 | Bundler/tooling modernization (gulp/browserify → newer toolchain) | Only after #1–#3, with byte-level or behavioural bundle comparison. |
+| 10 | Bundler/tooling modernization (gulp/browserify → newer toolchain) | Done in `feat/modern-build` (Rollup, Dart Sass CLI, npm scripts; behavioural comparison). |
 | 11 | Upgrade `simple-statistics` and `odc-d3-svg-legend` | Deep `src/*` paths of simple-statistics change in later majors; protect with the golden tests. |
 | 12 | Re-export `d3-time` in the standalone shim (§8.12) | Adds names to the D3 namespace object (§7.3); flips the known-bug test. |
 | 13 | Reuse/remove the legend gradient on redraw (§8.13) | Flips the known-bug tests; snapshot of the re-init test changes. |
 | 14 | Pass the event to `showTooltip` at the 10 call sites (§8.14) | Visible behaviour change (tooltips get content); flips the known-bug tests. |
 | 15 | Unique clipPath id per Regression instance (§8.17) | Snapshot of `regression` changes (id becomes a guid); flips the known-bug test. |
+| 16 | Rebuild and commit `dist/` with the new build | Release task; until then `dist/` is the Browserify build. Afterwards `check-build.js` can compare JS bundles byte by byte again. |
+| 17 | Update the Babel toolchain (`@babel/core`/`preset-env` 7.15, `caniuse-lite` 2021) and `sass` 1.42 | Dev only; removes the outdated-browserslist notice. Keep ES5 output unless a target change is decided; compare bundles. |
+| 18 | Build `dist/` atomically | Build into a temp dir and move on success, so a failed build leaves the previous `dist/`. |
+| 19 | Windows CI job for the npm scripts | Scripts avoid shell commands but are tested on Linux only. |
+| 20 | `actions/checkout` / `setup-node` v4 run on Node 20 (deprecation warning in CI) | Bump the actions. |
