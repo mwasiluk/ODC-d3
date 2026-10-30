@@ -23,6 +23,18 @@ You can install this package through `NPM` :
 
 
 
+## Development
+
+Node.js 22 (as in CI) and npm:
+
+```bash
+npm ci
+npm run build          # dist/: CSS (Dart Sass) and both JS bundles (Rollup)
+npm run watch          # rebuild on changes, Ctrl+C stops
+npm run serve          # examples at http://127.0.0.1:8089/examples/
+npm test               # contract tests, see docs/modernization/TESTING.md
+```
+
 <br/><br/>
 <img src="http://routetopa.eu/wp-content/uploads/2015/06/eu-flag.jpg" width="22">
 This project has received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 645860.

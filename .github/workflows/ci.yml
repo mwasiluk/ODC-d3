@@ -44,7 +44,7 @@ jobs:
       - name: Tests on committed dist
         run: npm test
 
-      - name: Build in isolated copy, compare with committed dist, tests on fresh dist
+      - name: npm run build in isolated copy, artifact checks, tests on fresh dist, error cases, watch and serve
         run: npm run test:build
 
       - name: Upload Playwright results on failure

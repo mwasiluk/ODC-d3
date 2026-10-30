@@ -27,6 +27,17 @@ for (const [variant, load] of Object.entries(variants)) {
         assert.deepEqual(Object.keys(ODCD3).sort(), EXPORTS);
     });
 
+    // same object shape as the Babel CommonJS exports: bundlers that require()
+    // a dist file use __esModule for default-import interop
+    test(variant + ': export object is a plain extensible object flagged __esModule', () => {
+        const {ODCD3} = load();
+        assert.equal(Object.prototype.toString.call(ODCD3), '[object Object]');
+        assert.equal(Object.getPrototypeOf(Object.getPrototypeOf(ODCD3)), null);
+        assert.ok(Object.isExtensible(ODCD3));
+        assert.deepEqual(Object.getOwnPropertyDescriptor(ODCD3, '__esModule'),
+            {value: true, writable: false, enumerable: false, configurable: false});
+    });
+
     test(variant + ': chart and config exports are classes, StatisticsUtils is a function map', () => {
         const {ODCD3} = load();
         for (const name of EXPORTS.filter(n => n !== 'StatisticsUtils')) {
