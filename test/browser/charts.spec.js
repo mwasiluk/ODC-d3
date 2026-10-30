@@ -19,9 +19,6 @@ const MARKS = {
     'line-chart': {'path.odc-line': 2, 'circle.odc-dot': 8, 'g.odc-legend g.cell': 2}
 };
 
-// Charts whose legend appends a new <linearGradient> on every init() (see known-bugs.spec.js)
-const GRADIENT_LEAK = ['correlation-matrix', 'heatmap', 'heatmap-timeseries'];
-
 // Fixed ids that are duplicated when the chart is rendered twice on one page
 // (current behaviour, BASELINE §8.17, see known-bugs.spec.js)
 const FIXED_IDS = {'regression': ['odc-clip']};
@@ -78,14 +75,7 @@ for (const f of fixtures) {
             await odc.settle();
             const second = await odc.run((O, h) => h.serialize());
             expect(await odc.run((O, h) => h.count('svg'))).toBe(1);
-            if (GRADIENT_LEAK.includes(f.name)) {
-                // current behaviour: identical except one more gradient definition
-                const strip = s => s.replace(/\n\s*lineargradient[^\n]*(\n\s+stop[^\n]*)*/g, '');
-                expect(strip(second)).toBe(strip(first));
-                expect(await odc.run((O, h) => h.count('linearGradient'))).toBe(2);
-            } else {
-                expect(second).toBe(first);
-            }
+            expect(second).toBe(first);
         });
 
         test('destroy() empties the container', async ({odc}) => {

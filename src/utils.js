@@ -167,8 +167,11 @@ export class Utils {
 
     static linearGradient(svg, gradientId, range, x1, y1, x2, y2) {
         var defs = Utils.selectOrAppend(svg, "defs");
-        var linearGradient = defs.append("linearGradient")
-            .attr("id", gradientId);
+        var linearGradient = defs.select("#" + gradientId);
+        if (linearGradient.empty()) {
+            linearGradient = defs.append("linearGradient")
+                .attr("id", gradientId);
+        }
 
         linearGradient
             .attr("x1", x1 + "%")

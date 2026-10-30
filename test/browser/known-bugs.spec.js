@@ -21,38 +21,6 @@ function tryRender(odc, cls, data, config) {
     }, [cls, data, config]);
 }
 
-// BASELINE §8.13 (found by these tests): Legend.linearGradientBar creates a new
-// gradient id on every init() and never removes the previous <linearGradient>.
-for (const name of ['heatmap', 'heatmap-timeseries', 'correlation-matrix']) {
-    test('[current behaviour, §8.13] ' + name + ': each init() adds a <linearGradient>', async ({odc}) => {
-        const counts = await odc.run((ODCD3, h, f) => {
-            const chart = new ODCD3[f.cls]('#c1', f.data, f.config);
-            const out = [h.count('linearGradient')];
-            chart.init();
-            out.push(h.count('linearGradient'));
-            chart.init();
-            out.push(h.count('linearGradient'));
-            // the legend bar references the newest gradient
-            const fill = document.querySelector('#c1 g.odc-legend rect').style.fill;
-            const last = document.querySelectorAll('#c1 linearGradient');
-            out.push(fill.includes(last[last.length - 1].id));
-            return out;
-        }, by[name]);
-        expect(counts).toEqual([1, 2, 3, true]);
-    });
-
-    test('[known bug §8.13, expected] ' + name + ': repeated init() keeps one <linearGradient>', async ({odc}) => {
-        test.fail(true, 'BASELINE §8.13: legend gradients accumulate');
-        const n = await odc.run((ODCD3, h, f) => {
-            const chart = new ODCD3[f.cls]('#c1', f.data, f.config);
-            chart.init();
-            chart.init();
-            return h.count('linearGradient');
-        }, by[name]);
-        expect(n).toBe(1);
-    });
-}
-
 // BASELINE §8.14 (found by these tests): charts call showTooltip(html) but the
 // signature is showTooltip(event, html); the tooltip becomes visible but empty
 // and unpositioned. BarChart passes the event and works (see lifecycle.spec.js).
