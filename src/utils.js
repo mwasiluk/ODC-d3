@@ -224,9 +224,12 @@ export class Utils {
         textObj.textContent = textString;
 
         var margin = 0;
-        var ellipsisLength = 9;
         //ellipsis is needed
         if (textObj.getComputedTextLength() > width + margin) {
+            // width of "..." in the font of this text element
+            textObj.textContent = "...";
+            var ellipsisLength = textObj.getComputedTextLength();
+            textObj.textContent = textString;
             for (var x = textString.length - 3; x > 0; x -= 1) {
                 if (textObj.getSubStringLength(0, x) + ellipsisLength <= width + margin) {
                     textObj.textContent = textString.substring(0, x) + "...";
