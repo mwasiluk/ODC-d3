@@ -1,0 +1,9 @@
+{
+  "name": "odc-d3-test-vendor",
+  "private": true,
+  "description": "Test-only browser libraries, kept out of the root dependency tree so they cannot change runtime resolutions.",
+  "dependencies": {
+    "@fontsource/dejavu-sans": "5.3.0",
+    "d3": "7.9.0"
+  }
+}

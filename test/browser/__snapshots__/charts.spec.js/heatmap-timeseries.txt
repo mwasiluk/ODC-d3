@@ -1,0 +1,38 @@
+svg class="odc-heatmap" height="400" preserveAspectRatio="xMidYMid meet" viewBox="0 0  600 400" width="600"
+  g class="main-group" transform="translate(60,30)"
+    g class="odc-cells" transform="translate(0, 0)"
+      g class="odc-cell" transform="translate(76.667,72.5)"
+        rect class="cell-shape-rect" fill-opacity="1" height="145" style="fill: rgb(0, 0, 139);" width="153.333" x="-76.667" y="-72.5"
+      g class="odc-cell" transform="translate(230,72.5)"
+        rect class="cell-shape-rect" fill-opacity="1" height="145" style="fill: rgb(207, 181, 100);" width="153.333" x="-76.667" y="-72.5"
+      g class="odc-cell" transform="translate(383.333,72.5)"
+        rect class="cell-shape-rect" fill-opacity="1" height="145" style="fill: rgb(108, 165, 228);" width="153.333" x="-76.667" y="-72.5"
+      g class="odc-cell" transform="translate(76.667,217.5)"
+        rect class="cell-shape-rect" fill-opacity="1" height="145" style="fill: rgb(204, 16, 48);" width="153.333" x="-76.667" y="-72.5"
+      g class="odc-cell" transform="translate(230,217.5)"
+        rect class="cell-shape-rect" fill-opacity="1" height="145" style="fill: rgb(241, 107, 24);" width="153.333" x="-76.667" y="-72.5"
+      g class="odc-cell" transform="translate(383.333,217.5)"
+        rect class="cell-shape-rect" fill-opacity="1" height="145" style="fill: rgb(139, 0, 0);" width="153.333" x="-76.667" y="-72.5"
+    text class="odc-label odc-label-x odc-label-x-0" dx="-2" dy="8" text-anchor="end" transform="rotate(-45, 76.667, 290)" x="76.667" y="290" | 2000
+    text class="odc-label odc-label-x odc-label-x-1" dx="-2" dy="8" text-anchor="end" transform="rotate(-45, 230, 290)" x="230" y="290" | 2001
+    text class="odc-label odc-label-x odc-label-x-2" dx="-2" dy="8" text-anchor="end" transform="rotate(-45, 383.333, 290)" x="383.333" y="290" | 2003
+    g class="odc-axis-x" transform="translate(230,370)"
+      text class="odc-label" dy="-0.5em" style="text-anchor: middle;"
+    text class="odc-label odc-label-y odc-label-y-0" dx="-2" text-anchor="end" transform="rotate(-45, 0, 72.5)" x="0" y="72.5" | u
+    text class="odc-label odc-label-y odc-label-y-1" dx="-2" text-anchor="end" transform="rotate(-45, 0, 217.5)" x="0" y="217.5" | v
+    g class="odc-axis-y"
+      text class="odc-label" dy="1em" style="text-anchor: middle;" transform="translate(-60,145)rotate(-90)"
+    g class="odc-legend" transform="translate(470,0)"
+      rect height="288" style="fill: url("#odc-linear-gradient-GUID_1");" width="10" x="0" y="0"
+      text alignment-baseline="middle" dominant-baseline="middle" dx="3" x="10" y="288" | 1
+      text alignment-baseline="middle" dominant-baseline="middle" dx="3" x="10" y="216" | 2.25
+      text alignment-baseline="middle" dominant-baseline="middle" dx="3" x="10" y="144" | 3.5
+      text alignment-baseline="middle" dominant-baseline="middle" dx="3" x="10" y="72" | 4.75
+      text alignment-baseline="middle" dominant-baseline="middle" dx="3" x="10" y="0" | 6
+  defs
+    lineargradient id="odc-linear-gradient-GUID_1" x1="0%" x2="0%" y1="100%" y2="0%"
+      stop offset="0" stop-color="darkblue"
+      stop offset="0.25" stop-color="lightskyblue"
+      stop offset="0.5" stop-color="orange"
+      stop offset="0.75" stop-color="crimson"
+      stop offset="1" stop-color="darkred"

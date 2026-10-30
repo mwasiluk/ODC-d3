@@ -1,0 +1,70 @@
+svg class="odc-box-plot" height="400" preserveAspectRatio="xMidYMid meet" viewBox="0 0  600 400" width="600"
+  g class="main-group" transform="translate(50,30)"
+    g class="odc-axis-x odc-axis odc-no-guides" fill="none" font-family="sans-serif" font-size="10" text-anchor="middle" transform="translate(0,320)"
+      path class="domain" d="M0.5,6V0.5H520.5V6" stroke="currentColor"
+      g class="tick" opacity="1" transform="translate(130,0)"
+        line stroke="currentColor" y2="6"
+        text dy="0.71em" fill="currentColor" y="9" | a
+      g class="tick" opacity="1" transform="translate(390,0)"
+        line stroke="currentColor" y2="6"
+        text dy="0.71em" fill="currentColor" y="9" | b
+      text class="odc-label" dy="-1em" style="text-anchor: middle;" transform="translate(260,50)"
+    g class="odc-axis-y odc-axis" fill="none" font-family="sans-serif" font-size="10" text-anchor="end"
+      path class="domain" d="M520,320.5H0.5V0.5H520" stroke="currentColor"
+      g class="tick" opacity="1" transform="translate(0,318.076)"
+        line stroke="currentColor" x2="520"
+        text dy="0.32em" fill="currentColor" x="-3" | 0
+      g class="tick" opacity="1" transform="translate(0,293.833)"
+        line stroke="currentColor" x2="520"
+        text dy="0.32em" fill="currentColor" x="-3" | 1
+      g class="tick" opacity="1" transform="translate(0,269.591)"
+        line stroke="currentColor" x2="520"
+        text dy="0.32em" fill="currentColor" x="-3" | 2
+      g class="tick" opacity="1" transform="translate(0,245.348)"
+        line stroke="currentColor" x2="520"
+        text dy="0.32em" fill="currentColor" x="-3" | 3
+      g class="tick" opacity="1" transform="translate(0,221.106)"
+        line stroke="currentColor" x2="520"
+        text dy="0.32em" fill="currentColor" x="-3" | 4
+      g class="tick" opacity="1" transform="translate(0,196.864)"
+        line stroke="currentColor" x2="520"
+        text dy="0.32em" fill="currentColor" x="-3" | 5
+      g class="tick" opacity="1" transform="translate(0,172.621)"
+        line stroke="currentColor" x2="520"
+        text dy="0.32em" fill="currentColor" x="-3" | 6
+      g class="tick" opacity="1" transform="translate(0,148.379)"
+        line stroke="currentColor" x2="520"
+        text dy="0.32em" fill="currentColor" x="-3" | 7
+      g class="tick" opacity="1" transform="translate(0,124.136)"
+        line stroke="currentColor" x2="520"
+        text dy="0.32em" fill="currentColor" x="-3" | 8
+      g class="tick" opacity="1" transform="translate(0,99.894)"
+        line stroke="currentColor" x2="520"
+        text dy="0.32em" fill="currentColor" x="-3" | 9
+      g class="tick" opacity="1" transform="translate(0,75.652)"
+        line stroke="currentColor" x2="520"
+        text dy="0.32em" fill="currentColor" x="-3" | 10
+      g class="tick" opacity="1" transform="translate(0,51.409)"
+        line stroke="currentColor" x2="520"
+        text dy="0.32em" fill="currentColor" x="-3" | 11
+      g class="tick" opacity="1" transform="translate(0,27.167)"
+        line stroke="currentColor" x2="520"
+        text dy="0.32em" fill="currentColor" x="-3" | 12
+      g class="tick" opacity="1" transform="translate(0,2.924)"
+        line stroke="currentColor" x2="520"
+        text dy="0.32em" fill="currentColor" x="-3" | 13
+      text class="odc-label" dy="1em" style="text-anchor: middle;" transform="translate(-50,160)rotate(-90)"
+    g class="odc-boxplot-item" style="stroke-opacity: 1; fill-opacity: 0.75; fill: rgb(31, 119, 180);" transform="translate(13, 0)"
+      rect class="odc-box" height="48.485" style="stroke: rgb(31, 119, 180);" width="100" x="67" y="220.606"
+      line class="odc-median" x1="67" x2="167" y1="256.97" y2="256.97"
+      line class="odc-whisker odc-boxplot-item-low" style="stroke: rgb(31, 119, 180);" x1="117" x2="117" y1="293.333" y2="269.091"
+      line class="odc-boxplot-tick odc-boxplot-item-low" style="stroke: rgb(31, 119, 180);" x1="67" x2="167" y1="293.333" y2="293.333"
+      line class="odc-whisker odc-boxplot-item-high" style="stroke: rgb(31, 119, 180);" x1="117" x2="117" y1="26.667" y2="220.606"
+      line class="odc-boxplot-tick odc-boxplot-item-high" style="stroke: rgb(31, 119, 180);" x1="67" x2="167" y1="26.667" y2="26.667"
+    g class="odc-boxplot-item" style="stroke-opacity: 1; fill-opacity: 0.75; fill: rgb(255, 127, 14);" transform="translate(273, 0)"
+      rect class="odc-box" height="48.485" style="stroke: rgb(255, 127, 14);" width="100" x="67" y="123.636"
+      line class="odc-median" x1="67" x2="167" y1="147.879" y2="147.879"
+      line class="odc-whisker odc-boxplot-item-low" style="stroke: rgb(255, 127, 14);" x1="117" x2="117" y1="196.364" y2="172.121"
+      line class="odc-boxplot-tick odc-boxplot-item-low" style="stroke: rgb(255, 127, 14);" x1="67" x2="167" y1="196.364" y2="196.364"
+      line class="odc-whisker odc-boxplot-item-high" style="stroke: rgb(255, 127, 14);" x1="117" x2="117" y1="99.394" y2="123.636"
+      line class="odc-boxplot-tick odc-boxplot-item-high" style="stroke: rgb(255, 127, 14);" x1="67" x2="167" y1="99.394" y2="99.394"

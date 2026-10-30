@@ -28,21 +28,39 @@ dist/odc-d3(.min).js         UMD `ODCD3`, needs global d3 v7 loaded first
 dist/standalone/odc-d3(.min).js  UMD `ODCD3`, D3 bundled
 examples/<chart>/            demo pages loading d3 from https://d3js.org/d3.v7.min.js
 docs/modernization/          modernization program docs and evidence
+test/unit/, test/browser/    contract tests (node:test, Playwright), see docs/modernization/TESTING.md
+test/vendor/                 test-only d3 7.9.0 and a font file, separate lockfile (keeps root runtime tree unchanged)
+scripts/check-build.js       build check in an isolated copy
 ```
 
 ## Commands
 
 ```bash
-npm ci                 # install from package-lock.json (lockfile v1, do not regenerate)
+npm ci                 # install from package-lock.json (lockfile v3, .npmrc legacy-peer-deps)
+npm run test:setup     # test/vendor (d3 for the global-bundle tests)
+npx playwright install --with-deps chromium
+npm test               # unit (node:test) + browser (Playwright) tests on dist/
+npm run test:build     # isolated gulp build + dist comparison + tests on the fresh dist
 npx gulp               # default: clean dist, build css + global bundle, then standalone bundle (~40 s)
 npx gulp build-css     # css only
 npx gulp build-js      # global bundle only (swaps src/d3.js)
 npx gulp build-js-standalone
 ```
 
-There is **no test suite yet**; `npm test` is a placeholder that exits 1.
+Details, coverage and limitations: `docs/modernization/TESTING.md`.
 `gulp watch`, `gulp serve`, `gulp default-watch` and `gulp build-js2` are
 broken at baseline. Do not report any of them as passing.
+
+Tests:
+
+- Known defects have a `[current behaviour]` test and an expected-failure
+  `[known bug, expected]` test. A fix must flip both (TESTING.md "Known bugs");
+  never delete or skip a failing test to get green.
+- Update SVG snapshots (`--update-snapshots`) only for an intended rendering
+  change and explain the diff in the PR.
+- Do not add test libraries to the root `package.json` if they pull `d3-*`
+  packages: they change the hoisted runtime tree. Use `test/vendor`. Check
+  lockfile changes with `scripts/lockfile-tree.js`.
 
 Browser smoke harness (evidence, not a test suite yet):
 

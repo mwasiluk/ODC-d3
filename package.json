@@ -4,7 +4,11 @@
   "description": "Open Data Charts for D3",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm run test:unit && npm run test:browser",
+    "test:setup": "npm ci --prefix test/vendor --no-audit --no-fund",
+    "test:unit": "node --test \"test/unit/*.test.js\"",
+    "test:browser": "playwright test",
+    "test:build": "node scripts/check-build.js"
   },
   "repository": {
     "type": "git",
@@ -66,6 +70,7 @@
     "@babel/core": "^7.15.8",
     "@babel/plugin-transform-runtime": "^7.15.8",
     "@babel/preset-env": "^7.15.8",
+    "@playwright/test": "1.63.0",
     "babel-plugin-transform-class-properties": "^6.24.1",
     "babelify": "^10.0.0",
     "browser-sync": "^2.27.5",

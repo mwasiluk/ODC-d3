@@ -1,0 +1,76 @@
+svg class="odc-diverging-stacked-bar-chart" height="400" preserveAspectRatio="xMidYMid meet" viewBox="0 0  600 400" width="600"
+  g class="main-group" transform="translate(50,30)"
+    g class="odc-axis-x odc-axis" fill="none" font-family="sans-serif" font-size="10" text-anchor="middle"
+      path class="domain" d="M0.5,320V0.5H420.5V320" stroke="currentColor"
+      g class="tick" opacity="1" transform="translate(8.5,0)"
+        line stroke="currentColor" y2="320"
+        text dy="0em" fill="currentColor" y="-3" | 0
+      g class="tick" opacity="1" transform="translate(59.5,0)"
+        line stroke="currentColor" y2="320"
+        text dy="0em" fill="currentColor" y="-3" | 50
+      g class="tick" opacity="1" transform="translate(109.5,0)"
+        line stroke="currentColor" y2="320"
+        text dy="0em" fill="currentColor" y="-3" | 100
+      g class="tick" opacity="1" transform="translate(160.5,0)"
+        line stroke="currentColor" y2="320"
+        text dy="0em" fill="currentColor" y="-3" | 150
+      g class="tick" opacity="1" transform="translate(210.5,0)"
+        line stroke="currentColor" y2="320"
+        text dy="0em" fill="currentColor" y="-3" | 200
+      g class="tick" opacity="1" transform="translate(260.5,0)"
+        line stroke="currentColor" y2="320"
+        text dy="0em" fill="currentColor" y="-3" | 250
+      g class="tick" opacity="1" transform="translate(311.5,0)"
+        line stroke="currentColor" y2="320"
+        text dy="0em" fill="currentColor" y="-3" | 300
+      g class="tick" opacity="1" transform="translate(361.5,0)"
+        line stroke="currentColor" y2="320"
+        text dy="0em" fill="currentColor" y="-3" | 350
+      g class="tick" opacity="1" transform="translate(412.5,0)"
+        line stroke="currentColor" y2="320"
+        text dy="0em" fill="currentColor" y="-3" | 400
+      text class="odc-label" dy="-1.5em" style="text-anchor: middle;" transform="translate(210,0)"
+    g class="odc-axis-y odc-axis" fill="none" font-family="sans-serif" font-size="10" text-anchor="end"
+      path class="domain" d="M420,0.5H0.5V320.5H420" stroke="currentColor"
+      g class="tick" opacity="1" transform="translate(0,63.03)"
+        line stroke="currentColor" x2="420"
+        text dy="0.32em" fill="currentColor" x="-3" | s1
+      g class="tick" opacity="1" transform="translate(0,160)"
+        line stroke="currentColor" x2="420"
+        text dy="0.32em" fill="currentColor" x="-3" | s2
+      g class="tick" opacity="1" transform="translate(0,256.97)"
+        line stroke="currentColor" x2="420"
+        text dy="0.32em" fill="currentColor" x="-3" | s3
+      text class="odc-label" dy="1em" style="text-anchor: middle;" transform="translate(-50,160)rotate(-90)"
+    g class="odc-row" transform="translate(0,29.091)"
+      g class="odc-bar"
+        rect height="67.879" style="fill: rgb(31, 119, 180);" width="101" x="8"
+        text dx="50.5" dy="0.5em" style="text-anchor: middle;" x="8" y="33.939" | 100
+      g class="odc-bar"
+        rect height="67.879" style="fill: rgb(255, 127, 14);" width="202" x="109"
+        text dx="101" dy="0.5em" style="text-anchor: middle;" x="109" y="33.939" | 200
+    g class="odc-row" transform="translate(0,126.061)"
+      g class="odc-bar"
+        rect height="67.879" style="fill: rgb(255, 127, 14);" width="20" x="89"
+        text dx="10" dy="0.5em" style="text-anchor: middle;" x="89" y="33.939" | 20
+      g class="odc-bar"
+        rect height="67.879" style="fill: rgb(31, 119, 180);" width="303" x="109"
+        text dx="151.5" dy="0.5em" style="text-anchor: middle;" x="109" y="33.939" | 300
+    g class="odc-row" transform="translate(0,223.03)"
+      g class="odc-bar"
+        rect height="67.879" style="fill: rgb(31, 119, 180);" width="30" x="79"
+        text dx="15" dy="0.5em" style="text-anchor: middle;" x="79" y="33.939" | 30
+      g class="odc-bar"
+        rect height="67.879" style="fill: rgb(255, 127, 14);" width="45" x="109"
+        text dx="22.5" dy="0.5em" style="text-anchor: middle;" x="109" y="33.939" | 45
+    line class="odc-middle-line" x1="109" x2="109" y1="0" y2="320"
+    g class="odc-legend" transform="translate(430,10)"
+      g class="legendCells"
+        g class="cell" transform="translate(0, 0)"
+          rect class="swatch" height="15" style="fill: rgb(31, 119, 180);" width="20"
+          text class="label" transform="translate( 30, 12.5)"
+            tspan dy="0em" x="0" | Low
+        g class="cell" transform="translate(0, 17)"
+          rect class="swatch" height="15" style="fill: rgb(255, 127, 14);" width="20"
+          text class="label" transform="translate( 30, 12.5)"
+            tspan dy="0em" x="0" | High

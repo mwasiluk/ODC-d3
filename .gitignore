@@ -3,3 +3,5 @@
 charts-d3.iml
 node_modules/
 bower_components/
+test-results/
+playwright-report/

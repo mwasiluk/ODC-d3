@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [modernize/odc-d3]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Tests (Node ${{ matrix.node }}, Linux)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      matrix:
+        # baseline Node line (docs/modernization/BASELINE.md §1)
+        node: ['22.22.0']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            test/vendor/package-lock.json
+
+      - name: Versions
+        run: node --version && npm --version
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Install test vendor libraries (d3 for the global bundle)
+        run: npm run test:setup
+
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Tests on committed dist
+        run: npm test
+
+      - name: Build in isolated copy, compare with committed dist, tests on fresh dist
+        run: npm run test:build
+
+      - name: Upload Playwright results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results-node-${{ matrix.node }}
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
