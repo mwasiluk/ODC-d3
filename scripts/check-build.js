@@ -5,9 +5,10 @@
 //  2. `npm run build`: exit code 0, no errors or warnings in the log
 //  3. all 8 dist artifacts exist and are not empty
 //  4. no file outside dist/ was changed, added or removed
-//  5. against the committed dist at HEAD: same CSS rules in the same order;
+//  5. CSS against the committed dist at HEAD: same rules in the same order;
 //     JS bundles are not compared byte by byte (behaviour is tested in 6),
-//     but no bundled package@version may be new; sizes are reported
+//     but the bundled package@version sets must equal the approved ones in
+//     scripts/bundle-inventory.json; sizes are reported
 //  6. unit + browser tests against the fresh dist (ODC_DIST)
 //  7. compile errors: a JS or SCSS error injected into its own fresh copy
 //     must fail the npm script with the tool's exit code and a diagnostic
@@ -137,8 +138,8 @@ function compareCss(work) {
     }
 }
 
-// "name@version" of every package with code in a bundle, from its source map
-// and the lockfile the bundle was built from
+// "install/path@version" of every package with code in a bundle, from its
+// source map and the lockfile the bundle was built from
 function inventory(map, mapDir, lock) {
     const out = new Set();
     for (const s of map.sources) {
@@ -150,30 +151,41 @@ function inventory(map, mapDir, lock) {
         const parts = p.slice(i + 'node_modules/'.length).split('/');
         const installPath = p.slice(0, i) + 'node_modules/' + parts.slice(0, parts[0].startsWith('@') ? 2 : 1).join('/');
         const entry = lock.packages[installPath];
-        // browser-pack: browserify's prelude, not a package of the library
-        if (!/node_modules\/browser-pack$/.test(installPath)) {
-            out.add(installPath.replace(/.*node_modules\//, '') + '@' + (entry ? entry.version : '?'));
-        }
+        // install path below the root node_modules/, so a package moved by hoisting is a change too
+        out.add(installPath.slice(installPath.indexOf('node_modules/') + 'node_modules/'.length) + '@' + (entry ? entry.version : '?'));
     }
     return out;
 }
 
+// Approved package@version sets per bundle. A dependency or lockfile change
+// that adds, removes or moves a package in a bundle fails until this file is
+// updated deliberately (docs/modernization/TESTING.md, "Build check").
+const INVENTORY_FILE = 'scripts/bundle-inventory.json';
+
 function compareJs(work) {
-    const headLock = JSON.parse(atHead('package-lock.json'));
+    const approved = JSON.parse(fs.readFileSync(path.join(root, INVENTORY_FILE), 'utf8'));
     const lock = JSON.parse(fs.readFileSync(path.join(work, 'package-lock.json'), 'utf8'));
+    const fresh = {};
+    let mismatch = false;
     for (const rel of ['dist/odc-d3.min.js.map', 'dist/standalone/odc-d3.min.js.map']) {
         const mapDir = path.posix.dirname(rel);
-        // committed maps (browserify) list sources relative to the repository root
-        const refMap = JSON.parse(atHead(rel));
-        const ref = inventory(refMap, refMap.sources.some(s => s.startsWith('../')) ? mapDir : '.', headLock);
+        const name = rel.replace('.min.js.map', '.js');
         const cur = inventory(JSON.parse(fs.readFileSync(path.join(work, rel), 'utf8')), mapDir, lock);
-        const added = [...cur].filter(p => !ref.has(p)), removed = [...ref].filter(p => !cur.has(p));
-        if (added.length || cur.has('?')) {
-            fail(rel.replace('.min.js.map', '') + ' bundles packages that HEAD does not: ' + added.join(', '));
+        fresh[name] = [...cur].sort();
+        const expected = new Set(approved[name] || []);
+        const added = [...cur].filter(p => !expected.has(p)), removed = [...expected].filter(p => !cur.has(p));
+        if (added.length || removed.length || cur.has('?')) {
+            mismatch = true;
+            fail(name + ' bundles packages that ' + INVENTORY_FILE + ' does not approve: '
+                + (added.length ? 'not approved ' + added.join(', ') : '') + (added.length && removed.length ? '; ' : '')
+                + (removed.length ? 'approved but not bundled ' + removed.join(', ') : ''));
         } else {
-            ok(rel.replace('.min.js.map', '') + ' bundles ' + cur.size + ' packages, none new'
-                + (removed.length ? ' (no code left from: ' + removed.join(', ') + ')' : ' (same set as HEAD)'));
+            ok(name + ' bundles the ' + cur.size + ' approved packages');
         }
+    }
+    if (mismatch) {
+        console.log('     fresh inventory (copy to ' + INVENTORY_FILE + ' after review):\n'
+            + JSON.stringify(fresh, null, 2).replace(/^/gm, '     '));
     }
     const kb = n => (n / 1024).toFixed(1).padStart(8) + ' KiB';
     console.log('     size: file, HEAD, fresh (gzip HEAD, gzip fresh)');
