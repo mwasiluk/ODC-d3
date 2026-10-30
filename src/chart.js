@@ -434,7 +434,7 @@ export class Chart {
     }
 
     prefixClass(clazz, addDot) {
-        return addDot ? '.' : '' + this.config.cssClassPrefix + clazz;
+        return (addDot ? '.' : '') + this.config.cssClassPrefix + clazz;
     }
 
     computePlotSize() {

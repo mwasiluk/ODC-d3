@@ -1,7 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const {variants} = require('../helpers/bundles');
-const {expectStillBroken} = require('../helpers/known-bug');
 
 const plain = v => JSON.parse(JSON.stringify(v));
 
@@ -128,15 +127,10 @@ for (const [variant, load] of Object.entries(variants)) {
         assert.equal(chart.prefixClass('plot-title', false), 'odc-plot-title');
     });
 
-    test(variant + ': [current behaviour, BASELINE §8.6] prefixClass(name, true) returns "."', () => {
+    // returned just '.' before (BASELINE §8.6)
+    test(variant + ': prefixClass(name, true) returns ".odc-name"', () => {
         const {ODCD3: O} = load();
-        assert.equal(fakeChart(O, {cssClassPrefix: 'odc-'}).prefixClass('plot-title', true), '.');
-    });
-
-    test(variant + ': [known bug §8.6, expected] prefixClass(name, true) returns ".odc-name"', async () => {
-        const {ODCD3: O} = load();
-        await expectStillBroken('BASELINE §8.6', () => {
-            assert.equal(fakeChart(O, {cssClassPrefix: 'odc-'}).prefixClass('plot-title', true), '.odc-plot-title');
-        });
+        assert.equal(fakeChart(O, {cssClassPrefix: 'odc-'}).prefixClass('plot-title', true), '.odc-plot-title');
+        assert.equal(fakeChart(O, {cssClassPrefix: 'x-'}).prefixClass('dot', true), '.x-dot');
     });
 }
