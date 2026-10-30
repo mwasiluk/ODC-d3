@@ -243,7 +243,7 @@ export class BoxPlotBase extends Chart {
                 const i = boxplotEnter.nodes().indexOf(this);
                 d3.select(this).classed('hover', true);
                 var html = 'Q3: ' + config.Q3(d, i) + '<br/>Q2: ' + config.Q2(d, i) + '<br/>Q1: ' + config.Q1(d, i);
-                self.showTooltip(html)
+                self.showTooltip(event, html)
             })
             .on('mouseout', function (e, d) {
                 d3.select(this).classed('hover', false);
@@ -324,7 +324,7 @@ export class BoxPlotBase extends Chart {
             boxplotEnter.selectAll('.' + boxplotClass + '-' + f.key)
                 .on('mouseover', function (event, d) {
                     d3.select(this).classed('hover', true);
-                    self.showTooltip(f.value(d))
+                    self.showTooltip(event, f.value(d))
                 })
                 .on('mouseout', function () {
                     d3.select(this).classed('hover', false);
@@ -345,7 +345,7 @@ export class BoxPlotBase extends Chart {
             .on('mouseover', function (event, d) {
                 const i = outlierEnterCircle.nodes().indexOf(this);
                 d3.select(this).classed('hover', true);
-                self.showTooltip(config.outlierLabel(d, i))
+                self.showTooltip(event, config.outlierLabel(d, i))
             })
             .on('mouseout', function () {
                 d3.select(this).classed('hover', false);

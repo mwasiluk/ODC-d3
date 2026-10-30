@@ -43,3 +43,40 @@ for (const name of ['heatmap', 'heatmap-timeseries', 'correlation-matrix']) {
         expect(r.stops).toBeGreaterThan(1);
     });
 }
+
+// §8.14: the charts called showTooltip(html) instead of showTooltip(event, html);
+// the tooltip became visible (opacity 0.9) but empty and unpositioned.
+// One case per call site (BarChart passed the event already, see lifecycle.spec.js).
+// mouseover is dispatched on the element itself: other marks overlap some of
+// them (median line over the box, brush overlay over the matrix dots).
+for (const [name, selector, html] of [
+    ['scatterplot', 'circle.odc-dot', '(1, 2)<br>a'],
+    ['line-chart', 'circle.odc-dot', null],
+    ['histogram', 'g.odc-bar rect', null],
+    ['scatterplot-matrix', 'g.odc-layer circle', null],
+    ['heatmap', 'g.odc-cell', null],
+    ['correlation-matrix', 'g.odc-cell', null],
+    ['box-plot-base', 'rect.odc-box', 'Q3: 40<br>Q2: 35<br>Q1: 30'],
+    ['box-plot-base', 'line.odc-boxplot-tick.odc-boxplot-item-low', '22'],
+    ['box-plot-base', 'circle.odc-outlier', '17']
+]) {
+    test(name + ' tooltip shows content at the pointer: ' + selector + ' (§8.14)', async ({odc}) => {
+        const f = by[name];
+        const t = await odc.run((ODCD3, h, [f, selector]) => {
+            new ODCD3[f.cls]('#c1', f.data, Object.assign({}, f.config, {showTooltip: true}));
+            const target = document.querySelector('#c1 ' + selector);
+            target.dispatchEvent(new MouseEvent('mouseover', {bubbles: true, clientX: 120, clientY: 80}));
+            const el = document.querySelector('div.odc-tooltip');
+            return {html: el.innerHTML, left: el.style.left, top: el.style.top};
+        }, [f, selector]);
+        await odc.settle();
+        const opacity = await odc.run(() => document.querySelector('div.odc-tooltip').style.opacity);
+        // showTooltip places the tooltip at (pageX + 5, pageY - 28)
+        expect({left: t.left, top: t.top, opacity}).toEqual({left: '125px', top: '52px', opacity: '0.9'});
+        if (html === null) {
+            expect(t.html).not.toBe('');
+        } else {
+            expect(t.html).toBe(html);
+        }
+    });
+}

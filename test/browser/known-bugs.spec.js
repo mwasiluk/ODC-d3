@@ -21,32 +21,6 @@ function tryRender(odc, cls, data, config) {
     }, [cls, data, config]);
 }
 
-// BASELINE §8.14 (found by these tests): charts call showTooltip(html) but the
-// signature is showTooltip(event, html); the tooltip becomes visible but empty
-// and unpositioned. BarChart passes the event and works (see lifecycle.spec.js).
-async function hoverFirst(odc, f, selector) {
-    await odc.run((ODCD3, h, f) => { new ODCD3[f.cls]('#c1', f.data, Object.assign({}, f.config, {showTooltip: true})); }, f);
-    await odc.page.locator('#c1 ' + selector).first().hover({force: true});
-    await odc.settle();
-    return odc.run(() => {
-        const el = document.querySelector('div.odc-tooltip');
-        return {html: el.innerHTML, opacity: el.style.opacity, left: el.style.left};
-    });
-}
-
-for (const [name, selector] of [['scatterplot', 'circle.odc-dot'], ['line-chart', 'circle.odc-dot']]) {
-    test('[current behaviour, §8.14] ' + name + ' tooltip is shown empty', async ({odc}) => {
-        expect(await hoverFirst(odc, by[name], selector)).toEqual({html: '', opacity: '0.9', left: ''});
-    });
-
-    test('[known bug §8.14, expected] ' + name + ' tooltip shows the point', async ({odc}) => {
-        test.fail(true, 'BASELINE §8.14: showTooltip(html) called without the event');
-        const t = await hoverFirst(odc, by[name], selector);
-        expect(t.html).not.toBe('');
-        expect(t.left).toMatch(/px$/);
-    });
-}
-
 // BASELINE §8.17 (found by these tests): Regression uses the fixed clipPath id
 // "odc-clip". With two Regression charts on a page the id is duplicated and
 // the second chart's clip-path resolves to the first chart's clipPath.

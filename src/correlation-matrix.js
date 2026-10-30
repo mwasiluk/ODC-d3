@@ -401,9 +401,9 @@ export class CorrelationMatrix extends Chart {
 
         if (plot.tooltip) {
 
-            mouseoverCallbacks.push(c => {
+            mouseoverCallbacks.push((c, e) => {
                 var html = c.value;
-                self.showTooltip(html);
+                self.showTooltip(e, html);
             });
 
             mouseoutCallbacks.push(c => {
@@ -432,7 +432,7 @@ export class CorrelationMatrix extends Chart {
 
 
         cellsMerge.on("mouseover", (e, c) => {
-            mouseoverCallbacks.forEach(callback => callback(c));
+            mouseoverCallbacks.forEach(callback => callback(c, e));
         })
             .on("mouseout", (e, c) => {
                 mouseoutCallbacks.forEach(callback => callback(c));
