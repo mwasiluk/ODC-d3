@@ -143,6 +143,11 @@ page `examples/index.html` does not link the line chart.
 
 ## 6. Dependency state (not changed in this PR)
 
+> Update (`test/chart-contracts`): the lockfile is now lockfileVersion 3 with
+> identical install paths and versions, plus test-only devDependencies; see
+> [`TESTING.md`](TESTING.md#dependency-and-lockfile-changes). The runtime
+> resolutions listed below are unchanged.
+
 - `package-lock.json` is **lockfileVersion 1** with stale metadata
   (`"version": "1.1.8"` vs `package.json` `2.0.0`). npm 10 accepts it for `npm ci`
   and leaves it untouched, but any `npm install` would rewrite it to v3.
@@ -220,8 +225,10 @@ names re-exported by `src/d3.js` (or present on global `d3`) defines which
   ignores the prefix), `odc-histogram`, `odc-bar-chart`, `odc-box-plot`,
   `odc-diverging-stacked-bar-chart`, `odc-line-chart`; base `odc-mw-d3-chart`.
   Shared: `.odc-tooltip` (a `div` appended to `body`), `.odc-legend`,
-  `.odc-axis`, `.odc-dot`, `.odc-bar`, `.odc-cell`, `.odc-selectable`, legend
-  `.cell`, `.legendCells`.
+  `.odc-axis`, `.odc-cell`, `.odc-selectable`, legend `.cell`, `.legendCells`.
+  (Correction after the contract tests: `.odc-dot`, `.odc-bar` and
+  `.odc-axis-y` exist only as empty SCSS rules, which Sass drops, so they are
+  not in the compiled CSS. The classes are still set on SVG elements.)
 - Config: `XxxConfig` classes with class-field defaults; `new XxxConfig(custom)`
   deep-merges `custom` via `Utils.deepExtend` (objects merged, arrays and
   functions replaced). A chart accepts either a plain object or a Config
@@ -233,8 +240,10 @@ names re-exported by `src/d3.js` (or present on global `d3`) defines which
   → postInit`, i.e. **renders synchronously**.
 - `init()` = `initPlot → initSvg → initTooltip (first time) → draw → update`.
   The first init removes any existing `svg` in the container.
-- Public lifecycle: `setConfig(cfg)` (re-wraps in the chart's Config class,
-  chainable, does not redraw), `setData(d)`, `init()`, `redraw()`,
+- Public lifecycle: `setConfig(cfg)` (merges over the chart's Config
+  defaults, chainable, does not redraw; every class in the chain wraps the
+  config again, so the stored object is an instance of the most basic Config
+  class in that chain, e.g. `ChartWithColorGroupsConfig` for `ScatterPlot`), `setData(d)`, `init()`, `redraw()`,
   `update(data)`, `draw(data)`, `destroy()` (removes all children of the
   container and the `resize.<id>` window listener), `attach(name, chart)`,
   events `on/once/off/trigger` (`cell-selected` on Heatmap and CorrelationMatrix).
@@ -244,8 +253,15 @@ names re-exported by `src/d3.js` (or present on global `d3`) defines which
   chart). Rebuilt by `setConfig` and `redraw`.
 - A `resize.<guid>` listener is registered on `window` for every chart where
   `!config.width || config.height` and re-runs `init()` without transitions.
-- Transitions are on by default (`config.transition = true`) and are skipped
-  on the first render.
+- Transitions are on by default (`config.transition = true`). Marks are
+  placed without transitions on the first render, but the axes of
+  `Histogram`, `BarChart`, `BoxPlotBase`, `BoxPlot` and
+  `DivergingStackedBarChart` are animated already on the first render (found
+  by the contract tests).
+- `update(data)` stores the data, but `ScatterPlot` (and charts that group data
+  in `initPlot`) only show new data after `init()`. Return value: the chart
+  for Histogram, BarChart, BoxPlotBase, BoxPlot, DivergingStackedBarChart;
+  `undefined` for the others.
 
 ### 7.5 D3 prototype extensions
 
@@ -279,6 +295,7 @@ Golden values measured on the committed standalone bundle in Node:
 | `tValue(10, 0.05)` / `tValue(30, 0.01)` / `tValue(5, 0.025)` / `tValue(100, 0.05)` | `1.8125 / 2.4573 / 2.5705 / 1.6602` |
 | `tValue(df, 0.975)` for df = 4, 5, 8, 10, 48 (what `Regression` calls for 95 %) | `-2.7763, -2.5705, -2.306, -2.2281, -2.0106` |
 | `tValue(df, p)` for df ≤ 3 and p in {0.975, 0.25 … 0.001} | **throws `ReferenceError: i is not defined`** (§8) |
+| `tValue(df, 0.5)` (any df) | the **string** `'0'` (§8.15) |
 
 ### 7.7 odc-d3-svg-legend
 
@@ -311,6 +328,25 @@ ChartWithColorGroups, Heatmap, CorrelationMatrix and DivergingStackedBarChart.
 11. Production `npm audit`: `d3-color@1.2.3` (high, ReDoS) and
     `@babel/runtime@7.15.4` (moderate) are shipped inside the bundles.
 
+Found by the contract tests (`docs/modernization/TESTING.md`), reproduced in
+`test/browser/known-bugs.spec.js` and `test/unit/statistics.test.js`:
+
+12. **Standalone bundle only:** `HeatmapTimeSeries` with `x.fillMissing: true`
+    throws `TypeError: Cannot read properties of undefined (reading 'offset')`.
+    It calls `d3['time' + Interval].offset`, and `src/d3.js` does not re-export
+    `d3-time`. Works in the global bundle (page D3 has `timeDay` etc.).
+13. `Legend.linearGradientBar` creates a new gradient id on every `init()` and
+    never removes the previous `<linearGradient>`: `Heatmap`,
+    `HeatmapTimeSeries` and `CorrelationMatrix` gain one element per redraw.
+14. Tooltips are empty: 10 call sites (ScatterPlot, LineChart, Histogram,
+    ScatterPlotMatrix, Heatmap ×2, CorrelationMatrix, BoxPlotBase ×3) call
+    `showTooltip(html)`, but the signature is `showTooltip(event, html)`. The
+    tooltip becomes visible (`opacity 0.9`) with no content and no position.
+    `BarChart` passes the event and works.
+15. `tValue(df, 0.5)` returns the string `'0'` instead of a number.
+16. `simple-statistics@4.1.1` `quantile(sortedArray, [p1, p2, ...])` returns
+    `NaN` for some p (third-party; the charts only call it with a single p).
+
 ## 9. Blockers
 
 None of the blockers stopped this baseline:
@@ -327,6 +363,9 @@ None of the blockers stopped this baseline:
   output files until §8.1 is fixed.
 
 ## 10. Minimal test set for the next PR
+
+Implemented in the `test/chart-contracts` PR, see
+[`TESTING.md`](TESTING.md) for what is covered and how to run it.
 
 Goal: lock the contracts in §7 before any dependency or build change. Run
 against the committed `dist/` and against a fresh build.
@@ -377,7 +416,7 @@ against the committed `dist/` and against a fresh build.
 
 | # | Task | Notes |
 |---|---|---|
-| 1 | Add the test set from §10 + an `npm test` script + CI workflow | First PR after this one. Adds a test runner devDependency (lockfile change limited to that). |
+| 1 | Add the test set from §10 + an `npm test` script + CI workflow | Done in `test/chart-contracts` (lockfile converted to v3 without version changes, see TESTING.md). |
 | 2 | Make the build fail on errors | Remove `this.emit('end')` swallowing for release builds; keep plumber only for watch. Test #1 turns green. |
 | 3 | Stop rewriting `src/d3.js` | Select the D3 module at bundle time (e.g. browserify `require`/alias or an env-based entry) instead of copying files over a tracked source. |
 | 4 | Fix or remove `watch`/`serve`/`default-watch`/`build-js2` | gulp 4 `watch(globs, gulp.series(...))`; drop `bower_components` route and the hard-coded browser. |
@@ -388,3 +427,6 @@ against the committed `dist/` and against a fresh build.
 | 9 | Package metadata: `files`, `exports` (keeping current deep paths), `module`/`browser`, `engines`, README for D3 v7 | Must not break the deep imports listed in §7.1. |
 | 10 | Bundler/tooling modernization (gulp/browserify → newer toolchain) | Only after #1–#3, with byte-level or behavioural bundle comparison. |
 | 11 | Upgrade `simple-statistics` and `odc-d3-svg-legend` | Deep `src/*` paths of simple-statistics change in later majors; protect with the golden tests. |
+| 12 | Re-export `d3-time` in the standalone shim (§8.12) | Adds names to the D3 namespace object (§7.3); flips the known-bug test. |
+| 13 | Reuse/remove the legend gradient on redraw (§8.13) | Flips the known-bug tests; snapshot of the re-init test changes. |
+| 14 | Pass the event to `showTooltip` at the 10 call sites (§8.14) | Visible behaviour change (tooltips get content); flips the known-bug tests. |
