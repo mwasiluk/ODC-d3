@@ -349,6 +349,10 @@ Found by the contract tests (`docs/modernization/TESTING.md`), reproduced in
 17. `Regression` uses the fixed clipPath id `odc-clip`. With two Regression
     charts on one page the id is duplicated and the second chart's
     `clip-path` resolves to the first chart's clipPath.
+18. Minor: `Utils.placeTextWithEllipsis` budgets `"..."` as 9px. Its real
+    width is about 10.5px at 11px DejaVu Sans, so a shortened label can
+    exceed the available width by that difference. Pinned in
+    `text-metrics.spec.js`; no expected-failure test (tolerance not decided).
 
 ## 9. Blockers
 

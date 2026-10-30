@@ -146,7 +146,10 @@ snapshots were verified to be identical with `sans-serif`, `serif` and
 That override hides the default text sizes and the ellipsis, so
 `text-metrics.spec.js` runs **without** it: library font sizes as shipped,
 only the font family replaced by a font file served from `test/vendor`
-(loaded and checked with `document.fonts` before rendering). Its assertions
+(loaded and checked with `document.fonts` before rendering). Chromium is
+started with `--font-render-hinting=none`: on the CI runner the system font
+configuration rounded text advances to whole pixels (title 117px instead of
+118.44px), which made metrics machine-dependent. Its assertions
 are relations between real measurements (fits / longest prefix / spacing =
 measured heights) plus a few pinned results. The pinned ellipsis labels
 were chosen at least 1.3px away from the truncation threshold.
