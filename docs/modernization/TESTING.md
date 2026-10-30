@@ -129,7 +129,8 @@ project (4 skipped by design: variant-specific tests).
      without slash is redirected, a path outside the repository is refused;
    - `scripts/watch.js` with `dist/` deleted: builds all 8 files, rebuilds
      both CSS files and both bundles after a change of `src/styles/shared.scss`
-     and `src/utils.js`, exits 0 on SIGTERM (it waits for its watchers);
+     and `src/utils.js`, exits 0 on SIGTERM and leaves no watcher process
+     behind (it runs in its own process group, checked on Linux/macOS);
    - no file outside `dist/` changed afterwards (the edits are reverted).
 
 It was checked that the steps fail when they should, see the PR of
