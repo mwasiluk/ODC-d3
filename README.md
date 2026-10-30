@@ -32,7 +32,8 @@ npm ci
 npm run build          # dist/: CSS (Dart Sass) and both JS bundles (Rollup)
 npm run watch          # rebuild on changes, Ctrl+C stops
 npm run serve          # examples at http://127.0.0.1:8089/examples/
-npm test               # contract tests, see docs/modernization/TESTING.md
+npm run test:build     # build in an isolated copy and run the contract tests on it
+npm test               # contract tests on dist/, see docs/modernization/TESTING.md
 ```
 
 <br/><br/>

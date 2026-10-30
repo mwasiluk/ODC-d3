@@ -16,11 +16,11 @@ published on the `gh-pages` branch.
 src/index.js                 public entry (named exports, applies D3 prototype extensions)
 src/chart.js                 Chart / ChartConfig base class (lifecycle, events, $-accessors)
 src/chart-with-color-groups.js, src/<chart>.js   chart classes, each with a XxxConfig
-src/d3.js                    D3 shim: re-exports the d3-* packages (standalone bundle, npm consumers)
+src/d3.js                    D3 shim: re-exports the d3-* packages incl. d3-time, d3-transition (standalone bundle, npm consumers)
 src/d3_import.js             same content as src/d3.js
 src/d3_global.js             `module.exports = d3`; the global bundle resolves src/d3.js to it at build time
 src/d3-extensions.js         selectOrAppend / selectOrInsert / appendSelector / insertSelector
-src/statistics-utils.js      wraps simple-statistics/src/* (deep CJS requires) + tValue
+src/statistics-utils.js      StatisticsUtils: simple-statistics 8 public API, local quantile (4.1.1 definition), tValue
 src/statistics-distributions.js  t-distribution (ported code, $-prefixed variables)
 src/legend.js                wraps odc-d3-svg-legend
 src/styles/*.scss            one Sass module per chart, all @use'd by src/odc-d3.scss
@@ -31,8 +31,11 @@ dist/standalone/odc-d3(.min).js  UMD `ODCD3`, D3 bundled
 examples/<chart>/            demo pages loading d3 from https://d3js.org/d3.v7.min.js
 docs/modernization/          modernization program docs and evidence
 test/unit/, test/browser/    contract tests (node:test, Playwright), see docs/modernization/TESTING.md
+test/browser/regressions.spec.js   regular tests for fixed BASELINE §8 defects
 test/vendor/                 test-only d3 7.9.0 and a font file, separate lockfile (keeps root runtime tree unchanged)
 scripts/check-build.js       build check in an isolated copy
+scripts/bundle-inventory.json   approved install/path@version set per bundle (check-build step 5)
+CHANGELOG.md                 behaviour changes for the next release ("Unreleased")
 scripts/clean.js, watch.js, serve.js   used by the npm scripts below
 ```
 
@@ -47,17 +50,25 @@ npm run build:css      # dist/odc-d3.css and .min.css only
 npm run build:js       # the 6 JS files only
 npm run watch          # rebuild CSS and JS on changes, Ctrl+C stops
 npm run serve          # examples at http://127.0.0.1:8089/examples/ (needs a built dist/)
-npm test               # unit (node:test) + browser (Playwright) tests on dist/
+npm test               # unit (node:test) + browser (Playwright) tests on dist/ (or ODC_DIST)
 npm run test:build     # isolated build + artifact checks + tests on the fresh dist + error cases + watch/serve
 ```
 
 Details, coverage and limitations: `docs/modernization/TESTING.md`.
 
+The committed `dist/` is the `v2.0.0` build and predates the fixes in
+`src/`, so `npm test` on it fails the regression tests of the fixed defects.
+Test changes with `npm run test:build` (CI runs only that), or point
+`ODC_DIST` at a build in an isolated copy.
+
 Tests:
 
 - Known defects have a `[current behaviour]` test and an expected-failure
-  `[known bug, expected]` test. A fix must flip both (TESTING.md "Known bugs");
+  `[known bug, expected]` test. A fix must flip both (TESTING.md "Known bugs")
+  and moves the pair to a regular test (e.g. `test/browser/regressions.spec.js`);
   never delete or skip a failing test to get green.
+- Statistics changes are checked against independent reference values
+  (scipy, mpmath, numpy, exact arithmetic), not against the new output.
 - Update SVG snapshots (`--update-snapshots`) only for an intended rendering
   change and explain the diff in the PR.
 - Do not add test libraries to the root `package.json` if they pull `d3-*`
@@ -93,8 +104,10 @@ D3_FILE=/path/to/d3@7.9.0/dist/d3.min.js node docs/modernization/evidence/smoke.
   build; after a successful one `npm run test:build` checks all 8 files.
 - The committed `dist/` is still the `v2.0.0` Browserify build. A Rollup
   build is not byte-identical (different module wrapper and order, smaller
-  files); behaviour is covered by the tests, and `npm run test:build` compares
-  the CSS rules and the set of bundled packages with the committed files.
+  files) and predates the fixes in `src/` (see `CHANGELOG.md`); behaviour is
+  covered by the tests, and `npm run test:build` compares the CSS rules with
+  the committed files and the bundled packages with
+  `scripts/bundle-inventory.json`.
 - `main` (`src/index.js`) and the `browserify.transform` field in
   `package.json` are for consumers that bundle the sources (SilverDecisions
   browserifies `odc-d3/src/*`); the library build does not read them. Do not
@@ -110,7 +123,14 @@ D3_FILE=/path/to/d3@7.9.0/dist/d3.min.js node docs/modernization/evidence/smoke.
 - **Do not update dependencies or `package-lock.json`** unless the task says
   so. Never run `npm install <pkg>` / `npm update` / `npm audit fix` casually;
   they change the lockfile. Runtime `dependencies` end up in the bundles:
-  compare `node scripts/lockfile-tree.js` output before and after.
+  compare `node scripts/lockfile-tree.js` output before and after, and
+  update `scripts/bundle-inventory.json` only for an approved change
+  (`npm run test:build` prints the fresh inventory).
+- Keep Babel 7 and `@babel/runtime` 7 until the consumer contract is
+  decided: Browserify consumers compile `odc-d3/src` with their own Babel 7
+  through the `browserify.transform` field and resolve `@babel/runtime`
+  from this package (TESTING.md "Dependency and lockfile changes", step 4).
+- Behaviour changes for users go into `CHANGELOG.md` ("Unreleased").
 - **Do not publish to npm, push to `gh-pages`, or change the default branch.**
 - **Keep the public contracts** listed in `BASELINE.md` §7: the 27 named
   exports, deep import paths (`odc-d3/src/*`, `odc-d3/dist/*`), global
