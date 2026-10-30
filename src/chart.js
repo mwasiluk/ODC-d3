@@ -137,7 +137,8 @@ export class Chart {
 
         self.svgG.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-        if (!config.width || config.height) {
+        // a missing width or height is taken from the container, so re-render on resize
+        if (!config.width || !config.height) {
             d3.select(window)
                 .on("resize." + self._id, function () {
                     var transition = self.config.transition;
@@ -145,6 +146,8 @@ export class Chart {
                     self.init();
                     self.config.transition = transition;
                 });
+        } else {
+            d3.select(window).on("resize." + self._id, null);
         }
     }
 
