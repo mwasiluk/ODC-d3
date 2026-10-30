@@ -50,6 +50,17 @@ const fail = msg => {
 const ok = msg => console.log('ok   ' + msg);
 const plain = log => log.replace(/\u001b\[[\d;]*m/g, '');
 
+// npm as `node npm-cli.js`: on Windows `npm` is a .cmd file that spawn() cannot
+// run without a shell. npm_execpath is set when this runs as an npm script.
+const NPM_CLI = [process.env.npm_execpath,
+    path.join(path.dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js'),
+    path.join(path.dirname(process.execPath), '..', 'lib', 'node_modules', 'npm', 'bin', 'npm-cli.js')]
+    .find(p => p && /npm-cli\.js$/.test(p) && fs.existsSync(p));
+
+function npm(npmArgs, opts) {
+    return NPM_CLI ? run(process.execPath, [NPM_CLI].concat(npmArgs), opts) : run('npm', npmArgs, opts);
+}
+
 function run(cmd, cmdArgs, opts) {
     const started = Date.now();
     const r = spawnSync(cmd, cmdArgs, Object.assign({encoding: 'utf8', maxBuffer: 1 << 28}, opts));
@@ -61,7 +72,7 @@ function run(cmd, cmdArgs, opts) {
 }
 
 function npmRun(work, logs, name, script) {
-    const r = run('npm', ['run', script], {cwd: work, log: path.join(logs, name + '.log')});
+    const r = npm(['run', script], {cwd: work, log: path.join(logs, name + '.log')});
     console.log('     npm run ' + script + ': exit ' + r.status + ' in ' + r.seconds + ' s, log ' + path.join(logs, name + '.log'));
     return r;
 }
@@ -416,8 +427,13 @@ async function checkWatch(work, logs) {
     } else {
         ok('npm run watch: stopped with exit 0 after SIGTERM');
     }
+    // exited children of the watchers (Sass runs `sh`) can stay in the group
+    // as zombies until they are reaped; live watchers do not go away
+    for (const until = Date.now() + 5000; GROUPS && groupAlive(child.pid) && Date.now() < until;) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
     if (GROUPS && groupAlive(child.pid)) {
-        fail('watcher processes still running after npm run watch exited');
+        fail('watcher processes still running 5 s after npm run watch exited');
         process.kill(-child.pid, 'SIGKILL');
     }
     [scss, utils].forEach((f, i) => fs.writeFileSync(f, originals[i]));
@@ -444,7 +460,7 @@ async function main() {
 
     ok('copied ' + copyTracked(work) + ' tracked files');
 
-    const ci = run('npm', ['ci', '--no-audit', '--no-fund'], {cwd: work, log: path.join(logs, 'npm-ci.log')});
+    const ci = npm(['ci', '--no-audit', '--no-fund'], {cwd: work, log: path.join(logs, 'npm-ci.log')});
     if (ci.status !== 0) {
         fail('npm ci exited ' + ci.status + ' (log: ' + path.join(logs, 'npm-ci.log') + ')');
         return finish(work, logs);
@@ -472,7 +488,7 @@ async function main() {
     if (!args.has('--skip-tests')) {
         const env = Object.assign({}, process.env, {ODC_DIST: path.join(work, 'dist')});
         for (const script of ['test:unit', 'test:browser']) {
-            const r = run('npm', ['run', script], {cwd: root, env, log: path.join(logs, script.replace(':', '-') + '.log')});
+            const r = npm(['run', script], {cwd: root, env, log: path.join(logs, script.replace(':', '-') + '.log')});
             const summary = r.log.split('\n').filter(l => /^# (pass|fail)|\d+ (passed|failed|skipped)/.test(l.trim())).map(l => l.trim()).join(', ');
             if (r.status !== 0) {
                 fail('npm run ' + script + ' on fresh dist exited ' + r.status + ' (' + summary + ')');
