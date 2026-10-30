@@ -114,3 +114,31 @@ for (const [name, selector] of [['scatterplot', 'circle.odc-dot'], ['line-chart'
         expect(t.left).toMatch(/px$/);
     });
 }
+
+// BASELINE §8.17 (found by these tests): Regression uses the fixed clipPath id
+// "odc-clip". With two Regression charts on a page the id is duplicated and
+// the second chart's clip-path resolves to the first chart's clipPath.
+function twoRegressions(odc) {
+    return odc.run((ODCD3, h, cfg) => {
+        const data = [];
+        for (let i = 0; i < 8; i++) {
+            data.push({x: i, y: (i * 7) % 5, g: 'a'});
+        }
+        new ODCD3.Regression('#c1', data, cfg);
+        new ODCD3.Regression('#c2', data, cfg);
+        return {duplicates: h.duplicateIds(), c2: h.references('c2')};
+    }, regressionConfig);
+}
+
+test('[current behaviour, §8.17] two Regression charts share the clipPath id', async ({odc}) => {
+    const r = await twoRegressions(odc);
+    expect(r.duplicates).toEqual(['odc-clip']);
+    expect(r.c2).toEqual([{from: 'g@clip-path', id: 'odc-clip', exists: true, inSameSvg: false}]);
+});
+
+test('[known bug §8.17, expected] two Regression charts use their own clipPath', async ({odc}) => {
+    test.fail(true, 'BASELINE §8.17: fixed id "odc-clip"');
+    const r = await twoRegressions(odc);
+    expect(r.duplicates).toEqual([]);
+    expect(r.c2.every(x => x.inSameSvg)).toBe(true);
+});

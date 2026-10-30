@@ -23,14 +23,14 @@ svg class="odc-heatmap" height="400" preserveAspectRatio="xMidYMid meet" viewBox
     g class="odc-axis-y"
       text class="odc-label" dy="1em" style="text-anchor: middle;" transform="translate(-60,145)rotate(-90)"
     g class="odc-legend" transform="translate(470,0)"
-      rect height="288" style="fill: url("#odc-linear-gradient-GUID");" width="10" x="0" y="0"
+      rect height="288" style="fill: url("#odc-linear-gradient-GUID_1");" width="10" x="0" y="0"
       text alignment-baseline="middle" dominant-baseline="middle" dx="3" x="10" y="288" | 1
       text alignment-baseline="middle" dominant-baseline="middle" dx="3" x="10" y="216" | 2.25
       text alignment-baseline="middle" dominant-baseline="middle" dx="3" x="10" y="144" | 3.5
       text alignment-baseline="middle" dominant-baseline="middle" dx="3" x="10" y="72" | 4.75
       text alignment-baseline="middle" dominant-baseline="middle" dx="3" x="10" y="0" | 6
   defs
-    lineargradient id="odc-linear-gradient-GUID" x1="0%" x2="0%" y1="100%" y2="0%"
+    lineargradient id="odc-linear-gradient-GUID_1" x1="0%" x2="0%" y1="100%" y2="0%"
       stop offset="0" stop-color="darkblue"
       stop offset="0.25" stop-color="lightskyblue"
       stop offset="0.5" stop-color="orange"

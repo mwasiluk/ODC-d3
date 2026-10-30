@@ -22,6 +22,10 @@ const MARKS = {
 // Charts whose legend appends a new <linearGradient> on every init() (see known-bugs.spec.js)
 const GRADIENT_LEAK = ['correlation-matrix', 'heatmap', 'heatmap-timeseries'];
 
+// Fixed ids that are duplicated when the chart is rendered twice on one page
+// (current behaviour, BASELINE §8.17, see known-bugs.spec.js)
+const FIXED_IDS = {'regression': ['odc-clip']};
+
 function render(odc, f, container) {
     return odc.run((ODCD3, h, [f, id]) => {
         window.charts = window.charts || {};
@@ -56,6 +60,16 @@ for (const f of fixtures) {
             expect(await odc.run((O, h) => h.serialize())).toMatchSnapshot(f.name + '.txt');
         });
 
+        test('every url(#id) / href="#id" points to an element in the same svg', async ({odc}) => {
+            await render(odc, f);
+            await odc.settle();
+            const refs = await odc.run((O, h) => h.references());
+            for (const r of refs) {
+                expect(r, r.from + ' -> #' + r.id).toMatchObject({exists: true, inSameSvg: true});
+            }
+            expect(await odc.run((O, h) => h.duplicateIds())).toEqual([]);
+        });
+
         test('second init() keeps one svg and re-renders the same output', async ({odc}) => {
             await render(odc, f);
             await odc.settle();
@@ -87,6 +101,14 @@ for (const f of fixtures) {
             await odc.settle();
             const [a, b] = await odc.run((O, h) => [h.serialize('c1'), h.serialize('c2')]);
             expect(b).toBe(a);
+            // ids are unique on the page and references stay inside each chart
+            expect(await odc.run((O, h) => h.duplicateIds())).toEqual(FIXED_IDS[f.name] || []);
+            for (const id of ['c1', 'c2']) {
+                const refs = await odc.run((O, h, id) => h.references(id), id);
+                for (const r of refs.filter(r => !(FIXED_IDS[f.name] || []).includes(r.id))) {
+                    expect(r, id + ': ' + r.from + ' -> #' + r.id).toMatchObject({exists: true, inSameSvg: true});
+                }
+            }
             await odc.run(() => window.charts.c1.destroy());
             expect(await odc.run((O, h) => [h.count('svg', 'c1'), h.count('svg', 'c2')])).toEqual([0, 1]);
         });

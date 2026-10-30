@@ -25,7 +25,7 @@ svg class="odc-correlation-matrix" height="580" preserveAspectRatio="xMidYMid me
     text class="odc-label odc-label-y odc-label-y-1" dx="-2" text-anchor="end" transform="rotate(-45, 0, 245)" x="0" y="245" | q
     text class="odc-label odc-label-y odc-label-y-2" dx="-2" text-anchor="end" transform="rotate(-45, 0, 408.333)" x="0" y="408.333" | r
     g class="odc-legend" transform="translate(500,0)"
-      rect height="488" style="fill: url("#odc-linear-gradient-GUID");" width="10" x="0" y="0"
+      rect height="488" style="fill: url("#odc-linear-gradient-GUID_1");" width="10" x="0" y="0"
       text alignment-baseline="middle" dominant-baseline="middle" dx="3" x="10" y="488" | -1
       text alignment-baseline="middle" dominant-baseline="middle" dx="3" x="10" y="406.667" | -0.75
       text alignment-baseline="middle" dominant-baseline="middle" dx="3" x="10" y="325.333" | -0.5
@@ -34,7 +34,7 @@ svg class="odc-correlation-matrix" height="580" preserveAspectRatio="xMidYMid me
       text alignment-baseline="middle" dominant-baseline="middle" dx="3" x="10" y="81.333" | 0.75
       text alignment-baseline="middle" dominant-baseline="middle" dx="3" x="10" y="0" | 1
   defs
-    lineargradient id="odc-linear-gradient-GUID" x1="0%" x2="0%" y1="100%" y2="0%"
+    lineargradient id="odc-linear-gradient-GUID_1" x1="0%" x2="0%" y1="100%" y2="0%"
       stop offset="0" stop-color="darkblue"
       stop offset="0.167" stop-color="blue"
       stop offset="0.333" stop-color="lightskyblue"
