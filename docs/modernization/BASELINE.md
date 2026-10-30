@@ -346,6 +346,9 @@ Found by the contract tests (`docs/modernization/TESTING.md`), reproduced in
 15. `tValue(df, 0.5)` returns the string `'0'` instead of a number.
 16. `simple-statistics@4.1.1` `quantile(sortedArray, [p1, p2, ...])` returns
     `NaN` for some p (third-party; the charts only call it with a single p).
+17. `Regression` uses the fixed clipPath id `odc-clip`. With two Regression
+    charts on one page the id is duplicated and the second chart's
+    `clip-path` resolves to the first chart's clipPath.
 
 ## 9. Blockers
 
@@ -430,3 +433,4 @@ against the committed `dist/` and against a fresh build.
 | 12 | Re-export `d3-time` in the standalone shim (§8.12) | Adds names to the D3 namespace object (§7.3); flips the known-bug test. |
 | 13 | Reuse/remove the legend gradient on redraw (§8.13) | Flips the known-bug tests; snapshot of the re-init test changes. |
 | 14 | Pass the event to `showTooltip` at the 10 call sites (§8.14) | Visible behaviour change (tooltips get content); flips the known-bug tests. |
+| 15 | Unique clipPath id per Regression instance (§8.17) | Snapshot of `regression` changes (id becomes a guid); flips the known-bug test. |

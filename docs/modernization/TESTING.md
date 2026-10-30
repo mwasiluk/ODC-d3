@@ -45,10 +45,10 @@ Every command exits non-zero on failure. `npm run test:build` takes about
 | `test/browser/*.spec.js` | Playwright + Chromium. Projects `global` (d3 7.9.0 + `dist/odc-d3.js`) and `standalone` (`dist/standalone/odc-d3.js`, no `window.d3`). |
 | `test/browser/fixtures.js` | Harness page served with `page.route` from disk (no web server); any other request (CDN) fails the test. Page errors and `console.error` fail the test unless declared. Fake clock (`page.clock`); `settle()` runs transitions to their end. |
 | `test/browser/chart-fixtures.js` | Deterministic data and config for all 12 chart classes. |
-| `test/browser/page-helpers.js` | In-page helpers: normalized SVG serializer (sorted attributes, numbers rounded to 3 decimals, random guids replaced), counters, bound-data readers. |
+| `test/browser/page-helpers.js` | In-page helpers: normalized SVG serializer (sorted attributes, numbers rounded to 3 decimals, random guids replaced by `GUID_1`, `GUID_2`, … in order of appearance so id/reference relations are kept), reference and duplicate-id checks, counters, bound-data readers. Self-tested in `harness.spec.js`. |
 | `test/browser/__snapshots__/` | One SVG snapshot per chart, **shared by both projects** (the variants must render identically). |
 | `test/helpers/` | Paths (`ODC_DIST`), bundle loaders, `expectStillBroken`. |
-| `test/vendor/` | Separate package with its own lockfile: `d3@7.9.0` for the global variant. |
+| `test/vendor/` | Separate package with its own lockfile: `d3@7.9.0` for the global variant, `@fontsource/dejavu-sans@5.3.0` (OFL-1.1) as the fixed font of the text-metrics tests. |
 | `scripts/check-build.js` | Build check in an isolated copy. |
 | `scripts/lockfile-tree.js` | Prints the resolved package tree of a lockfile (v1 or v3) for diffs. |
 | `.github/workflows/ci.yml` | Linux (ubuntu-24.04), Node 22.22.0, Chromium. |
@@ -64,13 +64,14 @@ Both bundle variants run the same tests unless noted.
 | `Utils` | `unit/utils` | `deepExtend` (incl. array-into-object merge), `mergeDeep`, `nest`, `cross`, `inferVariables`, type predicates, `guid`, `createScale` (17 scale names), `createAxis`. |
 | Config | `unit/config` | `ChartConfig` defaults, `svgClass` of all 12 configs, deep-merge semantics, subclass defaults, `$`-accessors, `prefixClass`. |
 | CSS | `unit/css` | Required selectors in `odc-d3.css` and `.min.css`, same selector set in both, tooltip rule. |
-| Rendering, 12 classes | `browser/charts` | Synchronous render into one `svg` with the chart class; explicit mark counts; settled SVG snapshot; second `init()` keeps one svg and the same output; `destroy()` empties the container; two independent instances. |
+| Rendering, 12 classes | `browser/charts` | Synchronous render into one `svg` with the chart class; explicit mark counts; settled SVG snapshot; every `url(#id)` / `href="#id"` points to an element in the same svg; second `init()` keeps one svg and the same output; `destroy()` empties the container; two independent instances with unique ids on the page. |
+| Text metrics | `browser/text-metrics` | Without the 10px override, with a fixed font file: default font sizes, title centring and measured width, Heatmap ellipsis (fits, longest possible prefix, pinned results, full text in the tooltip), legend layout from measured label heights, wrapping of long legend labels, legend position. |
 | Computations | `browser/computations` | Correlation cells = `sampleCorrelation`; regression lines = `linearRegression` per group and overall, confidence points pinned; box-plot quartiles/whiskers (plain and Tukey); histogram bins; diverging bar segments. Reference values computed in Node on the standalone bundle. |
 | Lifecycle, config, events | `browser/lifecycle` | Constructor order, selector or node container, replacing an old svg, `setConfig` (merge, no redraw), `setConfig().init()`, `update(data)`, stored config class and `update()` return per chart, `$`-accessors on instances, `on/once/off/trigger`, `cell-selected` on Heatmap and CorrelationMatrix, `attachScatterPlot`, resize listener (4 size cases + `destroy()`), resize without transitions, shared tooltip div, BarChart tooltip. |
 | D3 extensions | `browser/extensions` | `selectOrAppend`/`selectOrInsert` idempotent, `appendSelector`/`insertSelector` always create, selector parsing, enter selections, where they are installed. |
 | Build | `scripts/check-build.js` | See below. |
 
-Test counts at the time of writing: unit 58 (5 files), browser 218 = 109 per
+Test counts at the time of writing: unit 58 (5 files), browser 262 = 131 per
 project (4 skipped by design: variant-specific tests).
 
 ### Build check (`npm run test:build`)
@@ -122,6 +123,7 @@ Rules (BASELINE §8 numbers):
 | 8.14 | empty tooltips (`showTooltip(html)`) | `browser/known-bugs` (ScatterPlot, LineChart) | `browser/known-bugs` |
 | 8.15 | `tValue(df, 0.5)` returns `'0'` | `unit/statistics` | – |
 | 8.16 | `quantile(sorted, [p…])` NaN (third-party) | `unit/statistics` | – |
+| 8.17 | fixed `odc-clip` id duplicated by two Regression charts | `browser/known-bugs`, `browser/charts` | `browser/known-bugs` |
 
 ## Snapshots
 
@@ -137,8 +139,17 @@ Determinism measures: fixed viewport and container size, `locale en-US`,
 `timezoneId UTC`, fake clock, no random data, short labels. Text metrics
 depend on installed fonts (legend cell spacing via `getBBox` in
 `odc-d3-svg-legend`, label ellipsis via `getComputedTextLength`), so the
-harness forces SVG text to `10px sans-serif`. With that, the snapshots were
-verified to be identical with `sans-serif`, `serif` and `monospace`.
+snapshot harness forces SVG text to `10px sans-serif`. With that, the
+snapshots were verified to be identical with `sans-serif`, `serif` and
+`monospace`.
+
+That override hides the default text sizes and the ellipsis, so
+`text-metrics.spec.js` runs **without** it: library font sizes as shipped,
+only the font family replaced by a font file served from `test/vendor`
+(loaded and checked with `document.fonts` before rendering). Its assertions
+are relations between real measurements (fits / longest prefix / spacing =
+measured heights) plus a few pinned results. The pinned ellipsis labels
+were chosen at least 1.3px away from the truncation threshold.
 
 ## Dependency and lockfile changes
 
@@ -168,9 +179,11 @@ the committed bundles (§4.3 rules).
 - Node 22 only in CI (baseline line); other Node versions not tested yet.
 - `src/` is not tested directly (it is not loadable without a bundler,
   BASELINE §7.1); deep imports `odc-d3/src/*` are covered only through the bundles.
-- Interaction coverage is partial: hover/click on dots, bars and cells;
-  brush selection in ScatterPlotMatrix and tooltip contents (§8.14) are not
-  covered beyond the known-bug tests.
+- Interaction coverage is partial: hover/click on dots, bars, cells and
+  shortened labels; brush selection in ScatterPlotMatrix and tooltip
+  contents (§8.14) are not covered beyond the known-bug tests.
+- Text metrics are measured with one font (DejaVu Sans). The real font a
+  user gets depends on their system; that is not tested.
 - Interrupted build (§8.2), `watch`/`serve`/`build-js2` (§8.3) and the
   examples (§8.8) are not tested.
 - Snapshot values are characterization data: they pin the current output,

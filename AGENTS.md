@@ -29,7 +29,7 @@ dist/standalone/odc-d3(.min).js  UMD `ODCD3`, D3 bundled
 examples/<chart>/            demo pages loading d3 from https://d3js.org/d3.v7.min.js
 docs/modernization/          modernization program docs and evidence
 test/unit/, test/browser/    contract tests (node:test, Playwright), see docs/modernization/TESTING.md
-test/vendor/                 test-only d3 7.9.0, separate lockfile (keeps root runtime tree unchanged)
+test/vendor/                 test-only d3 7.9.0 and a font file, separate lockfile (keeps root runtime tree unchanged)
 scripts/check-build.js       build check in an isolated copy
 ```
 
