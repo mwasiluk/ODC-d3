@@ -31,11 +31,11 @@ npm run test:browser                           # Playwright, both variants
 npx playwright test --project=standalone       # one bundle variant
 npx playwright test test/browser/charts.spec.js -g heatmap
 ODC_DIST=/path/to/other/dist npm test          # test another dist directory
-node scripts/check-build.js --keep --skip-known-bugs   # keep the temp copy for inspection
+node scripts/check-build.js --keep --skip-error-cases  # keep the temp copy for inspection
 ```
 
 Every command exits non-zero on failure. `npm run test:build` takes about
-2–3 minutes (`npm ci` + `gulp` + full test run + 3 failure cases).
+2.5–3 minutes (`npm ci` + `gulp` + full test run + 7 compile error cases).
 
 ## Layout
 
@@ -78,8 +78,9 @@ project (4 skipped by design: variant-specific tests).
 
 1. Copies the tracked files of the working tree to a temp dir and runs `npm ci` there.
 2. Runs `gulp`. Fails on a non-zero exit code **and** on error markers in the
-   log (`SyntaxError`, `PluginError`, `onError`, `Error:` …), because the
-   build exits 0 on compile errors (BASELINE §4.2).
+   log (`SyntaxError`, `PluginError`, `onError`, `Error:` …). The build exits
+   non-zero on compile errors since §8.1 was fixed; the marker check stays as
+   a second guard.
 3. All 8 artifacts exist and are not empty.
 4. No file outside `dist/` changed, appeared or disappeared (catches the
    `src/d3.js` swap).
@@ -88,10 +89,36 @@ project (4 skipped by design: variant-specific tests).
    map field must be equal, and `sourcesContent` may differ **only** in CRLF
    vs LF. Anything else fails.
 6. Runs `test:unit` and `test:browser` with `ODC_DIST` pointing at the fresh build.
-7. Known bug §8.1 cases (JS error in `build-js`, SCSS error in `build-css`,
-   JS error in `gulp` default): asserts the current behaviour (exit 0, error in
-   the log, broken/missing output, sources restored). If the build starts
-   exiting non-zero the script fails with "the bug looks fixed".
+7. Compile error cases (BASELINE §8.1, fixed). Each case gets its own fresh
+   copy of the tracked files (committed `dist/`, `node_modules` symlinked from
+   step 1), so one case cannot affect the next; the copy of step 1 and the
+   working checkout are not touched. Each case requires:
+   - exit code exactly 1 (a spawn failure, a missing command or a crash
+     with another code fails the case), `Using gulpfile` and `Starting '<task>'`
+     in the log;
+   - a diagnostic for every injected error: file, line number of the injected
+     line and the code frame (`SyntaxError: …src/utils.js: Unexpected token
+     (L:C)` / `Error in plugin "gulp-sass" … Expected expression … shared.scss L:C`);
+   - `'<task>' errored after` for the failing tasks, no `Finished` for the
+     requested task, dependent tasks not started;
+   - all files outside `dist/` unchanged after the injected file is put back
+     (`src/d3.js` restored);
+   - the listed state of each `dist/` file (below).
+
+   | Case | Command | Injected | `dist/` afterwards |
+   |---|---|---|---|
+   | `js-error-build-js` | `gulp build-js` | JS syntax error in `src/utils.js` | everything kept (old global bundle stays) |
+   | `js-error-build-js-standalone` | `gulp build-js-standalone` | same | everything kept (old standalone bundle stays) |
+   | `scss-error-build-css` | `gulp build-css` | SCSS error in `src/styles/shared.scss` | everything kept (old CSS stays) |
+   | `js-and-scss-error-build` | `gulp build` | both | everything kept; both errors reported |
+   | `js-error-default` | `gulp` | JS | CSS written, all 6 JS files missing (`clean` ran), `build-js-standalone` not started |
+   | `scss-error-default` | `gulp` | SCSS | global bundle written (`build-js` runs to the end), CSS and standalone missing, `build-js-standalone` not started |
+   | `cli-parallel-error-while-d3-swapped` | `gulp build-js odc-fail-while-swapped` | a task appended to the copy's `gulpfile.js` that fails once `src/d3.js` holds the global variant | gulp-cli exits during `build-js`; the exit hook restores `src/d3.js` |
+
+   "kept" means content and mtime unchanged (mtimes are reset before the run,
+   so rewriting identical content counts as written). The table records
+   observed behaviour; the build does not publish `dist/` atomically, so a
+   failed command can leave stale files from an older build next to new ones.
 
 It was checked that a one-line change in `src/legend.js` makes step 5 fail.
 
@@ -113,7 +140,6 @@ Rules (BASELINE §8 numbers):
 
 | § | Defect | Current behaviour test | Expected test |
 |---|---|---|---|
-| 8.1 | build exits 0 on compile errors | `check-build.js` (3 cases) | script fails when exit ≠ 0 |
 | 8.4 | `tValue` throws for df ≤ 3; Regression with ≤ 5 points per group | `unit/statistics`, `browser/known-bugs` | both |
 | 8.5 | negative critical value, swapped bands | `unit/statistics`, `browser/computations` | – (decision pending, changes results) |
 | 8.6 | `prefixClass(name, true)` returns `'.'` | `unit/config` | `unit/config` |
@@ -124,6 +150,12 @@ Rules (BASELINE §8 numbers):
 | 8.15 | `tValue(df, 0.5)` returns `'0'` | `unit/statistics` | – |
 | 8.16 | `quantile(sorted, [p…])` NaN (third-party) | `unit/statistics` | – |
 | 8.17 | fixed `odc-clip` id duplicated by two Regression charts | `browser/known-bugs`, `browser/charts` | `browser/known-bugs` |
+
+Fixed defects (regular regression tests now):
+
+| § | Defect | Tests |
+|---|---|---|
+| 8.1 | build exited 0 on compile errors | `check-build.js` step 7 (7 cases) |
 
 ## Snapshots
 
