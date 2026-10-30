@@ -62,7 +62,7 @@ cases + watch/serve).
 | `scripts/bundle-inventory.json` | Approved `install/path@version` set per bundle, checked by `check-build.js` step 5. |
 | `rollup.config.mjs`, `src/odc-d3.scss`, `scripts/{clean,watch,serve}.js` | The build itself (`npm run build`, `watch`, `serve`); checked by `check-build.js`. |
 | `scripts/lockfile-tree.js` | Prints the resolved package tree of a lockfile (v1 or v3) for diffs. |
-| `.github/workflows/ci.yml` | Linux (ubuntu-24.04), Node 22.22.0, Chromium: `npm run test:build` (the full run). Windows (windows-2025), Node 22.22.0 and 24: build smoke (see "Limitations"). |
+| `.github/workflows/ci.yml` | Linux (ubuntu-24.04), Node 22.22.0, Chromium: `npm run test:build` (the full run). Windows (windows-2025), Node 22.22.0, 24.21.0 and the latest 24: build smoke (see "Limitations"). |
 
 ## Coverage
 
@@ -301,7 +301,7 @@ checks behaviour instead (see "Build check").
 
 - Chromium only; no Firefox/WebKit, no pixel comparison.
 - Full tests on Linux with Node 22 only (baseline line). Windows (Node
-  22.22.0 and 24) runs a build smoke: `npm ci`, `npm run build` with a
+  22.22.0, 24.21.0 and the latest 24) runs a build smoke: `npm ci`, `npm run build` with a
   5-minute timeout (Sass 1.42 hung there), unit tests on the fresh dist, no
   changes outside `dist/`, and `check-build.js` without browser tests and
   dev scripts (on Windows `watch.js` cannot get SIGTERM, so its clean stop

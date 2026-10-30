@@ -62,7 +62,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: ['22.22.0', '24']
+        # 24.21.0: Sass 1.42 hung there in the review of feat/modern-build
+        node: ['22.22.0', '24.21.0', '24']
     steps:
       - uses: actions/checkout@v7
 
