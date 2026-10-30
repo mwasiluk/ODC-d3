@@ -167,8 +167,11 @@ export class Utils {
 
     static linearGradient(svg, gradientId, range, x1, y1, x2, y2) {
         var defs = Utils.selectOrAppend(svg, "defs");
-        var linearGradient = defs.append("linearGradient")
-            .attr("id", gradientId);
+        var linearGradient = defs.select("#" + gradientId);
+        if (linearGradient.empty()) {
+            linearGradient = defs.append("linearGradient")
+                .attr("id", gradientId);
+        }
 
         linearGradient
             .attr("x1", x1 + "%")
@@ -221,9 +224,12 @@ export class Utils {
         textObj.textContent = textString;
 
         var margin = 0;
-        var ellipsisLength = 9;
         //ellipsis is needed
         if (textObj.getComputedTextLength() > width + margin) {
+            // width of "..." in the font of this text element
+            textObj.textContent = "...";
+            var ellipsisLength = textObj.getComputedTextLength();
+            textObj.textContent = textString;
             for (var x = textString.length - 3; x > 0; x -= 1) {
                 if (textObj.getSubStringLength(0, x) + ellipsisLength <= width + margin) {
                     textObj.textContent = textString.substring(0, x) + "...";

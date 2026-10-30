@@ -1,4 +1,5 @@
 import {Utils} from "./utils";
+import * as d3 from './d3'
 
 import {legendColor, legendSize, legendSymbol} from 'odc-d3-svg-legend'
 
@@ -8,6 +9,9 @@ import {legendColor, legendSize, legendSymbol} from 'odc-d3-svg-legend'
 // var legend = require('../bower_components/d3-legend/no-extend');
 //
 // module.exports.legend = legend;
+
+// gradient id per legend container: charts create a new Legend on every init()
+var gradientIds = d3.local();
 
 export class Legend {
 
@@ -35,7 +39,11 @@ export class Legend {
 
 
     linearGradientBar(barWidth, barHeight, title) {
-        var gradientId = this.cssClassPrefix + "linear-gradient" + "-" + this.guid;
+        var gradientId = gradientIds.get(this.container.node());
+        if (!gradientId) {
+            gradientId = this.cssClassPrefix + "linear-gradient" + "-" + this.guid;
+            gradientIds.set(this.container.node(), gradientId);
+        }
         var scale = this.scale;
         var self = this;
 

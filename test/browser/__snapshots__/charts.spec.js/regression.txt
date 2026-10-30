@@ -67,8 +67,8 @@ svg class="odc-scatterplot" height="400" preserveAspectRatio="xMidYMid meet" vie
         line stroke="currentColor" x2="-6"
         text dy="0.32em" fill="currentColor" x="-9" | 8
       text class="odc-label" dy="1em" style="text-anchor: middle;" transform="translate(-50,160)rotate(-90)"
-    g class="odc-regression-container" clip-path="url(#odc-clip)"
-      clippath id="odc-clip"
+    g class="odc-regression-container" clip-path="url(#odc-clip-GUID_1)"
+      clippath id="odc-clip-GUID_1"
         rect height="320" width="420" x="0" y="0"
       g class="odc-regression"
         path class="odc-line" d="M19.091,239.395L400.909,105.416" shape-rendering="optimizeQuality" style="stroke: black;"

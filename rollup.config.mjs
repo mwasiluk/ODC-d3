@@ -3,9 +3,9 @@
 // inline source map and as a minified file with an external .map:
 //   dist/odc-d3(.min).js             uses the page's global d3 (v7)
 //   dist/standalone/odc-d3(.min).js  bundles the d3-* modules re-exported by src/d3.js
+import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {transformAsync} from '@babel/core';
 import {babel} from '@rollup/plugin-babel';
 import commonjs from '@rollup/plugin-commonjs';
 import {nodeResolve} from '@rollup/plugin-node-resolve';
@@ -56,19 +56,26 @@ function globalD3() {
     };
 }
 
-// src/statistics-utils.js mixes ES `import` with `module.exports`/`require`,
-// which @rollup/plugin-commonjs does not support. Its imports are turned into
-// require() calls first (as babelify did), so it is plain CommonJS.
-function mixedModules() {
+// Packages that ship their own source maps (simple-statistics, odc-d3-svg-legend):
+// Rollup chains them, so the bundle maps point to the packages' original
+// modules (only those with code left), not to their dist files.
+function packageSourceMaps() {
     return {
-        name: 'odc-mixed-modules',
-        async transform(code, id) {
-            if (!id.startsWith(SRC) || !/\bmodule\.exports\b/.test(code) || !/^import\s/m.test(code)) {
+        name: 'odc-package-source-maps',
+        load(id) {
+            if (!/[\\/]node_modules[\\/]/.test(id) || !fs.existsSync(id)) {
                 return null;
             }
-            const result = await transformAsync(code, {filename: id, babelrc: false, configFile: false,
-                sourceMaps: true, plugins: ['@babel/plugin-transform-modules-commonjs']});
-            return {code: result.code, map: result.map};
+            const code = fs.readFileSync(id, 'utf8');
+            const ref = /\/\/# sourceMappingURL=([^\s'"]+\.map)\s*$/.exec(code);
+            const mapFile = ref && path.resolve(path.dirname(id), ref[1]);
+            if (!mapFile || !fs.existsSync(mapFile)) {
+                return null;
+            }
+            const map = JSON.parse(fs.readFileSync(mapFile, 'utf8'));
+            map.sources = map.sources.map(s => path.resolve(path.dirname(mapFile), map.sourceRoot || '', s));
+            delete map.sourceRoot;
+            return {code: code.slice(0, ref.index), map};
         }
     };
 }
@@ -77,10 +84,14 @@ function mixedModules() {
 // for consumers that bundle src/). Like the previous babelify build, every
 // module is compiled to ES5, node_modules included; @babel/runtime and
 // regenerator-runtime are already ES5 and must not import their own helpers.
+// Babel does not read the packages' source maps itself (inputSourceMap): with
+// simple-statistics' map its modules disappeared from the bundle maps; they
+// are chained by packageSourceMaps() instead.
 const babelPlugin = babel({
     babelHelpers: 'runtime',
     babelrc: false,
     configFile: false,
+    inputSourceMap: false,
     exclude: /[\\/]node_modules[\\/](@babel[\\/]runtime|regenerator-runtime)[\\/]/,
     presets: ['@babel/preset-env'],
     plugins: [
@@ -105,7 +116,7 @@ function bundle(dir, plugins) {
         plugins: plugins.concat([
             umdEntry(),
             nodeResolve(),
-            mixedModules(),
+            packageSourceMaps(),
             commonjs({transformMixedEsModules: true}),
             babelPlugin
         ]),

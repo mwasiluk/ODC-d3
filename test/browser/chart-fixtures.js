@@ -58,7 +58,7 @@ module.exports = [
         cls: 'HeatmapTimeSeries',
         svgClass: 'odc-heatmap',
         data: [
-            // yearly data: short labels (daily filling is covered in known-bugs.spec.js)
+            // yearly data: short labels (daily filling is covered in regressions.spec.js)
             {t: '2000', y: 'u', z: 1}, {t: '2001', y: 'u', z: 3}, {t: '2003', y: 'u', z: 2},
             {t: '2000', y: 'v', z: 5}, {t: '2001', y: 'v', z: 4}, {t: '2003', y: 'v', z: 6}
         ],

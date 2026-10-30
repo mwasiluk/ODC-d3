@@ -187,16 +187,17 @@ test('CorrelationMatrix.attachScatterPlot renders an attached ScatterPlot on cel
     expect(r).toEqual({svg: 'odc-scatterplot', dots: 6, attached: true, keys: ['p', 'q']});
 });
 
-// Resize listener registration: condition `!config.width || config.height`
-// (BASELINE §8.7, suspected typo; pinned as current behaviour, intended
-// behaviour not decided yet, so there is no expected-failure test for it).
+// Resize listener: a missing width or height is taken from the container
+// (Utils.sanitizeWidth/Height), so the chart re-renders on window resize unless
+// both are set. Before BASELINE §8.7 was fixed the condition was
+// `!config.width || config.height`: width + height registered it, width only did not.
 for (const [label, size, expected] of [
     ['no width/height', {}, 1],
-    ['width and height', {width: 500, height: 300}, 1],
+    ['width and height', {width: 500, height: 300}, 0],
     ['height only', {height: 300}, 1],
-    ['width only', {width: 500}, 0]
+    ['width only', {width: 500}, 1]
 ]) {
-    test('window resize re-runs init() - ' + label + ' (current behaviour)', async ({odc}) => {
+    test('window resize re-runs init() - ' + label, async ({odc}) => {
         const calls = await odc.run((ODCD3, h, [f, size]) => {
             const chart = new ODCD3.ScatterPlot('#c1', f.data, Object.assign({}, f.config, size));
             let n = 0;
@@ -212,6 +213,45 @@ for (const [label, size, expected] of [
         expect(calls).toEqual([expected, expected]);
     });
 }
+
+test('resize follows the container in the automatic dimension only', async ({odc}) => {
+    const r = await odc.run((ODCD3, h, f) => {
+        const c1 = document.getElementById('c1'), c2 = document.getElementById('c2');
+        c1.style.width = '400px';
+        c2.style.height = '300px';
+        new ODCD3.ScatterPlot('#c1', f.data, Object.assign({}, f.config, {height: 250}));
+        new ODCD3.ScatterPlot('#c2', f.data, Object.assign({}, f.config, {width: 350}));
+        const size = id => [document.querySelector('#' + id + ' svg').getAttribute('width'), document.querySelector('#' + id + ' svg').getAttribute('height')];
+        const before = [size('c1'), size('c2')];
+        c1.style.width = '500px';
+        c2.style.height = '200px';
+        window.dispatchEvent(new Event('resize'));
+        return {before, after: [size('c1'), size('c2')]};
+    }, scatter);
+    expect(r).toEqual({before: [['400', '250'], ['350', '300']], after: [['500', '250'], ['350', '200']]});
+});
+
+test('setConfig().init() registers or removes the resize listener for the new size', async ({odc}) => {
+    const calls = await odc.run((ODCD3, h, f) => {
+        const chart = new ODCD3.ScatterPlot('#c1', f.data, Object.assign({}, f.config, {width: 500, height: 300}));
+        let n = 0;
+        const init = chart.init.bind(chart);
+        chart.init = () => { n++; return init(); };
+        const out = [];
+        window.dispatchEvent(new Event('resize'));
+        out.push(n);
+        chart.setConfig(Object.assign({}, f.config, {width: 500})).init();
+        n = 0;
+        window.dispatchEvent(new Event('resize'));
+        out.push(n);
+        chart.setConfig(Object.assign({}, f.config, {width: 500, height: 300})).init();
+        n = 0;
+        window.dispatchEvent(new Event('resize'));
+        out.push(n);
+        return out;
+    }, scatter);
+    expect(calls).toEqual([0, 1, 0]);
+});
 
 test('resize re-render runs without transitions and restores config.transition', async ({odc}) => {
     const r = await odc.run((ODCD3, h, f) => {

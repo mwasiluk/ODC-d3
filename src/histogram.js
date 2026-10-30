@@ -242,7 +242,7 @@ export class Histogram extends ChartWithColorGroups {
 
         if (plot.tooltip) {
             barMerge.on("mouseover", (e, d) => {
-                self.showTooltip(d.y);
+                self.showTooltip(e, d.y);
             }).on("mouseout", () => {
                 self.hideTooltip();
             });

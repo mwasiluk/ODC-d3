@@ -459,7 +459,7 @@ function log10 ($n) {
  
 function max () {
 	var $max = arguments[0];
-	for (var $i = 0; i < arguments.length; i++) {
+	for (var $i = 0; $i < arguments.length; $i++) {
                 if ($max < arguments[$i])
                         $max = arguments[$i];
 	}	
@@ -468,7 +468,7 @@ function max () {
 
 function min () {
 	var $min = arguments[0];
-	for (var $i = 0; i < arguments.length; i++) {
+	for (var $i = 0; $i < arguments.length; $i++) {
                 if ($min > arguments[$i])
                         $min = arguments[$i];
 	}
@@ -483,7 +483,7 @@ function precision_string ($x) {
 	if ($x) {
 		return round_to_precision($x, precision($x));
 	} else {
-		return "0";
+		return 0;
 	}
 }
 

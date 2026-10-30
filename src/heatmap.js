@@ -945,9 +945,9 @@ export class Heatmap extends Chart {
         });
         if (plot.tooltip) {
 
-            mouseoverCallbacks.push(d => {
+            mouseoverCallbacks.push((d, e) => {
                 var html = parentGroup.label + ": " + d.groupingValue;
-                self.showTooltip(html);
+                self.showTooltip(e, html);
             });
 
             mouseoutCallbacks.push(d => {
@@ -959,7 +959,7 @@ export class Heatmap extends Chart {
         tileRects.on("mouseover", function (e, d) {
             var self = this;
             mouseoverCallbacks.forEach(function (callback) {
-                callback.call(self, d)
+                callback.call(self, d, e)
             });
         });
         tileRects.on("mouseout", function (e, d) {
@@ -1009,9 +1009,9 @@ export class Heatmap extends Chart {
 
         if (plot.tooltip) {
 
-            mouseoverCallbacks.push(c => {
+            mouseoverCallbacks.push((c, e) => {
                 var html = c.value === undefined ? self.config.tooltip.noDataText : self.formatValueZ(c.value);
-                self.showTooltip(html);
+                self.showTooltip(e, html);
 
             });
 
@@ -1039,7 +1039,7 @@ export class Heatmap extends Chart {
 
 
         cellsMerge.on("mouseover", (e, c) => {
-            mouseoverCallbacks.forEach(callback => callback(c));
+            mouseoverCallbacks.forEach(callback => callback(c, e));
         })
             .on("mouseout", (e, c) => {
                 mouseoutCallbacks.forEach(callback => callback(c));

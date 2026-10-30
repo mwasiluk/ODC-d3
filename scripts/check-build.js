@@ -5,9 +5,10 @@
 //  2. `npm run build`: exit code 0, no errors or warnings in the log
 //  3. all 8 dist artifacts exist and are not empty
 //  4. no file outside dist/ was changed, added or removed
-//  5. against the committed dist at HEAD: same CSS rules in the same order;
+//  5. CSS against the committed dist at HEAD: same rules in the same order;
 //     JS bundles are not compared byte by byte (behaviour is tested in 6),
-//     but no bundled package@version may be new; sizes are reported
+//     but the bundled package@version sets must equal the approved ones in
+//     scripts/bundle-inventory.json; sizes are reported
 //  6. unit + browser tests against the fresh dist (ODC_DIST)
 //  7. compile errors: a JS or SCSS error injected into its own fresh copy
 //     must fail the npm script with the tool's exit code and a diagnostic
@@ -49,6 +50,17 @@ const fail = msg => {
 const ok = msg => console.log('ok   ' + msg);
 const plain = log => log.replace(/\u001b\[[\d;]*m/g, '');
 
+// npm as `node npm-cli.js`: on Windows `npm` is a .cmd file that spawn() cannot
+// run without a shell. npm_execpath is set when this runs as an npm script.
+const NPM_CLI = [process.env.npm_execpath,
+    path.join(path.dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js'),
+    path.join(path.dirname(process.execPath), '..', 'lib', 'node_modules', 'npm', 'bin', 'npm-cli.js')]
+    .find(p => p && /npm-cli\.js$/.test(p) && fs.existsSync(p));
+
+function npm(npmArgs, opts) {
+    return NPM_CLI ? run(process.execPath, [NPM_CLI].concat(npmArgs), opts) : run('npm', npmArgs, opts);
+}
+
 function run(cmd, cmdArgs, opts) {
     const started = Date.now();
     const r = spawnSync(cmd, cmdArgs, Object.assign({encoding: 'utf8', maxBuffer: 1 << 28}, opts));
@@ -60,7 +72,7 @@ function run(cmd, cmdArgs, opts) {
 }
 
 function npmRun(work, logs, name, script) {
-    const r = run('npm', ['run', script], {cwd: work, log: path.join(logs, name + '.log')});
+    const r = npm(['run', script], {cwd: work, log: path.join(logs, name + '.log')});
     console.log('     npm run ' + script + ': exit ' + r.status + ' in ' + r.seconds + ' s, log ' + path.join(logs, name + '.log'));
     return r;
 }
@@ -137,8 +149,8 @@ function compareCss(work) {
     }
 }
 
-// "name@version" of every package with code in a bundle, from its source map
-// and the lockfile the bundle was built from
+// "install/path@version" of every package with code in a bundle, from its
+// source map and the lockfile the bundle was built from
 function inventory(map, mapDir, lock) {
     const out = new Set();
     for (const s of map.sources) {
@@ -150,30 +162,41 @@ function inventory(map, mapDir, lock) {
         const parts = p.slice(i + 'node_modules/'.length).split('/');
         const installPath = p.slice(0, i) + 'node_modules/' + parts.slice(0, parts[0].startsWith('@') ? 2 : 1).join('/');
         const entry = lock.packages[installPath];
-        // browser-pack: browserify's prelude, not a package of the library
-        if (!/node_modules\/browser-pack$/.test(installPath)) {
-            out.add(installPath.replace(/.*node_modules\//, '') + '@' + (entry ? entry.version : '?'));
-        }
+        // install path below the root node_modules/, so a package moved by hoisting is a change too
+        out.add(installPath.slice(installPath.indexOf('node_modules/') + 'node_modules/'.length) + '@' + (entry ? entry.version : '?'));
     }
     return out;
 }
 
+// Approved package@version sets per bundle. A dependency or lockfile change
+// that adds, removes or moves a package in a bundle fails until this file is
+// updated deliberately (docs/modernization/TESTING.md, "Build check").
+const INVENTORY_FILE = 'scripts/bundle-inventory.json';
+
 function compareJs(work) {
-    const headLock = JSON.parse(atHead('package-lock.json'));
+    const approved = JSON.parse(fs.readFileSync(path.join(root, INVENTORY_FILE), 'utf8'));
     const lock = JSON.parse(fs.readFileSync(path.join(work, 'package-lock.json'), 'utf8'));
+    const fresh = {};
+    let mismatch = false;
     for (const rel of ['dist/odc-d3.min.js.map', 'dist/standalone/odc-d3.min.js.map']) {
         const mapDir = path.posix.dirname(rel);
-        // committed maps (browserify) list sources relative to the repository root
-        const refMap = JSON.parse(atHead(rel));
-        const ref = inventory(refMap, refMap.sources.some(s => s.startsWith('../')) ? mapDir : '.', headLock);
+        const name = rel.replace('.min.js.map', '.js');
         const cur = inventory(JSON.parse(fs.readFileSync(path.join(work, rel), 'utf8')), mapDir, lock);
-        const added = [...cur].filter(p => !ref.has(p)), removed = [...ref].filter(p => !cur.has(p));
-        if (added.length || cur.has('?')) {
-            fail(rel.replace('.min.js.map', '') + ' bundles packages that HEAD does not: ' + added.join(', '));
+        fresh[name] = [...cur].sort();
+        const expected = new Set(approved[name] || []);
+        const added = [...cur].filter(p => !expected.has(p)), removed = [...expected].filter(p => !cur.has(p));
+        if (added.length || removed.length || cur.has('?')) {
+            mismatch = true;
+            fail(name + ' bundles packages that ' + INVENTORY_FILE + ' does not approve: '
+                + (added.length ? 'not approved ' + added.join(', ') : '') + (added.length && removed.length ? '; ' : '')
+                + (removed.length ? 'approved but not bundled ' + removed.join(', ') : ''));
         } else {
-            ok(rel.replace('.min.js.map', '') + ' bundles ' + cur.size + ' packages, none new'
-                + (removed.length ? ' (no code left from: ' + removed.join(', ') + ')' : ' (same set as HEAD)'));
+            ok(name + ' bundles the ' + cur.size + ' approved packages');
         }
+    }
+    if (mismatch) {
+        console.log('     fresh inventory (copy to ' + INVENTORY_FILE + ' after review):\n'
+            + JSON.stringify(fresh, null, 2).replace(/^/gm, '     '));
     }
     const kb = n => (n / 1024).toFixed(1).padStart(8) + ' KiB';
     console.log('     size: file, HEAD, fresh (gzip HEAD, gzip fresh)');
@@ -217,8 +240,9 @@ const JS_ERROR = {file: 'src/utils.js', marker: 'odcInjectedJsError', append: '\
         + '[\\s\\S]*?' + line + ': export const odcInjectedJsError = ;').test(log)};
 const SCSS_ERROR = {file: 'src/styles/shared.scss', marker: 'odc-injected-scss-error', append: '\n.odc-injected-scss-error { color: ; }\n',
     diagnostic: (log, line) => new RegExp('Error: Expected expression\\.'
-        + '[\\s\\S]*?' + line + ' │ \\.odc-injected-scss-error \\{ color: ; \\}'
-        + '[\\s\\S]*?src/styles/shared\\.scss ' + line + ':\\d+').test(log)};
+        // Windows: ASCII gutter "|" and backslashes
+        + '[\\s\\S]*?' + line + ' [│|] \\.odc-injected-scss-error \\{ color: ; \\}'
+        + '[\\s\\S]*?src[\\\\/]styles[\\\\/]shared\\.scss ' + line + ':\\d+').test(log)};
 const CSS = ['dist/odc-d3.css', 'dist/odc-d3.min.css'];
 const JS = ARTIFACTS.filter(rel => !CSS.includes(rel));
 const RUNS_ROLLUP = '> rollup -c', RUNS_SASS = '> sass ';
@@ -264,7 +288,8 @@ function errorCases(base, nodeModules, logs) {
         }
         c.inject.forEach((e, i) => {
             if (!e.diagnostic(r.log, lines[i])) {
-                problems.push('no diagnostic for the error injected into ' + e.file + ':' + lines[i]);
+                problems.push('no diagnostic for the error injected into ' + e.file + ':' + lines[i]
+                    + '; log:\n' + r.log.split('\n').slice(0, 25).map(l => '       | ' + l).join('\n'));
             }
         });
         c.ran.filter(s => !r.log.includes(s)).forEach(s => problems.push("'" + s.trim() + "' did not run"));
@@ -404,8 +429,13 @@ async function checkWatch(work, logs) {
     } else {
         ok('npm run watch: stopped with exit 0 after SIGTERM');
     }
+    // exited children of the watchers (Sass runs `sh`) can stay in the group
+    // as zombies until they are reaped; live watchers do not go away
+    for (const until = Date.now() + 5000; GROUPS && groupAlive(child.pid) && Date.now() < until;) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
     if (GROUPS && groupAlive(child.pid)) {
-        fail('watcher processes still running after npm run watch exited');
+        fail('watcher processes still running 5 s after npm run watch exited');
         process.kill(-child.pid, 'SIGKILL');
     }
     [scss, utils].forEach((f, i) => fs.writeFileSync(f, originals[i]));
@@ -432,7 +462,7 @@ async function main() {
 
     ok('copied ' + copyTracked(work) + ' tracked files');
 
-    const ci = run('npm', ['ci', '--no-audit', '--no-fund'], {cwd: work, log: path.join(logs, 'npm-ci.log')});
+    const ci = npm(['ci', '--no-audit', '--no-fund'], {cwd: work, log: path.join(logs, 'npm-ci.log')});
     if (ci.status !== 0) {
         fail('npm ci exited ' + ci.status + ' (log: ' + path.join(logs, 'npm-ci.log') + ')');
         return finish(work, logs);
@@ -460,7 +490,7 @@ async function main() {
     if (!args.has('--skip-tests')) {
         const env = Object.assign({}, process.env, {ODC_DIST: path.join(work, 'dist')});
         for (const script of ['test:unit', 'test:browser']) {
-            const r = run('npm', ['run', script], {cwd: root, env, log: path.join(logs, script.replace(':', '-') + '.log')});
+            const r = npm(['run', script], {cwd: root, env, log: path.join(logs, script.replace(':', '-') + '.log')});
             const summary = r.log.split('\n').filter(l => /^# (pass|fail)|\d+ (passed|failed|skipped)/.test(l.trim())).map(l => l.trim()).join(', ');
             if (r.status !== 0) {
                 fail('npm run ' + script + ' on fresh dist exited ' + r.status + ' (' + summary + ')');

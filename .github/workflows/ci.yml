@@ -19,9 +19,9 @@ jobs:
         # baseline Node line (docs/modernization/BASELINE.md §1)
         node: ['22.22.0']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
           cache: npm
@@ -41,17 +41,64 @@ jobs:
       - name: Install Chromium for Playwright
         run: npx playwright install --with-deps chromium
 
-      - name: Tests on committed dist
-        run: npm test
-
+      # The committed dist/ is the v2.0.0 build and predates the fixes in src/,
+      # so the tests run on a fresh build only (docs/modernization/TESTING.md).
       - name: npm run build in isolated copy, artifact checks, tests on fresh dist, error cases, watch and serve
         run: npm run test:build
 
       - name: Upload Playwright results on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-results-node-${{ matrix.node }}
           path: test-results/
           if-no-files-found: ignore
           retention-days: 7
+
+  windows-smoke:
+    name: Build smoke (Node ${{ matrix.node }}, Windows)
+    runs-on: windows-2025
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        # 24.21.0: Sass 1.42 hung there in the review of feat/modern-build
+        node: ['22.22.0', '24.21.0', '24']
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            test/vendor/package-lock.json
+
+      - name: Versions
+        run: node --version && npm --version
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Install test vendor libraries (d3 for the global bundle)
+        run: npm run test:setup
+
+      # a hang (seen with Sass 1.42 on Windows / Node 24) fails the step
+      - name: npm run build
+        timeout-minutes: 5
+        run: npm run build
+
+      - name: Unit tests on the fresh dist (Node only, no browser)
+        run: npm run test:unit
+
+      - name: The build changed nothing outside dist/
+        shell: bash
+        run: |
+          changes="$(git status --porcelain --untracked-files=all -- . ':(exclude)dist')"
+          echo "$changes"
+          test -z "$changes"
+
+      - name: Build check in an isolated copy (artifacts, CSS rules, bundle inventory, compile error exit codes)
+        timeout-minutes: 10
+        run: node scripts/check-build.js --skip-tests --skip-dev-scripts

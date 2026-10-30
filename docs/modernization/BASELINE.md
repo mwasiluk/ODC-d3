@@ -208,6 +208,13 @@ page `examples/index.html` does not link the line chart.
 > identical install paths and versions, plus test-only devDependencies; see
 > [`TESTING.md`](TESTING.md#dependency-and-lockfile-changes). The runtime
 > resolutions listed below are unchanged.
+>
+> Update (`feat/dependency-and-runtime-modernization`): the runtime tree was
+> updated: D3 modules at the versions of `d3@7.9.0`, no D3 v1/v2-era
+> packages left, `d3-time`, `d3-time-format` and `d3-transition` declared,
+> `@babel/runtime` 7.29.10, `simple-statistics` 8.0.0. Versions before/after
+> and deferred updates: [`TESTING.md`](TESTING.md#dependency-and-lockfile-changes),
+> step 4. The approved bundle contents are in `scripts/bundle-inventory.json`.
 
 - `package-lock.json` is **lockfileVersion 1** with stale metadata
   (`"version": "1.1.8"` vs `package.json` `2.0.0`). npm 10 accepts it for `npm ci`
@@ -235,7 +242,9 @@ deliberately, with a changelog entry).
 
 - `main: "src/index.js"` – untranspiled ES2015+ modules with class fields,
   extensionless relative imports and mixed ESM/CJS (`statistics-utils.js` uses
-  `import` **and** `module.exports`). Not loadable by plain Node (#12).
+  `import` **and** `module.exports`; a plain ES module with the same named
+  export since `feat/dependency-and-runtime-modernization`). Not loadable by
+  plain Node (#12).
   Consumers need a bundler with Babel. The `browserify.transform` field
   applies babelify to this package for browserify consumers, but `babelify`
   and the presets are devDependencies, so that only works if the consumer
@@ -290,7 +299,17 @@ enumerable getter per export.
 | Prototype extensions applied to | the page's global `d3.selection` | the bundled `d3-selection` only |
 
 The global bundle therefore contains a second copy of `d3-selection` used by
-the legend, next to the page's D3. The D3 namespace object is also a
+the legend, next to the page's D3.
+
+Since `feat/dependency-and-runtime-modernization` (exact sets in
+`scripts/bundle-inventory.json`): the global bundle has `@babel/runtime,
+d3-array, d3-color, d3-dispatch, d3-format, d3-interpolate, d3-scale,
+d3-selection, odc-d3-svg-legend, simple-statistics` plus the legend's own
+`d3-array@3.1.1` and `d3-format@3.0.1` (exact pins of the fork, nested
+because the root has the `d3@7.9.0` versions); `regenerator-runtime` is
+replaced by `@babel/runtime` helpers. The standalone shim re-exports
+`d3-time` and `d3-transition` too, so `d3.timeDay` etc. exist in both
+variants. The D3 namespace object is also a
 configuration contract: `Utils.createScale(name)` calls `d3['scale' + Name]()`
 and `Utils.createAxis(orient)` calls `d3['axis' + Orient]()`, so the set of
 names re-exported by `src/d3.js` (or present on global `d3`) defines which
@@ -355,6 +374,16 @@ build this mutates the page's D3 for all other code on the page.
 
 ### 7.6 simple-statistics
 
+> Update (`feat/dependency-and-runtime-modernization`): `simple-statistics`
+> 8.0.0 through its public API (named imports of the package); `quantile` is
+> a local copy of the 4.1.1 definition (8.x interpolates, type 7). The
+> golden values below still hold except: `errorFunction(1)` =
+> `0.8427007877600068` (same approximation, Horner evaluation, one ulp);
+> `tValue` for df ≤ 3 returns numbers (§8.4) and `tValue(df, 0.5)` the
+> number `0` (§8.15). `linearRegression` keeps `{m: 0.8, b: 1.5}`, differs
+> in the last bits elsewhere and is exact for large x offsets.
+> `src/statistics-utils.js` is a plain ES module now.
+
 `StatisticsUtils` deep-requires CommonJS files from `simple-statistics@4.1.1`:
 `src/sample_correlation`, `linear_regression`, `linear_regression_line`,
 `error_function`, `standard_deviation`, `sample_standard_deviation`,
@@ -398,18 +427,29 @@ ChartWithColorGroups, Heatmap, CorrelationMatrix and DivergingStackedBarChart.
 4. `statistics-distributions.js` `max()`/`min()` loop over `$i` but test the
    undeclared `i` → `tValue` throws for df ≤ 3. Effect: `Regression` with
    confidence bands fails for any group with ≤ 5 points (`df = n - 2`).
+   **Fixed** (`feat/dependency-and-runtime-modernization`); values checked
+   against scipy. A group of 2 points (df = 0) still throws `Invalid n`.
 5. `tValue(df, 0.975)` returns a negative value, so `Regression`'s margin of
    error is negative (bands are drawn with up/down swapped). Documented
-   behaviour; changing it changes results.
+   behaviour; changing it changes results. **Open**: `tValue(df, p)` is the
+   upper critical value (`P(T > t) = p`, as scipy `t.isf`), so the sign is
+   consistent; the question is whether `Regression` should call it with
+   `alpha / 2` (positive margin, `y0 < y1`) and whether custom
+   `confidence.criticalValue` functions rely on the current argument. The
+   drawn band area is the same either way. Needs a decision on the
+   `criticalValue(df, p)` contract.
 6. `Chart.prefixClass(clazz, addDot)` has an operator-precedence bug
    (`addDot ? '.' : '' + prefix + clazz` returns just `'.'` when `addDot` is true).
+   **Fixed**.
 7. `Chart.initSvg`: condition `!config.width || config.height` (probably meant
-   `!config.width || !config.height`).
+   `!config.width || !config.height`). **Fixed**: registered when width or
+   height is automatic (taken from the container), removed when both are set.
 8. `examples/heatmap-timeseries` is broken (§5).
 9. README still documents D3 4.x/3.x and `1.x`; nothing says `2.x` needs D3 v7.
-10. `package-lock.json` metadata says `1.1.8`, lockfile v1 (§6).
+10. `package-lock.json` metadata says `1.1.8`, lockfile v1 (§6). **Fixed** (v3).
 11. Production `npm audit`: `d3-color@1.2.3` (high, ReDoS) and
     `@babel/runtime@7.15.4` (moderate) are shipped inside the bundles.
+    **Fixed**: production `npm audit` reports 0.
 
 Found by the contract tests (`docs/modernization/TESTING.md`), reproduced in
 `test/browser/known-bugs.spec.js` and `test/unit/statistics.test.js`:
@@ -417,25 +457,25 @@ Found by the contract tests (`docs/modernization/TESTING.md`), reproduced in
 12. **Standalone bundle only:** `HeatmapTimeSeries` with `x.fillMissing: true`
     throws `TypeError: Cannot read properties of undefined (reading 'offset')`.
     It calls `d3['time' + Interval].offset`, and `src/d3.js` does not re-export
-    `d3-time`. Works in the global bundle (page D3 has `timeDay` etc.).
+    `d3-time`. Works in the global bundle (page D3 has `timeDay` etc.). **Fixed**.
 13. `Legend.linearGradientBar` creates a new gradient id on every `init()` and
     never removes the previous `<linearGradient>`: `Heatmap`,
-    `HeatmapTimeSeries` and `CorrelationMatrix` gain one element per redraw.
+    `HeatmapTimeSeries` and `CorrelationMatrix` gain one element per redraw. **Fixed**.
 14. Tooltips are empty: 10 call sites (ScatterPlot, LineChart, Histogram,
     ScatterPlotMatrix, Heatmap ×2, CorrelationMatrix, BoxPlotBase ×3) call
     `showTooltip(html)`, but the signature is `showTooltip(event, html)`. The
     tooltip becomes visible (`opacity 0.9`) with no content and no position.
-    `BarChart` passes the event and works.
-15. `tValue(df, 0.5)` returns the string `'0'` instead of a number.
+    `BarChart` passes the event and works. **Fixed**.
+15. `tValue(df, 0.5)` returns the string `'0'` instead of a number. **Fixed**.
 16. `simple-statistics@4.1.1` `quantile(sortedArray, [p1, p2, ...])` returns
-    `NaN` for some p (third-party; the charts only call it with a single p).
+    `NaN` for some p (third-party; the charts only call it with a single p). **Fixed**.
 17. `Regression` uses the fixed clipPath id `odc-clip`. With two Regression
     charts on one page the id is duplicated and the second chart's
-    `clip-path` resolves to the first chart's clipPath.
+    `clip-path` resolves to the first chart's clipPath. **Fixed**.
 18. Minor: `Utils.placeTextWithEllipsis` budgets `"..."` as 9px. Its real
     width is about 10.5px at 11px DejaVu Sans, so a shortened label can
     exceed the available width by that difference. Pinned in
-    `text-metrics.spec.js`; no expected-failure test (tolerance not decided).
+    `text-metrics.spec.js`; no expected-failure test (tolerance not decided). **Fixed**.
 
 ## 9. Blockers
 
@@ -512,18 +552,23 @@ against the committed `dist/` and against a fresh build.
 | 3 | Stop rewriting `src/d3.js` | Done in `feat/modern-build` (Rollup resolves the import, §4.1). |
 | 4 | Fix or remove `watch`/`serve`/`default-watch`/`build-js2` | Done in `feat/modern-build`: Gulp removed, `npm run watch` / `npm run serve`. |
 | 5 | Fix `examples/heatmap-timeseries` (and the dead `d3.json` call in `heatmap`) | Replace bower `lodash`/`moment` and D3 v4 callback API. Examples only, no library change. |
-| 6 | Regenerate lockfile (v3) with the same direct ranges; decide on the stale `d3-color@1` / `d3-time-format@2` transitive packages | Separate PR, compare bundles and golden values before/after. |
-| 7 | Fix `statistics-distributions` `max/min` (`i` → `$i`) | Changes behaviour (no more exception for df ≤ 3); needs a changelog note. Decide separately whether to touch the negative critical value (§8.5). |
-| 8 | Fix `prefixClass` and the resize condition (§8.6, §8.7) | Behaviour changes, each covered by a test. |
+| 6 | Regenerate lockfile (v3) with the same direct ranges; decide on the stale `d3-color@1` / `d3-time-format@2` transitive packages | Done (v3 in `test/chart-contracts`, stale packages replaced in `feat/dependency-and-runtime-modernization`). |
+| 7 | Fix `statistics-distributions` `max/min` (`i` → `$i`) | Done; the negative critical value (§8.5) is still open. |
+| 8 | Fix `prefixClass` and the resize condition (§8.6, §8.7) | Done. |
 | 9 | Package metadata: `files`, `exports` (keeping current deep paths), `module`/`browser`, `engines`, README for D3 v7 | Must not break the deep imports listed in §7.1. |
 | 10 | Bundler/tooling modernization (gulp/browserify → newer toolchain) | Done in `feat/modern-build` (Rollup, Dart Sass CLI, npm scripts; behavioural comparison). |
-| 11 | Upgrade `simple-statistics` and `odc-d3-svg-legend` | Deep `src/*` paths of simple-statistics change in later majors; protect with the golden tests. |
-| 12 | Re-export `d3-time` in the standalone shim (§8.12) | Adds names to the D3 namespace object (§7.3); flips the known-bug test. |
-| 13 | Reuse/remove the legend gradient on redraw (§8.13) | Flips the known-bug tests; snapshot of the re-init test changes. |
-| 14 | Pass the event to `showTooltip` at the 10 call sites (§8.14) | Visible behaviour change (tooltips get content); flips the known-bug tests. |
-| 15 | Unique clipPath id per Regression instance (§8.17) | Snapshot of `regression` changes (id becomes a guid); flips the known-bug test. |
+| 11 | Upgrade `simple-statistics` and `odc-d3-svg-legend` | `simple-statistics` done (8.0.0). `odc-d3-svg-legend` stays 3.0.0: its source is `github.com/mwasiluk/d3-legend` (`master` = tag `v3.0.0`, the only npm release); it pins `d3-array` 3.1.1, `d3-format` 3.0.1, `d3-scale` 4.0.2, `d3-selection` 3.0.0, `d3-dispatch` 3.0.1, `d3-transition` 3.0.1 exactly. A release with `^3` ranges there would remove the two nested copies. The upstream `d3-svg-legend` (2.25.6) targets D3 v4/v5. |
+| 12 | Re-export `d3-time` in the standalone shim (§8.12) | Done. |
+| 13 | Reuse/remove the legend gradient on redraw (§8.13) | Done. |
+| 14 | Pass the event to `showTooltip` at the 10 call sites (§8.14) | Done. |
+| 15 | Unique clipPath id per Regression instance (§8.17) | Done. |
 | 16 | Rebuild and commit `dist/` with the new build | Release task; until then `dist/` is the Browserify build. Afterwards `check-build.js` can compare JS bundles byte by byte again. |
-| 17 | Update the Babel toolchain (`@babel/core`/`preset-env` 7.15, `caniuse-lite` 2021) and `sass` 1.42 | Dev only; removes the outdated-browserslist notice. Keep ES5 output unless a target change is decided; compare bundles. |
+| 17 | Update the Babel toolchain (`@babel/core`/`preset-env` 7.15, `caniuse-lite` 2021) and `sass` 1.42 | Done (Babel 7.29, Sass 1.106). Babel 8 deferred, see TESTING.md "Dependency and lockfile changes" step 4. |
 | 18 | Build `dist/` atomically | Build into a temp dir and move on success, so a failed build leaves the previous `dist/`. |
-| 19 | Windows CI job for the npm scripts | Scripts avoid shell commands but are tested on Linux only. |
-| 20 | `actions/checkout` / `setup-node` v4 run on Node 20 (deprecation warning in CI) | Bump the actions. |
+| 19 | Windows CI job for the npm scripts | Done: build smoke on Node 22 and 24 (`watch` stop and browser tests stay Linux only). |
+| 20 | `actions/checkout` / `setup-node` v4 run on Node 20 (deprecation warning in CI) | Done (v7). |
+| 21 | Decide the `tValue` sign / `criticalValue(df, p)` contract (§8.5) | Changes Regression band data (`y0`/`y1`), not the drawn area. |
+| 22 | Regression group with 2 points (df = 0) throws `Invalid n` from `tValue` | Skip the band for df < 1 instead; behaviour change. |
+| 23 | `tValue` accuracy for df 4–5 and small p (e.g. `tValue(4, 0.001)` = 7.1592, exact 7.1732) | Cornish-Fisher expansion without refinement for df ≥ 4; for p = 0.975 (Regression) the relative error is ≤ 6e-5. |
+| 24 | Release `odc-d3-svg-legend` with `^3` ranges (`mwasiluk/d3-legend`) | Removes the nested `d3-array`/`d3-format` copies (~7 KB minified in the standalone bundle). |
+| 25 | Babel 8 for the library build | Needs explicit ES5 targets, a separate helper strategy (`@babel/runtime` 8 vs. consumers' Babel 7) and a replacement for the Babel 6 class-properties plugin with the same assignment semantics. |

@@ -55,6 +55,22 @@ test('Regression: lines follow linearRegression per group and overall', async ({
     ]);
 });
 
+// df = n - 2 <= 3 threw ReferenceError in tValue before (BASELINE §8.4)
+test('Regression: a group of 5 points gets a confidence band (df = 3)', async ({odc}) => {
+    const r = await odc.run((ODCD3) => {
+        const data = [{x: 1, y: 2, g: 'a'}, {x: 2, y: 3, g: 'a'}, {x: 3, y: 5, g: 'a'}, {x: 4, y: 4, g: 'a'}, {x: 5, y: 6, g: 'a'}];
+        const calls = [];
+        new ODCD3.Regression('#c1', data, {x: {key: 'x'}, y: {key: 'y'}, groups: {key: 'g'}, confidence: {
+            criticalValue: (df, p) => { const t = ODCD3.StatisticsUtils.tValue(df, p); calls.push([df, p, t]); return t; }
+        }});
+        const bands = Array.from(document.querySelectorAll('#c1 g.odc-regression')).map(g => g.__data__.confidence.points);
+        return {calls, bands: document.querySelectorAll('#c1 path.odc-confidence').length,
+            finite: bands.every(b => b.length === 3 && b.every(p => Number.isFinite(p.y0) && Number.isFinite(p.y1)))};
+    });
+    // one call for the group, one for the overall regression (same points)
+    expect(r).toEqual({calls: [[3, 0.975, -3.1824], [3, 0.975, -3.1824]], bands: 2, finite: true});
+});
+
 test('BoxPlot: quartiles via quantile, whiskers at min/max', async ({odc}) => {
     const f = by['box-plot'];
     const read = d => ({key: d.key, Q1: d.values.Q1, Q2: d.values.Q2, Q3: d.values.Q3,

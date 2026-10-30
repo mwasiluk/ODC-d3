@@ -302,7 +302,7 @@ export class ScatterPlotMatrix extends ChartWithColorGroups {
                             }
                             html += group
                         }
-                        self.showTooltip(html);
+                        self.showTooltip(event, html);
                     })
                         .on("mouseout", () => {
                             self.hideTooltip();

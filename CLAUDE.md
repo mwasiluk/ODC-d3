@@ -3,7 +3,8 @@
 Short version for Claude Code:
 
 - Read `docs/modernization/BASELINE.md` before touching build, deps or API.
-- Tests: `npm test` (dist/), `npm run test:build` (fresh build); see
+- Tests: `npm run test:build` (fresh build; CI runs only this), `npm test`
+  (dist/ or `ODC_DIST`; the committed dist/ predates the src/ fixes); see
   `docs/modernization/TESTING.md`.
 - Build: `npm run build` (Rollup for JS, Dart Sass CLI for CSS; no Gulp or
   Browserify). It writes only `dist/` (tracked), fails with a non-zero exit

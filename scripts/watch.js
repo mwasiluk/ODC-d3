@@ -11,7 +11,8 @@ const {spawn} = require('child_process');
 
 const root = path.resolve(__dirname, '..');
 const rollup = require.resolve('rollup/dist/bin/rollup');
-const sass = require.resolve('sass/sass.js');
+// the sass CLI (bin sass.js) is not listed in the package's "exports"
+const sass = path.join(path.dirname(require.resolve('sass')), 'sass.js');
 const watchers = [
     [rollup, '-c', '--watch'],
     [sass, '--watch', '--no-source-map', '--no-error-css', 'src/odc-d3.scss', 'dist/odc-d3.css'],

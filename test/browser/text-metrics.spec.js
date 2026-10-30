@@ -47,7 +47,8 @@ test('title and subtitle are centred on the svg using their measured width', asy
 
 // Heatmap labels longer than the available width are shortened by
 // Utils.placeTextWithEllipsis: the longest prefix p with
-// getSubStringLength(0, p) + 9 <= maxWidth, followed by "...".
+// getSubStringLength(0, p) + width("...") <= maxWidth, followed by "...".
+// "..." was budgeted as a fixed 9px before (BASELINE §8.18).
 const LONG_A = 'categories of the second kind';
 const LONG_B = 'an extremely long column label for testing';
 const heatmapData = [LONG_A, LONG_B, 'b'].map((v, i) => ({x: v, y: v, z: i + 1}));
@@ -65,13 +66,16 @@ function readLabels(odc) {
                 t.parentNode.appendChild(probe);
                 const shown = t.textContent;
                 const p = shown.endsWith('...') ? shown.length - 3 : values[i].length;
+                probe.textContent = '...';
+                const ellipsis = probe.getComputedTextLength();
+                probe.textContent = values[i];
                 out.labels.push({
                     axis, full: values[i], shown,
                     length: t.getComputedTextLength(),
                     prefix: p ? t.getSubStringLength(0, p) : 0,
                     dots: shown.length > p ? t.getSubStringLength(p, shown.length - p) : 0,
-                    fits: probe.getSubStringLength(0, p) + 9 <= widths[axis],
-                    maximal: p === values[i].length || probe.getSubStringLength(0, p + 1) + 9 > widths[axis]
+                    fits: probe.getSubStringLength(0, p) + (p < values[i].length ? ellipsis : 0) <= widths[axis],
+                    maximal: p === values[i].length || probe.getSubStringLength(0, p + 1) + ellipsis > widths[axis]
                 });
                 probe.remove();
             });
@@ -90,9 +94,8 @@ test('Heatmap: long axis labels are shortened with an ellipsis to the available 
         expect(l.prefix + l.dots, l.axis + ' ' + l.shown).toBeCloseTo(l.length, 1);
         if (l.shown.endsWith('...')) {
             expect(l.full.startsWith(l.shown.slice(0, -3))).toBe(true);
-            // "..." is budgeted as 9px; the label overflows maxWidth by at most
-            // the difference to its real width (current behaviour)
-            expect(l.length).toBeLessThanOrEqual(r.widths[l.axis] + Math.max(0, l.dots - 9) + 1e-6);
+            // the shortened label fits the available width
+            expect(l.length).toBeLessThanOrEqual(r.widths[l.axis] + 1e-3);
         }
     }
     // real width of "..." at 11px in the test font
@@ -102,6 +105,32 @@ test('Heatmap: long axis labels are shortened with an ellipsis to the available 
         ['x', 'categories of the ...'], ['x', 'an extremely lon...'], ['x', 'b'],
         ['y', 'categories o...'], ['y', 'an extremel...'], ['y', 'b']
     ]);
+});
+
+// BASELINE §8.18: with "..." budgeted as 9px, a width between
+// prefix + 9 and prefix + width("...") kept a prefix one character too long
+test('Utils.placeTextWithEllipsis: the shortened text fits when "..." is wider than 9px', async ({odc}) => {
+    const r = await odc.run((ODCD3) => {
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        document.getElementById('c1').appendChild(svg);
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('style', 'font-size: 11px');
+        svg.appendChild(text);
+        const label = 'categories of the second kind';
+        text.textContent = '...';
+        const dots = text.getComputedTextLength();
+        text.textContent = label;
+        // budget between "prefix of 12 chars + 9" and "prefix + real ..."
+        const width = text.getSubStringLength(0, 12) + (9 + dots) / 2;
+        // only .node() of the selection is used
+        const placed = ODCD3.Utils.placeTextWithEllipsis({node: () => text}, label, width);
+        return {dots, placed, shown: text.textContent, length: text.getComputedTextLength(), width};
+    });
+    expect(r.dots).toBeGreaterThan(9.5);
+    expect(r.placed).toBe(true);
+    // 'categories o...' (12 characters) overflowed with the 9px budget
+    expect(r.shown).toBe('categories ...');
+    expect(r.length).toBeLessThanOrEqual(r.width);
 });
 
 test('Heatmap: hovering a shortened label shows the full text in the tooltip', async ({odc}) => {
