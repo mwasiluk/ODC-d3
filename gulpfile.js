@@ -1,3 +1,5 @@
+var fs = require('fs');
+var stream = require('stream');
 var gulp = require('gulp');
 var del = require('del');
 var merge = require('merge-stream');
@@ -23,16 +25,18 @@ gulp.task('clean', function (cb) {
     return del(['tmp', 'dist'], cb);
 });
 
-gulp.task('build-css', function () {
+gulp.task('build-css', function (done) {
     var fileName = projectName;
-    return gulp.src('./src/styles/*')
-        .pipe(plugins.plumber({ errorHandler: onError }))
-        .pipe(sass())
-        .pipe(plugins.concat(fileName+'.css'))
-        .pipe(gulp.dest('./dist'))
-        .pipe(plugins.cleanCss())
-        .pipe(plugins.rename({ extname: '.min.css' }))
-        .pipe(gulp.dest('./dist'));
+    stream.pipeline(
+        gulp.src('./src/styles/*'),
+        sass(),
+        plugins.concat(fileName+'.css'),
+        gulp.dest('./dist'),
+        plugins.cleanCss(),
+        plugins.rename({ extname: '.min.css' }),
+        gulp.dest('./dist'),
+        done
+    );
 });
 
 gulp.task('build-js2', function () {
@@ -50,7 +54,23 @@ gulp.task('build-js2', function () {
         .pipe(gulp.dest('dist'));
 });
 
+// src/d3.js holds the global variant from copy-global-d3 until restoreImportD3()
+var d3Swapped = false;
+
+function restoreImportD3() {
+    if (d3Swapped) {
+        fs.copyFileSync('./src/d3_import.js', './src/d3.js');
+        d3Swapped = false;
+    }
+}
+
+// Last resort when the process exits while src/d3.js is swapped, e.g. gulp-cli
+// calling process.exit(1) after another task given on the command line failed.
+// Not reached on signals (SIGINT/SIGTERM), see BASELINE §8.2.
+process.on('exit', restoreImportD3);
+
 gulp.task('copy-global-d3', function () {
+    d3Swapped = true;
     return gulp.src("./src/d3_global.js")
         .pipe(plugins.rename({
             basename: "d3"
@@ -59,26 +79,26 @@ gulp.task('copy-global-d3', function () {
 });
 
 
-gulp.task('do-build-js', gulp.series('copy-global-d3', function () {
+gulp.task('do-build-js', gulp.series('copy-global-d3', function (done) {
 
-    return buildJs(projectName, "dist")
+    buildJs(projectName, "dist", function (err) {
+        // also on error: gulp.series would skip a separate restore step
+        restoreImportD3();
+        done(err);
+    });
 
 }));
 
-gulp.task('build-js', gulp.series('do-build-js', function () {
-    return gulp.src("./src/d3_import.js")
-        .pipe(plugins.rename({
-            basename: "d3"
-        }))
-        .pipe(gulp.dest('./src/'))
-}));
+gulp.task('build-js', gulp.series('do-build-js'));
 
-gulp.task('build-js-standalone', function () {
-    return buildJs(projectName, "dist/standalone");
+gulp.task('build-js-standalone', function (done) {
+    buildJs(projectName, "dist/standalone", done);
 });
 
-function buildJs(jsFileName, dest) {
-    return browserify({
+// stream.pipeline passes an error of any stage to done and destroys the other
+// stages, so a failed compile fails the task and nothing after it runs.
+function buildJs(jsFileName, dest, done) {
+    var bundle = browserify({
         basedir: '.',
         debug: true,
         entries: ['src/index.js'],
@@ -88,21 +108,50 @@ function buildJs(jsFileName, dest) {
     })
 
         .transform("babelify", browserifyTransforms['babelify'])
-        .bundle()
-        .on('error', map_error)
-        .pipe(plugins.plumber({ errorHandler: onError }))
-        .pipe(source(jsFileName+'.js'))
-        .pipe(gulp.dest(dest))
-        .pipe(buffer())
-        .pipe(sourcemaps.init({loadMaps: true}))
-        .pipe(plugins.stripDebug())
-        .pipe(plugins.uglify())
-        .pipe(plugins.rename({ extname: '.min.js' }))
-        .pipe(sourcemaps.write('./'))
-        .pipe(gulp.dest(dest));
+        .bundle();
+
+    stream.pipeline(
+        bundle,
+        source(jsFileName+'.js'),
+        gulp.dest(dest),
+        buffer(),
+        sourcemaps.init({loadMaps: true}),
+        plugins.stripDebug(),
+        plugins.uglify(),
+        plugins.rename({ extname: '.min.js' }),
+        sourcemaps.write('./'),
+        gulp.dest(dest),
+        function (err) {
+            if (err) {
+                map_error(err);
+            }
+            done(err);
+        }
+    );
 }
 
-gulp.task('build', gulp.parallel('build-css', 'build-js'));
+// Like gulp.parallel, but waits for every task before reporting the first
+// error. gulp.parallel reports at once and gulp-cli exits while the other
+// tasks may still be writing dist/ or have src/d3.js swapped.
+function parallelSettled() {
+    var tasks = Array.prototype.slice.call(arguments);
+    var fn = function (done) {
+        var pending = tasks.length;
+        var error = null;
+        tasks.forEach(function (task) {
+            gulp.series(task)(function (err) {
+                error = error || err;
+                if (--pending === 0) {
+                    done(error);
+                }
+            });
+        });
+    };
+    fn.displayName = '<parallel-settled>';
+    return fn;
+}
+
+gulp.task('build', parallelSettled('build-css', 'build-js'));
 
 gulp.task('build-clean', gulp.series('clean', 'build'));
 
@@ -158,6 +207,4 @@ function map_error(err) {
         // browserify error..
         gutil.log(chalk.red(err))
     }
-
-    this.emit('end');
 }
