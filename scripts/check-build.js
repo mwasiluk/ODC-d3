@@ -293,8 +293,12 @@ function errorCases(base, nodeModules, logs) {
 
 // --- dev scripts (step 8) ---
 
+// own process group (not on Windows), so leftover watcher processes can be
+// detected and killed
+const GROUPS = process.platform !== 'win32';
+
 function start(work, logFile, script, scriptArgs) {
-    const child = spawn(process.execPath, [path.join(work, 'scripts', script)].concat(scriptArgs), {cwd: work});
+    const child = spawn(process.execPath, [path.join(work, 'scripts', script)].concat(scriptArgs), {cwd: work, detached: GROUPS});
     child.output = '';
     const collect = d => {
         child.output += d;
@@ -360,6 +364,15 @@ async function checkServe(work, logs) {
     await child.exited;
 }
 
+function groupAlive(pid) {
+    try {
+        process.kill(-pid, 0);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
 async function checkWatch(work, logs) {
     const css = path.join(work, 'dist/odc-d3.css'), minCss = path.join(work, 'dist/odc-d3.min.css');
     const js = path.join(work, 'dist/odc-d3.js'), standalone = path.join(work, 'dist/standalone/odc-d3.js');
@@ -385,11 +398,15 @@ async function checkWatch(work, logs) {
     const exit = await Promise.race([child.exited, new Promise(resolve => setTimeout(() => resolve(null), 20000))]);
     if (!exit) {
         fail('npm run watch did not stop within 20 s after SIGTERM');
-        child.kill('SIGKILL');
+        GROUPS ? process.kill(-child.pid, 'SIGKILL') : child.kill('SIGKILL');
     } else if (exit.code !== 0) {
         fail('npm run watch exited ' + JSON.stringify(exit) + ' after SIGTERM');
     } else {
         ok('npm run watch: stopped with exit 0 after SIGTERM');
+    }
+    if (GROUPS && groupAlive(child.pid)) {
+        fail('watcher processes still running after npm run watch exited');
+        process.kill(-child.pid, 'SIGKILL');
     }
     [scss, utils].forEach((f, i) => fs.writeFileSync(f, originals[i]));
 }
