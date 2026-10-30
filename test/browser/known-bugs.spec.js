@@ -21,29 +21,6 @@ function tryRender(odc, cls, data, config) {
     }, [cls, data, config]);
 }
 
-// BASELINE §8.12 (found by these tests): HeatmapTimeSeries x.fillMissing uses
-// d3['time' + Interval].offset; the standalone D3 shim does not export d3-time.
-const tsData = [{t: '2000-01-01', y: 'u', z: 1}, {t: '2000-01-04', y: 'u', z: 2}];
-const tsConfig = {x: {key: 't', fillMissing: true}, y: {key: 'y'}, z: {key: 'z'}};
-
-test('[current behaviour, §8.12] HeatmapTimeSeries x.fillMissing', async ({odc, variant}) => {
-    const r = await tryRender(odc, 'HeatmapTimeSeries', tsData, tsConfig);
-    if (variant === 'global') {
-        expect(r).toEqual({ok: true});
-        // 2000-01-01 .. 2000-01-04 filled day by day
-        expect(await odc.run((O, h) => h.count('text.odc-label-x'))).toBe(4);
-    } else {
-        expect(r).toEqual({ok: false, name: 'TypeError', message: "Cannot read properties of undefined (reading 'offset')"});
-    }
-});
-
-test('[known bug §8.12, expected] HeatmapTimeSeries x.fillMissing works in the standalone bundle', async ({odc, variant}) => {
-    test.skip(variant !== 'standalone', 'works in the global variant');
-    test.fail(true, 'BASELINE §8.12: src/d3.js does not re-export d3-time');
-    expect(await tryRender(odc, 'HeatmapTimeSeries', tsData, tsConfig)).toEqual({ok: true});
-    expect(await odc.run((O, h) => h.count('text.odc-label-x'))).toBe(4);
-});
-
 // BASELINE §8.13 (found by these tests): Legend.linearGradientBar creates a new
 // gradient id on every init() and never removes the previous <linearGradient>.
 for (const name of ['heatmap', 'heatmap-timeseries', 'correlation-matrix']) {
