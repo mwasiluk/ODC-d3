@@ -1,0 +1,8 @@
+{
+  "name": "odc-d3-test-vendor",
+  "private": true,
+  "description": "Test-only browser libraries, kept out of the root dependency tree so they cannot change runtime resolutions.",
+  "dependencies": {
+    "d3": "7.9.0"
+  }
+}
