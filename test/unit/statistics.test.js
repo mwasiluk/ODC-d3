@@ -29,16 +29,48 @@ for (const [variant, load] of Object.entries(variants)) {
         assert.equal(s.quantile([1, 2, 3, 4, 5, 6, 7, 8], 0.25), 2.5);
         assert.equal(s.quantile([1, 2, 3, 4, 5, 6, 7, 8], 0.75), 6.5);
         assert.equal(s.zScore(5, 3, 2), 1);
-        assert.equal(s.errorFunction(1), 0.8427007877600067);
     });
 
-    // simple-statistics 4.1.1 multi-quantile mode is wrong for sorted input.
-    // Not used by the charts (BoxPlot calls quantile with a single p); pinned
-    // so that a simple-statistics upgrade shows up here.
-    test(variant + ': quantile with an array of p (current third-party behaviour)', () => {
+    // errorFunction is the Numerical Recipes erfc approximation (fractional
+    // error < 1.2e-7). simple-statistics 8 evaluates the same polynomial with
+    // Horner's scheme, which moves results by about one ulp (v2.0.0:
+    // errorFunction(1) = 0.8427007877600067). Reference values: mpmath erf.
+    test(variant + ': errorFunction against reference values', () => {
         const s = su();
-        assert.deepEqual(Array.from(s.quantile([1, 2, 3, 4, 5, 6, 7, 8], [0.25, 0.5, 0.75])), [NaN, 5, NaN]);
-        assert.deepEqual(Array.from(s.quantile([8, 1, 7, 2], [0.5, 0.25])), [4.5, 1.5]);
+        for (const [x, erf] of [[-2, -0.9953222650189527], [-0.5, -0.5204998778130465], [0.3, 0.3286267594591274],
+            [1, 0.8427007929497149], [2.5, 0.999593047982555]]) {
+            assert.ok(Math.abs(s.errorFunction(x) - erf) < 1.2e-7, 'erf(' + x + ')');
+        }
+        assert.ok(Math.abs(s.errorFunction(1) - 0.8427007877600067) <= 2 * Number.EPSILON);
+    });
+
+    // StatisticsUtils.quantile keeps the definition of simple-statistics 4.1.1
+    // (simple-statistics >= 7.8.9 interpolates). For p = 0.25, 0.5, 0.75 (BoxPlot)
+    // it is the "averaged inverted CDF" quantile; reference values: numpy.quantile(
+    // values, p, method='averaged_inverted_cdf').
+    test(variant + ': quantile for p = 0.25, 0.5, 0.75 against reference values', () => {
+        const s = su();
+        for (const [values, expected] of [
+            [[7], [7, 7, 7]], [[3, 1], [1, 2, 3]], [[5, 1, 3], [1, 3, 5]], [[4, 1, 3, 2], [1.5, 2.5, 3.5]],
+            [[2, 9, 4, 1, 7], [2, 4, 7]], [[6, 5, 4, 3, 2, 1], [2, 3.5, 5]], [[1, 2, 2, 3, 10, 11, 12], [2, 3, 11]],
+            [[1, 2, 3, 4, 5, 6, 7, 8], [2.5, 4.5, 6.5]], [[-3.5, -1, 0, 2.25, -7], [-3.5, -1, 0]]
+        ]) {
+            const copy = values.slice();
+            assert.deepEqual([0.25, 0.5, 0.75].map(p => s.quantile(values, p)), expected, JSON.stringify(values));
+            assert.deepEqual(values, copy, 'input not modified');
+        }
+        assert.equal(s.quantile([3, 1, 2], 0), 1);
+        assert.equal(s.quantile([3, 1, 2], 1), 3);
+        assert.throws(() => s.quantile([], 0.5), /at least one data point/);
+        assert.throws(() => s.quantile([1, 2], 1.5), /between 0 and 1/);
+    });
+
+    // An array of p gives the quantile for each p. simple-statistics 4.1.1
+    // returned [NaN, 5, NaN] for the first call (BASELINE §8.16).
+    test(variant + ': quantile with an array of p', () => {
+        const s = su();
+        assert.deepEqual(s.quantile([1, 2, 3, 4, 5, 6, 7, 8], [0.25, 0.5, 0.75]), [2.5, 4.5, 6.5]);
+        assert.deepEqual(s.quantile([8, 1, 7, 2], [0.5, 0.25]), [4.5, 1.5]);
     });
 
     test(variant + ': tValue for df >= 4', () => {

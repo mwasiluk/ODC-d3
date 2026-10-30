@@ -5,7 +5,6 @@
 //   dist/standalone/odc-d3(.min).js  bundles the d3-* modules re-exported by src/d3.js
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {transformAsync} from '@babel/core';
 import {babel} from '@rollup/plugin-babel';
 import commonjs from '@rollup/plugin-commonjs';
 import {nodeResolve} from '@rollup/plugin-node-resolve';
@@ -56,31 +55,18 @@ function globalD3() {
     };
 }
 
-// src/statistics-utils.js mixes ES `import` with `module.exports`/`require`,
-// which @rollup/plugin-commonjs does not support. Its imports are turned into
-// require() calls first (as babelify did), so it is plain CommonJS.
-function mixedModules() {
-    return {
-        name: 'odc-mixed-modules',
-        async transform(code, id) {
-            if (!id.startsWith(SRC) || !/\bmodule\.exports\b/.test(code) || !/^import\s/m.test(code)) {
-                return null;
-            }
-            const result = await transformAsync(code, {filename: id, babelrc: false, configFile: false,
-                sourceMaps: true, plugins: ['@babel/plugin-transform-modules-commonjs']});
-            return {code: result.code, map: result.map};
-        }
-    };
-}
-
 // The Babel options of the `browserify.transform` field in package.json (kept
 // for consumers that bundle src/). Like the previous babelify build, every
 // module is compiled to ES5, node_modules included; @babel/runtime and
 // regenerator-runtime are already ES5 and must not import their own helpers.
+// Source maps shipped in packages are not followed (inputSourceMap): with
+// simple-statistics' dist map its modules disappeared from the bundle maps,
+// so the maps point to the package files that were actually bundled.
 const babelPlugin = babel({
     babelHelpers: 'runtime',
     babelrc: false,
     configFile: false,
+    inputSourceMap: false,
     exclude: /[\\/]node_modules[\\/](@babel[\\/]runtime|regenerator-runtime)[\\/]/,
     presets: ['@babel/preset-env'],
     plugins: [
@@ -105,7 +91,6 @@ function bundle(dir, plugins) {
         plugins: plugins.concat([
             umdEntry(),
             nodeResolve(),
-            mixedModules(),
             commonjs({transformMixedEsModules: true}),
             babelPlugin
         ]),
