@@ -8,8 +8,6 @@ const fixtures = require('./chart-fixtures');
 
 const by = Object.fromEntries(fixtures.map(f => [f.name, f]));
 
-// BASELINE §8.4: tValue throws for df <= 3, so Regression bands fail for groups of <= 5 points
-const smallGroup = [{x: 1, y: 2, g: 'a'}, {x: 2, y: 3, g: 'a'}, {x: 3, y: 5, g: 'a'}, {x: 4, y: 4, g: 'a'}, {x: 5, y: 6, g: 'a'}];
 const regressionConfig = {x: {key: 'x'}, y: {key: 'y'}, groups: {key: 'g'}};
 
 function tryRender(odc, cls, data, config) {
@@ -22,17 +20,6 @@ function tryRender(odc, cls, data, config) {
         }
     }, [cls, data, config]);
 }
-
-test('[current behaviour, §8.4] Regression with a 5-point group throws ReferenceError', async ({odc}) => {
-    expect(await tryRender(odc, 'Regression', smallGroup, regressionConfig))
-        .toEqual({ok: false, name: 'ReferenceError', message: 'i is not defined'});
-});
-
-test('[known bug §8.4, expected] Regression with a 5-point group renders confidence bands', async ({odc}) => {
-    test.fail(true, 'BASELINE §8.4: statistics-distributions max()/min() use undeclared i');
-    expect(await tryRender(odc, 'Regression', smallGroup, regressionConfig)).toEqual({ok: true});
-    expect(await odc.run((O, h) => h.count('path.odc-confidence'))).toBeGreaterThan(0);
-});
 
 // BASELINE §8.12 (found by these tests): HeatmapTimeSeries x.fillMissing uses
 // d3['time' + Interval].offset; the standalone D3 shim does not export d3-time.

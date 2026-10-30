@@ -1,7 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const {variants} = require('../helpers/bundles');
-const {expectStillBroken} = require('../helpers/known-bug');
 
 // Golden values from BASELINE.md §7.6 (measured on the v2.0.0 bundles).
 // Exact equality on purpose: any change of computation results must be visible.
@@ -15,6 +14,18 @@ for (const [variant, load] of Object.entries(variants)) {
         assert.deepEqual({...s.linearRegression([[1, 2], [2, 3], [3, 5], [4, 4]])}, {m: 0.8, b: 1.5});
         assert.equal(s.linearRegressionLine({m: 2, b: 1})(3), 7);
         assert.equal(s.sampleCorrelation([1, 2, 3, 4], [2, 3, 5, 4]), 0.7999999999999999);
+    });
+
+    // simple-statistics 8 computes the regression in two passes: with a large
+    // x offset (e.g. timestamps) 4.1.1 returned m = 0.5 (offset 1e8) and
+    // m = Infinity (1e9). Exact values: m = 0.8, b = 3.5 - 0.8 * mean(x).
+    test(variant + ': linearRegression with a large x offset', () => {
+        const s = su();
+        for (const offset of [1e8, 1e9]) {
+            const r = s.linearRegression([[offset + 1, 2], [offset + 2, 3], [offset + 3, 5], [offset + 4, 4]]);
+            const b = 3.5 - 0.8 * (offset + 2.5);
+            assert.ok(Math.abs(r.m - 0.8) < 1e-9 && Math.abs(r.b - b) <= 1e-12 * Math.abs(b), JSON.stringify(r));
+        }
     });
 
     test(variant + ': descriptive statistics', () => {
@@ -79,8 +90,14 @@ for (const [variant, load] of Object.entries(variants)) {
         assert.equal(s.tValue(30, 0.01), 2.4573);
         assert.equal(s.tValue(5, 0.025), 2.5705);
         assert.equal(s.tValue(100, 0.05), 1.6602);
-        // p = 0.5 returns the string '0' instead of a number (current behaviour)
-        assert.equal(s.tValue(10, 0.5), '0');
+    });
+
+    // p = 0.5 returned the string '0' (BASELINE §8.15)
+    test(variant + ': tValue(df, 0.5) is the number 0', () => {
+        const s = su();
+        for (const df of [1, 2, 3, 10, 100]) {
+            assert.equal(s.tValue(df, 0.5), 0, 'df ' + df);
+        }
     });
 
     // Regression calls tValue(n - 2, 1 - alpha / 2). The value is negative, so the
@@ -91,23 +108,26 @@ for (const [variant, load] of Object.entries(variants)) {
             [-2.7763, -2.5705, -2.306, -2.2281, -2.0106]);
     });
 
-    test(variant + ': [current behaviour, BASELINE §8.4] tValue throws for df <= 3', () => {
+    // tValue(df, p) is the upper critical value t with P(T > t) = p, to 5
+    // significant digits. df <= 3 threw ReferenceError before (BASELINE §8.4).
+    // Reference values: scipy.stats.t.isf(p, df) (SciPy 1.18).
+    test(variant + ': tValue for df <= 3 against reference values', () => {
         const s = su();
-        for (const df of [1, 2, 3]) {
-            for (const p of [0.975, 0.25, 0.1, 0.05, 0.025, 0.01, 0.005, 0.001]) {
-                assert.throws(() => s.tValue(df, p), {name: 'ReferenceError', message: 'i is not defined'}, df + '/' + p);
-            }
-            // p = 0.5 does not reach the broken max()/min() helpers; note: returns a string
-            assert.equal(s.tValue(df, 0.5), '0');
+        const p = [0.25, 0.1, 0.05, 0.025, 0.01, 0.005, 0.001, 0.975];
+        const reference = {
+            1: [1, 3.077684, 6.313752, 12.706205, 31.820516, 63.656741, 318.308839, -12.706205],
+            2: [0.816497, 1.885618, 2.919986, 4.302653, 6.964557, 9.924843, 22.327125, -4.302653],
+            3: [0.764892, 1.637744, 2.353363, 3.182446, 4.540703, 5.840909, 10.214532, -3.182446]
+        };
+        for (const [df, values] of Object.entries(reference)) {
+            values.forEach((ref, i) => {
+                const v = s.tValue(Number(df), p[i]);
+                assert.equal(typeof v, 'number');
+                assert.ok(Math.abs(v - ref) <= 1e-4 * Math.abs(ref), 'df ' + df + ', p ' + p[i] + ': ' + v + ' vs ' + ref);
+            });
         }
-    });
-
-    test(variant + ': [known bug §8.4, expected] tValue returns a finite number for df <= 3', async () => {
-        const s = su();
-        await expectStillBroken('BASELINE §8.4', () => {
-            for (const df of [1, 2, 3]) {
-                assert.ok(Number.isFinite(s.tValue(df, 0.05)));
-            }
-        });
+        // pinned results of the fixed helper (as for df >= 4 above)
+        assert.deepEqual([1, 2, 3].map(df => s.tValue(df, 0.025)), [12.706, 4.3027, 3.1824]);
+        assert.deepEqual([1, 2, 3].map(df => s.tValue(df, 0.975)), [-12.706, -4.3027, -3.1824]);
     });
 }
